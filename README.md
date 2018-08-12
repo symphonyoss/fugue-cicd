@@ -1,2 +1,2 @@
 # fugue-cicd
-Jenkins pipeline library for the Fugue project
+Fugue Jenkins pipeline library
