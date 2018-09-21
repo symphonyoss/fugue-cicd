@@ -166,15 +166,16 @@ FugeDeploy execute start
     '''{
     "taskRoleArn": "''' + taskRoleArn + '''",
     "family": "fugue-deploy",
+    "networkMode": "awsvpc", 
+    "memory": ''' + memory + ''',
+    "cpu": ''' + cpu + ''', 
+    "requiresCompatibilities": [
+        "FARGATE"
+    ], 
     "containerDefinitions": [
         {
             "name": "''' + taskDefFamily + '''",
             "image": "''' + serviceImage + '''",
-            "memory": ''' + memory + ''',
-            "cpu": ''' + cpu + ''', 
-            "requiresCompatibilities": [
-                "FARGATE"
-            ], 
             "essential": true,
             "logConfiguration": {
                 "logDriver": "awslogs",
