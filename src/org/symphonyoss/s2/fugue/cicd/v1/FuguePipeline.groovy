@@ -340,7 +340,7 @@ class FuguePipeline implements Serializable
         def conf = new EnvironmentTypeConfig(steps, config."amazon")
         steps.echo 'T2'
         steps.echo 'conf=' + conf
-        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, environmentType)
+        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
         steps.echo 'T3'
         docker_repo[environmentType] = aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/'+symteam+'/'
         
@@ -639,7 +639,7 @@ public void deployServiceContainers(Station tenantStage)
       logGroup = createLogGroup('fugue')
     }
     
-    FugueDeploy deploy = new FugueDeploy(steps, task,
+    FugueDeploy deploy = new FugueDeploy(steps, this, task,
       logGroup,
       aws_identity[accountId].Account, 
       ECSClusterMaps.env_cluster[tenantStage.environment]['name'],

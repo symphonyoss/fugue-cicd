@@ -84,7 +84,7 @@ roleName            ${roleName}
       logGroup_ = pipeLine_.createLogGroup('fugue')
       pipeLine_.createRole(accountId, 'fugue-' + environmentType_ + "-root-policy", roleName)
     
-      FugueDeploy deploy = new FugueDeploy(steps_, 'CreateEnvironmentType',
+      FugueDeploy deploy = new FugueDeploy(steps_, pipeLine_, 'CreateEnvironmentType',
         logGroup_,
         pipeLine_.aws_identity[accountId].Account,
         cluster_,
