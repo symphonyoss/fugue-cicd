@@ -33,6 +33,9 @@ class FugueDeploy implements Serializable
   private boolean primaryRegion_
   private String  configTaskdef_
   private String  role_
+  private String  executionRole_  = 'ecsTaskExecutionRole'
+  private String  memory_         = '1024'
+  private String  cpu_            = '256'
   private String  consulTokenId_
   private String  accountId_
   
@@ -141,11 +144,11 @@ FugeDeploy execute start
 ------------------------------------------------------------------------------------------------------------------------
 """
     
-    String taskRoleArn    = 'arn:aws:iam::' + awsAccount_ + ':role/' + role_  
+    String taskRoleArn    = 'arn:aws:iam::' + awsAccount_ + ':role/' + role_
+    String executionRoleArn    = 'arn:aws:iam::' + awsAccount_ + ':role/' + executionRole_
     String taskDefFamily  = 'fugue-deploy-' + environmentType_ + '-' + environment_
     String serviceImage   = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy:' + dockerLabel_
-    String memory         = 1024
-    String cpu            = 256
+
     String consulToken
     String gitHubToken
     
@@ -164,11 +167,13 @@ FugeDeploy execute start
     
     configTaskdef_ =
     '''{
+
+    "executionRoleArn": "''' + executionRoleArn + '''",
     "taskRoleArn": "''' + taskRoleArn + '''",
     "family": "fugue-deploy",
     "networkMode": "awsvpc", 
-    "memory": "''' + memory + '''",
-    "cpu": "''' + cpu + '''", 
+    "memory": "''' + memory_ + '''",
+    "cpu": "''' + cpu_ + '''", 
     "requiresCompatibilities": [
         "FARGATE"
     ], 
