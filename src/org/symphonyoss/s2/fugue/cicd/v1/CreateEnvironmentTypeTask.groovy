@@ -127,17 +127,19 @@ CreateEnvironmentTypeTask Finished
         {
           clusterArn_ = c."clusterArn"
           steps_.echo 'clusterArn_ is ' + clusterArn_
-          return
         }
     }
     
-    steps_.echo 'Cluster ' + cluster_ + ' does not exist, creating...'
-    
-    def createdCluster = steps_.readJSON(text:
-      steps_.sh(returnStdout: true, script: 'aws ecs create-cluster --region us-east-1 --cluster-name ' + cluster_ ))
-
-    clusterArn_ = createdCluster."cluster"."clusterArn"
-    
-    steps_.echo 'created clusterArn_ ' + clusterArn_
+    if(clusterArn_ == null)
+    {
+      steps_.echo 'Cluster ' + cluster_ + ' does not exist, creating...'
+      
+      def createdCluster = steps_.readJSON(text:
+        steps_.sh(returnStdout: true, script: 'aws ecs create-cluster --region us-east-1 --cluster-name ' + cluster_ ))
+  
+      clusterArn_ = createdCluster."cluster"."clusterArn"
+      
+      steps_.echo 'created clusterArn_ ' + clusterArn_
+    }
   }
 }

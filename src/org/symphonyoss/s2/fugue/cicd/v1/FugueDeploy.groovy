@@ -173,8 +173,8 @@ FugeDeploy execute start
     "taskRoleArn": "''' + taskRoleArn + '''",
     "family": "fugue-deploy",
     "networkMode": "awsvpc", 
-    "memory": ''' + memory_ + ''',
-    "cpu": ''' + cpu_ + ''', 
+    "memory": "''' + memory_ + '''",
+    "cpu": "''' + cpu_ + '''", 
     "requiresCompatibilities": [
         "FARGATE"
     ], 
