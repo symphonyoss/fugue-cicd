@@ -204,6 +204,23 @@ class FuguePipeline implements Serializable
     }
   }
   
+  public void toolsPreFlight()
+  {
+    steps.sh 'pwd'
+    steps.sh 'ls -l'
+    
+    if(configGitRepo != null)
+    {
+      steps.echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
+      steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
+
+      steps.sh 'pwd'
+      steps.sh 'ls -l config'
+    }
+    
+    steps.verifyCreds('dev')
+  }
+  
   public void preflight()
   {
     steps.sh 'rm -rf *'
