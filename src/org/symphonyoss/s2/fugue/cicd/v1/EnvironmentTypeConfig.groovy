@@ -11,7 +11,7 @@ class EnvironmentTypeConfig implements Serializable
     
     steps.echo 'TT1'
     steps.echo 'environmentType=' + environmentType
-    steps_.sh 'ls -l'
+    steps.sh 'ls -l'
     steps.echo 'TT2'
     steps_.sh 'ls'
     steps.echo 'TT3'
