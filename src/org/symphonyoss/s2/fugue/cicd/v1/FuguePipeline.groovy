@@ -210,7 +210,7 @@ class FuguePipeline implements Serializable
       .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
   }
   
-  public CreateEnvironmentTask  createEnvironmenTask(String environmentType, String environment,
+  public CreateEnvironmentTask  createEnvironmentTask(String environmentType, String environment,
     String realm, String region)
   {
     return new CreateEnvironmentTask(steps, this, environmentType, environment, realm, region)
