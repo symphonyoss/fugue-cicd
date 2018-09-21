@@ -16,6 +16,10 @@ node
     FuguePipeline pipeLine = FuguePipeline.instance(env, steps)
       .withUseRootCredentials(true)  // We need to force use of root credentials
     
+    stage('Preflight')
+    {
+        pipeLine.verifyCreds('dev')
+    }
     stage('Create EnvironmentType')
     { 
       new CreateEnvironmentTypeTask(steps, pipeLine, environmentType)
