@@ -251,7 +251,7 @@ FugeDeploy execute start
         ' --launch-type FARGATE' +
         ' --network-configuration "awsvpcConfiguration={subnets=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSubnets_ +
            ',securityGroups=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSecurityGroups_ +
-           ',assignPublicIp=DISABLED}"' +
+           ',assignPublicIp=ENABLED}"' +
         ' --task-definition fugue-deploy --count 1'
         )
       )
