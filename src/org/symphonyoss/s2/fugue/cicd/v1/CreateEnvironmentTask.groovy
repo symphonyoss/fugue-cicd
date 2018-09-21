@@ -73,9 +73,11 @@ region_             ${region_}
       credentialsId:      accountId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
+      getOrCreateCluster()
+      
       logGroup_ = pipeLine_.createLogGroup('fugue')
     
-      FugueDeploy deploy = new FugueDeploy(steps_, 'CreateEnvironment',
+      FugueDeploy deploy = new FugueDeploy(steps_, pipeLine_, 'CreateEnvironment',
         logGroup_,
         pipeLine_.aws_identity[accountId].Account,
         cluster_,
@@ -120,5 +122,31 @@ CreateEnvironmentTask Finished
 """
   }
   
+  public void getOrCreateCluster()
+  {
+    def clusters = steps_.readJSON(text:
+      steps_.sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
+
+    clusters."clusters".each
+    {
+      c ->
+        if(cluster_.equals(c."clusterName"))
+        {
+          clusterArn_ = c."clusterArn"
+          steps_.echo 'clusterArn_ is ' + clusterArn_
+        }
+    }
+    
+    if(clusterArn_ == null)
+    {
+      steps_.echo 'Cluster ' + cluster_ + ' does not exist, creating...'
+      
+      def createdCluster = steps_.readJSON(text:
+        steps_.sh(returnStdout: true, script: 'aws ecs create-cluster --region us-east-1 --cluster-name ' + cluster_ ))
   
+      clusterArn_ = createdCluster."cluster"."clusterArn"
+      
+      steps_.echo 'created clusterArn_ ' + clusterArn_
+    }
+  }
 }
