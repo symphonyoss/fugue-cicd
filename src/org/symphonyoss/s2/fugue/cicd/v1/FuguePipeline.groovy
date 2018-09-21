@@ -232,9 +232,9 @@ class FuguePipeline implements Serializable
     
     steps.echo "dir.absolutePath =" + dir.absolutePath 
     
-    steps.echo "dir.listFiles =" + dir.listFiles
+    steps.echo "dir.listFiles() =" + dir.listFiles()
     
-    dir.listFiles.each
+    dir.listFiles().each
     {
       environmentType -> 
       def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
