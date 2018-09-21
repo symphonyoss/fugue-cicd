@@ -18,7 +18,10 @@ node
     
     stage('Preflight')
     {
-        pipeLine.verifyCreds('dev')
+      pipeLine.sh 'pwd'
+      pipeLine.sh 'ls -l'
+      
+      pipeLine.verifyCreds('dev')
     }
     stage('Create EnvironmentType')
     { 
