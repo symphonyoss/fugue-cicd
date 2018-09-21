@@ -37,10 +37,6 @@ class CreateEnvironmentTask implements Serializable
       region_          = region
       cluster_         = 'fugue-' + environmentType_
       
-      configGitOrg_    = pipeLine.configGitOrg_
-      configGitRepo_   = pipeLine.configGitRepo_
-      configGitBranch_ = pipeLine.configGitBranch_
-      
   }
   
   public CreateEnvironmentTask withAwsRegion(String n)
