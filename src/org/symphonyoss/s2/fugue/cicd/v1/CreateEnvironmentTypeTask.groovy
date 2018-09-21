@@ -19,9 +19,9 @@ class CreateEnvironmentTypeTask implements Serializable
   private String  awsRegion_        = 'us-east-1'
   private String  cluster_
   private String  clusterArn_
-  private String  configGitOrg_     = 'SymphonyOSF'
-  private String  configGitRepo_    = 'S2-fugue-config'
-  private String  configGitBranch_  = 'master'
+  private String  configGitOrg_
+  private String  configGitRepo_ 
+  private String  configGitBranch_
   
   public CreateEnvironmentTypeTask(steps, pipeLine, environmentType)
   {
@@ -29,6 +29,10 @@ class CreateEnvironmentTypeTask implements Serializable
       pipeLine_        = pipeLine
       environmentType_ = environmentType
       cluster_         = 'fugue-' + environmentType_
+      
+      configGitOrg_    = pipeLine.configGitOrg_
+      configGitRepo_   = pipeLine.configGitRepo_
+      configGitBranch_ = pipeLine.configGitBranch_
   }
   
   public CreateEnvironmentTypeTask withAwsRegion(String n)

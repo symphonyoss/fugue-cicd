@@ -206,8 +206,7 @@ class FuguePipeline implements Serializable
   
   public void toolsPreFlight()
   {
-    steps.sh 'pwd'
-    steps.sh 'ls -l'
+    steps.sh 'rm -rf *'
     
     if(configGitRepo != null)
     {
@@ -218,7 +217,7 @@ class FuguePipeline implements Serializable
       steps.sh 'ls -l config'
     }
     
-    steps.verifyCreds('dev')
+    verifyCreds('dev')
   }
   
   public void preflight()
