@@ -117,7 +117,7 @@ CreateEnvironmentTypeTask Finished
     def clusters = steps_.readJSON(text:
       steps_.sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
 
-    clusters."clusters" each
+    clusters."clusters".each
     {
       clusterArn, clusterName ->
         if(cluster_.equals(clusterName))
