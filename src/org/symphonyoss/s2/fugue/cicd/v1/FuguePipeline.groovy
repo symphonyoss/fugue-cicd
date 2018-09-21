@@ -229,7 +229,12 @@ class FuguePipeline implements Serializable
     steps.sh 'ls -l config/environment'
     
     File dir = new File('config/environment');
-    dir.listFiles().each
+    
+    steps.echo "dir.absolutePath =" + dir.absolutePath 
+    
+    steps.echo "dir.listFiles =" + dir.listFiles
+    
+    dir.listFiles.each
     {
       environmentType -> 
       def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
