@@ -217,17 +217,38 @@ class FuguePipeline implements Serializable
       .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
   }
   
+  public void loadConfig()
+  {
+    steps.echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
+    steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
+
+    steps.sh 'pwd'
+    steps.sh 'ls -l config'
+    
+    File dir = new File('config/environment');
+    dir.listFiles().each
+    {
+      environmentType -> 
+      def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
+    
+      steps.echo 'config=' + config
+      
+      
+      def conf = new EnvironmentTypeConfig(steps, config."amazon")
+      steps.echo 'T2'
+      steps.echo 'conf=' + conf
+      environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
+      steps.echo 'T3'
+    }
+  }
+  
   public void toolsPreFlight()
   {
     steps.sh 'rm -rf *'
     
     if(configGitRepo != null)
     {
-      steps.echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
-      steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
-
-      steps.sh 'pwd'
-      steps.sh 'ls -l config'
+      loadConfig()
     }
     
     verifyCreds('dev')
@@ -239,11 +260,7 @@ class FuguePipeline implements Serializable
 
     if(configGitRepo != null)
     {
-      steps.echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
-      steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
-
-      steps.sh 'pwd'
-      steps.sh 'ls -l config'
+      loadConfig()
 
       steps.sh 'ls -l config/service/' + servicename + '/service.json'
 
@@ -361,16 +378,16 @@ class FuguePipeline implements Serializable
 //        steps.echo 'TA3'
 //        steps.sh 'ls config/environment/' + environmentType
 //        steps.echo 'TA4'
-        def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
-        
-        steps.echo 'config=' + config
-        
-        
-        def conf = new EnvironmentTypeConfig(steps, config."amazon")
-        steps.echo 'T2'
-        steps.echo 'conf=' + conf
-        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
-        steps.echo 'T3'
+//        def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
+//        
+//        steps.echo 'config=' + config
+//        
+//        
+//        def conf = new EnvironmentTypeConfig(steps, config."amazon")
+//        steps.echo 'T2'
+//        steps.echo 'conf=' + conf
+//        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
+//        steps.echo 'T3'
         docker_repo[environmentType] = aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/'+symteam+'/'
         
         service_map.values().each
