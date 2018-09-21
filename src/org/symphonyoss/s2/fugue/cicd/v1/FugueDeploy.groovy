@@ -36,6 +36,7 @@ class FugueDeploy implements Serializable
   private String  executionRole_  = 'ecsTaskExecutionRole'
   private String  memory_         = '1024'
   private String  cpu_            = '256'
+  private String  port_           = '80'
   private String  consulTokenId_
   private String  accountId_
   
@@ -172,8 +173,6 @@ FugeDeploy execute start
     "taskRoleArn": "''' + taskRoleArn + '''",
     "family": "fugue-deploy",
     "networkMode": "awsvpc", 
-    "memory": "''' + memory_ + '''",
-    "cpu": "''' + cpu_ + '''", 
     "requiresCompatibilities": [
         "FARGATE"
     ], 
@@ -182,6 +181,14 @@ FugeDeploy execute start
             "name": "''' + taskDefFamily + '''",
             "image": "''' + serviceImage + '''",
             "essential": true,
+            "memory": "''' + memory_ + '''",
+            "cpu": "''' + cpu_ + '''", 
+            "portMappings": [
+                {
+                    "containerPort": "''' + port_ + '''",
+                    "protocol": "tcp"
+                }
+            ],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
