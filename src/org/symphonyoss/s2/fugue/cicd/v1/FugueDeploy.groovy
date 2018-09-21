@@ -11,6 +11,8 @@ import java.util.Map.Entry
 class FugueDeploy implements Serializable
 {
   private def     steps_
+  private FuguePipeline pipeLine_
+  
   private String  task_
   private String  logGroup_
   private String  awsRegion_
@@ -40,14 +42,15 @@ class FugueDeploy implements Serializable
   private String  consulTokenId_
   private String  accountId_
   
-  public FugueDeploy(steps, task, logGroup, awsAccount, cluster, awsRegion)
+  public FugueDeploy(steps, pipeLine, task, logGroup, awsAccount, cluster, awsRegion)
   {
-      steps_ = steps
-      task_ = task
-      logGroup_ = logGroup
-      awsAccount_ = awsAccount;
-      cluster_ = cluster
-      awsRegion_ = awsRegion
+      steps_          = steps
+      pipeLine_       = pipeLine
+      task_           = task
+      logGroup_       = logGroup
+      awsAccount_     = awsAccount;
+      cluster_        = cluster
+      awsRegion_      = awsRegion
   }
   
   public FugueDeploy withServiceName(String n)
@@ -246,8 +249,8 @@ FugeDeploy execute start
       def taskRun = steps_.readJSON(text:
         steps_.sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
         ' --launch-type fargate' +
-        ' --network-configuration awsvpcConfiguration={subnets=[' + steps_.environmentTypeConfig[environmentType].subnets_ +
-           '],securityGroups=[' + steps_.environmentTypeConfig[environmentType].securityGroups_ +
+        ' --network-configuration awsvpcConfiguration={subnets=[' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSubnets_ +
+           '],securityGroups=[' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSecurityGroups_ +
            '],assignPublicIp=DISABLED}' +
         ' --task-definition fugue-deploy --count 1'
         )

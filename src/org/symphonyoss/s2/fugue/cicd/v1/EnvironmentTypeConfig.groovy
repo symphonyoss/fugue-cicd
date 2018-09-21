@@ -3,22 +3,25 @@ package org.symphonyoss.s2.fugue.cicd.v1
 class EnvironmentTypeConfig implements Serializable
 {
   
-  private def     steps_
+  private def steps_
+  String      accountId_
+  String      vpcId_
+  String      loadBalancerCertificateArn_
+  String[]    loadBalancerSecurityGroups_
+  String[]    loadBalancerSubnets_
   
-  public EnvironmentTypeConfig(steps, String environmentType)
+  public EnvironmentTypeConfig(steps, amazon)
   {
     steps_ = steps;
-    
-    steps.echo 'TT1'
-    steps.echo 'environmentType=' + environmentType
-    steps.sh 'ls -l'
-    steps.echo 'TT2'
-    steps_.sh 'ls'
-    steps.echo 'TT3'
-    steps_.sh 'ls config/environment/' + environmentType
-    steps.echo 'TT4'
-    def config = steps_.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
-    
-    steps_.echo 'config=' + config
+    accountId_ = amazon."accountId"
+    vpcId_ = amazon."vpcId"
+    loadBalancerCertificateArn_ = amazon."loadBalancerCertificateArn"
+    loadBalancerSecurityGroups_ = amazon."loadBalancerSecurityGroups"
+    loadBalancerSubnets_ = amazon."loadBalancerSubnets"
+  }
+  
+  public String[] getLoadBalancerSecurityGroups()
+  {
+    return loadBalancerSecurityGroups_
   }
 }
