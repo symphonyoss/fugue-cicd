@@ -219,11 +219,14 @@ class FuguePipeline implements Serializable
   
   public void loadConfig()
   {
+    steps.echo 'loadConfig'
+    
     steps.echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
 
     steps.sh 'pwd'
     steps.sh 'ls -l config'
+    steps.sh 'ls -l config/environment'
     
     File dir = new File('config/environment');
     dir.listFiles().each
