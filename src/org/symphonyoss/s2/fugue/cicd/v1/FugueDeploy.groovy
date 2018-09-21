@@ -181,11 +181,11 @@ FugeDeploy execute start
             "name": "''' + taskDefFamily + '''",
             "image": "''' + serviceImage + '''",
             "essential": true,
-            "memory": "''' + memory_ + '''",
-            "cpu": "''' + cpu_ + '''", 
+            "memory": ''' + memory_ + ''',
+            "cpu": ''' + cpu_ + ''', 
             "portMappings": [
                 {
-                    "containerPort": "''' + port_ + '''",
+                    "containerPort": ''' + port_ + ''',
                     "protocol": "tcp"
                 }
             ],

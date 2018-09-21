@@ -120,12 +120,12 @@ CreateEnvironmentTypeTask Finished
     steps_.echo 'clusters is ' + clusters
     clusters."clusters".each
     {
-      clusterArn, clusterName ->
-      steps_.echo 'XclusterArn is ' + clusterArn
-      steps_.echo 'XclusterName is ' + clusterName
-        if(cluster_.equals(clusterName))
+      c ->
+      steps_.echo 'XclusterArn is ' + c."clusterArn"
+      steps_.echo 'XclusterName is ' + c."clusterName"
+        if(cluster_.equals(c."clusterName"))
         {
-          clusterArn_ = clusterArn
+          clusterArn_ = c."clusterArn"
           steps_.echo 'clusterArn_ is ' + clusterArn_
           return
         }
