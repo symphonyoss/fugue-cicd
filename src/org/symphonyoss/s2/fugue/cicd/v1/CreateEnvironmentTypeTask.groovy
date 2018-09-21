@@ -49,7 +49,7 @@ class CreateEnvironmentTypeTask implements Serializable
 
     steps_.echo """
 ------------------------------------------------------------------------------------------------------------------------
-CreateEnvironmentTypeTask V1
+CreateEnvironmentTypeTask V2
 
 awsRegion_          ${awsRegion_}
 environmentType_    ${environmentType_}
