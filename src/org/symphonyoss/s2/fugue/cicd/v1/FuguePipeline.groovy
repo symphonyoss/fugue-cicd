@@ -9,6 +9,7 @@ class FuguePipeline implements Serializable
 
   private Map aws_identity = [:]
   private Map docker_repo = [:]
+  private Map<String, EnvironmentTypeConfig> environmentTypeConfig = [:]
   private Map<String, Container> service_map = [:]
   private Map<String, Station> tenant_stage_map = [:]
   private Map<String, String> role_map = [:]
@@ -320,6 +321,7 @@ class FuguePipeline implements Serializable
 
       if(environmentType != null)
       {
+        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, environmentType)
         docker_repo[environmentType] = aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/'+symteam+'/'
         
         service_map.values().each

@@ -245,6 +245,10 @@ FugeDeploy execute start
       
       def taskRun = steps_.readJSON(text:
         steps_.sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
+        ' --launch-type fargate' +
+        ' --network-configuration awsvpcConfiguration={subnets=[' + steps_.environmentTypeConfig[environmentType].subnets_ +
+           '],securityGroups=[' + steps_.environmentTypeConfig[environmentType].securityGroups_ +
+           '],assignPublicIp=DISABLED}' +
         ' --task-definition fugue-deploy --count 1'
         )
       )
