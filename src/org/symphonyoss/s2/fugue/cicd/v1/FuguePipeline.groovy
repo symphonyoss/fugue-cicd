@@ -321,7 +321,12 @@ class FuguePipeline implements Serializable
 
       if(environmentType != null)
       {
+        steps.echo 'T1'
+        def conf = new EnvironmentTypeConfig(steps, environmentType)
+        steps.echo 'T2'
+        steps.echo 'conf=' + conf
         environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, environmentType)
+        steps.echo 'T3'
         docker_repo[environmentType] = aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/'+symteam+'/'
         
         service_map.values().each
