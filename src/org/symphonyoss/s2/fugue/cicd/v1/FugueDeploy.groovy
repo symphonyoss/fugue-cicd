@@ -173,6 +173,8 @@ FugeDeploy execute start
     "taskRoleArn": "''' + taskRoleArn + '''",
     "family": "fugue-deploy",
     "networkMode": "awsvpc", 
+    "memory": ''' + memory_ + ''',
+    "cpu": ''' + cpu_ + ''', 
     "requiresCompatibilities": [
         "FARGATE"
     ], 
@@ -181,8 +183,6 @@ FugeDeploy execute start
             "name": "''' + taskDefFamily + '''",
             "image": "''' + serviceImage + '''",
             "essential": true,
-            "memory": ''' + memory_ + ''',
-            "cpu": ''' + cpu_ + ''', 
             "portMappings": [
                 {
                     "containerPort": ''' + port_ + ''',
