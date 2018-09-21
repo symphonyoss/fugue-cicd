@@ -322,6 +322,21 @@ class FuguePipeline implements Serializable
       if(environmentType != null)
       {
         steps.echo 'T1'
+        
+        
+        steps.echo 'TA1'
+        steps.echo 'environmentType=' + environmentType
+        steps.sh 'ls -l'
+        steps.echo 'TA2'
+        steps.sh 'ls'
+        steps.echo 'TA3'
+        steps.sh 'ls config/environment/' + environmentType
+        steps.echo 'TA4'
+        def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
+        
+        steps.echo 'config=' + config
+        
+        
         def conf = new EnvironmentTypeConfig(steps, environmentType)
         steps.echo 'T2'
         steps.echo 'conf=' + conf
