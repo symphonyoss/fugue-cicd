@@ -27,7 +27,7 @@ node
     }
     stage('Create Environment')
     { 
-      new CreateEnvironmentTask(steps, pipeLine, environmentType, environment, realm, region)
+      pipeLine.createEnvironmentTask(environmentType, environment, realm, region)
         .execute()
     }
 }

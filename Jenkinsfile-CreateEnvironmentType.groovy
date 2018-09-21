@@ -25,7 +25,7 @@ node
     }
     stage('Create EnvironmentType')
     { 
-      new CreateEnvironmentTypeTask(steps, pipeLine, environmentType)
+      pipeLine.createEnvironmentTypeTask(environmentType)
         .execute()
     }
 }

@@ -204,6 +204,19 @@ class FuguePipeline implements Serializable
     }
   }
   
+  public CreateEnvironmentTypeTask  createEnvironmentTypeTask(String environmentType)
+  {
+    return new CreateEnvironmentTypeTask(steps, this, environmentType)
+      .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
+  }
+  
+  public CreateEnvironmentTask  createEnvironmenTask(String environmentType, String environment,
+    String realm, String region)
+  {
+    return new CreateEnvironmentTask(steps, this, environmentType, environment, realm, region)
+      .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
+  }
+  
   public void toolsPreFlight()
   {
     steps.sh 'rm -rf *'
