@@ -19,6 +19,9 @@ class CreateEnvironmentTypeTask implements Serializable
   private String  awsRegion_        = 'us-east-1'
   private String  cluster_
   private String  clusterArn_
+  private String  configGitOrg_     = 'SymphonyOSF'
+  private String  configGitRepo_    = 'S2-fugue-config'
+  private String  configGitBranch_  = 'master'
   
   public CreateEnvironmentTypeTask(steps, pipeLine, environmentType)
   {
@@ -41,6 +44,15 @@ class CreateEnvironmentTypeTask implements Serializable
     
     return this
   }
+  
+  public CreateEnvironmentTypeTask withConfigGitRepo(String org, String repo, String branch = 'master')
+  {
+    configGitOrg_ = org
+    configGitRepo_ = repo
+    configGitBranch_ = branch
+    
+    return this
+  }
 
   public void execute()
   {
@@ -57,6 +69,7 @@ accountId           ${accountId}
 roleName            ${roleName}
 ------------------------------------------------------------------------------------------------------------------------
 """
+    steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg_ + '/' + configGitRepo_ + '.git', branch: configGitBranch_
     
     pipeLine_.verifyUserAccess(accountId, environmentType_)
     
@@ -76,7 +89,7 @@ roleName            ${roleName}
         pipeLine_.aws_identity[accountId].Account,
         cluster_,
         awsRegion_)
-          .withConfigGitRepo('SymphonyOSF', 'S2-fugue-config', 'master')
+          .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
           .withEnvironmentType(environmentType_)
           .withDockerLabel(dockerLabel_)
           .withRole(roleName)
