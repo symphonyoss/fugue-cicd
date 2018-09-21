@@ -145,6 +145,7 @@ FugeDeploy execute start
     String taskDefFamily  = 'fugue-deploy-' + environmentType_ + '-' + environment_
     String serviceImage   = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy:' + dockerLabel_
     String memory         = 1024
+    String cpu            = 256
     String consulToken
     String gitHubToken
     
@@ -170,6 +171,10 @@ FugeDeploy execute start
             "name": "''' + taskDefFamily + '''",
             "image": "''' + serviceImage + '''",
             "memory": ''' + memory + ''',
+            "cpu": ''' + cpu + ''', 
+            "requiresCompatibilities": [
+                "FARGATE"
+            ], 
             "essential": true,
             "logConfiguration": {
                 "logDriver": "awslogs",

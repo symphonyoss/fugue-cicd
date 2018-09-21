@@ -58,7 +58,7 @@ roleName            ${roleName}
 ------------------------------------------------------------------------------------------------------------------------
 """
     
-    pipeLine_.verifyUserAccess(accountId)
+    pipeLine_.verifyUserAccess(accountId, environmentType_)
     
     steps_.withCredentials([[
       $class:             'AmazonWebServicesCredentialsBinding',
