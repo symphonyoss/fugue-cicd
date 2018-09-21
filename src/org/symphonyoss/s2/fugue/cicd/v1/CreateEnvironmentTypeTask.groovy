@@ -18,13 +18,14 @@ class CreateEnvironmentTypeTask implements Serializable
   private String  dockerLabel_      = 'latest'
   private String  awsRegion_        = 'us-east-1'
   private String  cluster_
+  private String  clusterArn_
   
   public CreateEnvironmentTypeTask(steps, pipeLine, environmentType)
   {
       steps_           = steps
       pipeLine_        = pipeLine
       environmentType_ = environmentType
-      cluster_         = ECSClusterMaps.env_cluster[environmentType_]['name']   // FIXME: we need to move to fargate etc etc
+      cluster_         = 'fugue-' + environmentType_
   }
   
   public CreateEnvironmentTypeTask withAwsRegion(String n)
@@ -48,7 +49,7 @@ class CreateEnvironmentTypeTask implements Serializable
 
     steps_.echo """
 ------------------------------------------------------------------------------------------------------------------------
-CreateEnvironmentTypeTask
+CreateEnvironmentTypeTask V1
 
 awsRegion_          ${awsRegion_}
 environmentType_    ${environmentType_}
@@ -65,6 +66,8 @@ roleName            ${roleName}
       credentialsId:      accountId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
+      getOrCreateCluster()
+      
       logGroup_ = pipeLine_.createLogGroup('fugue')
       pipeLine_.createRole(accountId, 'fugue-' + environmentType_ + "-root-policy", roleName)
     
@@ -109,5 +112,22 @@ CreateEnvironmentTypeTask Finished
 """
   }
   
-  
+  public void getOrCreateCluster()
+  {
+    def clusters = steps_.readJSON(text:
+      steps_.sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
+
+    clusters."clusters" each
+    {
+      clusterArn, clusterName ->
+        if(cluster_.equals(clusterName))
+        {
+          clusterArn_ = clusterArn
+          steps_.echo 'clusterArn_ is ' + clusterArn_
+          return
+        }
+    }
+    
+    steps_.echo 'Cluster ' + cluster_ + ' does not exist, creating...'
+  }
 }

@@ -31,11 +31,11 @@ class CreateEnvironmentTask implements Serializable
       environment_     = environment
       realm_           = realm
       region_          = region
-      cluster_          = ECSClusterMaps.env_cluster[environment_]['name']   // FIXME: we need to move to fargate etc etc
+      cluster_         = 'fugue-' + environmentType_
       
   }
   
-  public CreateEnvironmentTypeTask withAwsRegion(String n)
+  public CreateEnvironmentTask withAwsRegion(String n)
   {
       awsRegion_ = n
       
