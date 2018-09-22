@@ -84,14 +84,13 @@ roleName            ${roleName}
     
       FugueDeploy deploy = new FugueDeploy(steps_, pipeLine_, 'CreateEnvironmentType',
         logGroup_,
-        pipeLine_.aws_identity[accountId].Account,
-        cluster_,
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
           .withEnvironmentType(environmentType_)
           .withDockerLabel(dockerLabel_)
           .withRole(roleName)
           .withAccountId(accountId)
+          .withCluster(cluster_)
         
       deploy.execute()
       

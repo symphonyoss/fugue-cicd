@@ -42,15 +42,20 @@ class FugueDeploy implements Serializable
   private String  consulTokenId_
   private String  accountId_
   
-  public FugueDeploy(steps, pipeLine, task, logGroup, awsAccount, cluster, awsRegion)
+  public FugueDeploy(steps, FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
   {
       steps_          = steps
       pipeLine_       = pipeLine
       task_           = task
       logGroup_       = logGroup
-      awsAccount_     = awsAccount;
-      cluster_        = cluster
       awsRegion_      = awsRegion
+  }
+  
+  public FugueDeploy withCluster(String n)
+  {
+      cluster_ = n
+      
+      return this
   }
   
   public FugueDeploy withServiceName(String n)
@@ -86,6 +91,7 @@ class FugueDeploy implements Serializable
   public FugueDeploy withAccountId(String s)
   {
     accountId_ = s
+    awsAccount_     = pipeLine.aws_identity[accountId_].Account;
     
     return this
   }
@@ -101,6 +107,8 @@ class FugueDeploy implements Serializable
     role_               = environmentType_ + '-' + environment_ + '-admin-role'
     consulTokenId_      = 'sym-consul-' + environmentType_
     accountId_          = 'fugue-' + environmentType_ + '-cicd'
+    awsAccount_         = pipeLine.aws_identity[accountId_].Account;
+    cluster_            = environmentType_ + '-' + environment_
     
     return this
   }

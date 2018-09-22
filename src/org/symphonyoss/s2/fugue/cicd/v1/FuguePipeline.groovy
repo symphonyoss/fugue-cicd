@@ -682,8 +682,6 @@ public void deployServiceContainers(Station tenantStage)
     
     FugueDeploy deploy = new FugueDeploy(steps, this, task,
       logGroup,
-      aws_identity[accountId].Account, 
-      ECSClusterMaps.env_cluster[tenantStage.environment]['name'],
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
         .withStation(tenantStage)
@@ -694,115 +692,6 @@ public void deployServiceContainers(Station tenantStage)
       deploy.withDockerLabel(release + '-' + buildNumber)
       
     deploy.execute() 
-      
-      
-      
-      
-//    String taskDefFamily = 'fugue-deploy-' + tenantStage.environmentType + '-' + tenantStage.environment
-//    String deployConfigVersion = toolsDeploy ? release + '-' + buildNumber : 'latest'
-//    def template_args =
-//    [
-//      'AWSREGION':awsRegion,
-//      'FUGUE_ENVIRONMENT_TYPE':tenantStage.environmentType,
-//      'FUGUE_ENVIRONMENT':tenantStage.environment,
-//      'FUGUE_REALM':tenantStage.realm,
-//      'FUGUE_REGION':tenantStage.region,
-//      'FUGUE_SERVICE':servicename,
-//      'FUGUE_PRIMARY_ENVIRONMENT':tenantStage.primaryEnvironment,
-//      'FUGUE_PRIMARY_REGION':tenantStage.primaryRegion,
-//      'TASK_ROLE_ARN':'arn:aws:iam::' + aws_identity[tenantStage.environmentType].Account + ':role/' + 
-//        tenantStage.environmentType + '-' + tenantStage.environment + '-admin-role',
-//      'LOG_GROUP':'',
-//      'FUGUE_TENANT':tenant,
-//      'FUGUE_ACTION':task,
-//      'MEMORY':1024,
-//      'TASK_FAMILY':taskDefFamily,
-//      'SERVICE_IMAGE':aws_identity[tenantStage.environmentType].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy:' + deployConfigVersion,
-//      'CONSUL_TOKEN':'',
-//      'GITHUB_TOKEN':'',
-//      'GITHUB_ORG':configGitOrg,
-//      'GITHUB_REPO':configGitRepo,
-//      'GITHUB_BRANCH':configGitBranch
-//    ]
-//    
-//    steps.withCredentials([steps.string(credentialsId: 'sym-consul-'+tenantStage.environmentType, variable: 'CONSUL_TOKEN')])
-//    {
-//      // TODO: CONSUL_TOKEN needs to be moved
-//      template_args['CONSUL_TOKEN'] = steps.sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
-//    }
-//      
-//    steps.withCredentials([steps.string(credentialsId: 'symphonyjenkinsauto-token', variable: 'GITHUB_TOKEN')])
-//    {
-//      template_args['GITHUB_TOKEN'] = steps.sh(returnStdout:true, script:'echo -n $GITHUB_TOKEN').trim()
-//    }
-//    
-//    steps.withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'sym-aws-'+tenantStage.environmentType, secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
-//    {
-//
-//      template_args['LOG_GROUP'] = createLogGroup('fugue')
-//      
-//      //def taskdef = (new groovy.text.SimpleTemplateEngine()).createTemplate(taskdef_template).make(template_args).toString()
-//      def taskdef = (new org.apache.commons.lang3.text.StrSubstitutor(template_args)).replace(config_taskdef_template)
-//      //steps.echo taskdef
-//      def taskdef_file = 'ecs-'+tenantStage.environment+'-'+tenant+'.json'
-//      steps.writeFile file:taskdef_file, text:taskdef
-//      
-////          steps.echo 'taskdef file is ' + taskdef_file
-//      steps.echo 'Vconf1 taskdef is ' + taskdef
-//      steps.echo 'Vconf1 tenantStage.primaryEnvironment is ' + tenantStage.primaryEnvironment
-//      steps.echo 'Vconf1 template_args is ' + template_args
-//    
-//      steps.sh 'aws --region ' + awsRegion + ' ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-'+tenantStage.environment+'-'+tenant+'.json'
-////          def tdefout = steps.readJSON file: 'ecs-taskdef-out-'+tenantStage.environment+'-'+tenant+'.json'
-////          tenants[tenantStage.environment][tenant]['ecs-taskdef-arn'] = tdefout.taskDefinition.taskDefinitionArn
-////          tenants[tenantStage.environment][tenant]['ecs-taskdef-family'] = tdefout.taskDefinition.family
-////          tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = tdefout.taskDefinition.revision
-////          steps.echo """
-////ECS Task Definition ARN:      ${tenants[tenantStage.environment][tenant]['ecs-taskdef-arn']}
-////ECS Task Definition Family:   ${tenants[tenantStage.environment][tenant]['ecs-taskdef-family']}
-////ECS Task Definition Revision: ${tenants[tenantStage.environment][tenant]['ecs-taskdef-revision']}
-////"""
-//   
-//      def taskRun = steps.readJSON(text:
-//        steps.sh(returnStdout: true, script: 'aws --region ' + awsRegion + ' ecs run-task --cluster ' + ECSClusterMaps.env_cluster[tenantStage.environment]['name'] +
-//        ' --task-definition fugue-deploy --count 1'
-//        )
-//      )
-//        
-//      steps.echo """
-//Task run
-//taskArn: ${taskRun.tasks[0].taskArn}
-//lastStatus: ${taskRun.tasks[0].lastStatus}
-//"""
-//      String taskArn = taskRun.tasks[0].taskArn
-//      String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
-//      
-//      steps.sh 'aws --region ' + awsRegion + ' ecs wait tasks-stopped --cluster ' + ECSClusterMaps.env_cluster[tenantStage.environment]['name'] +
-//        ' --tasks ' + taskArn
-//      
-//
-//      def taskDescription = steps.readJSON(text:
-//        steps.sh(returnStdout: true, script: 'aws --region ' + awsRegion + ' ecs describe-tasks  --cluster ' + 
-//          ECSClusterMaps.env_cluster[tenantStage.environment]['name'] +
-//          ' --tasks ' + taskArn
-//        )
-//      )
-//      
-//      steps.echo """
-//Task run
-//taskArn: ${taskDescription.tasks[0].taskArn}
-//lastStatus: ${taskDescription.tasks[0].lastStatus}
-//stoppedReason: ${taskDescription.tasks[0].stoppedReason}
-//exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
-//"""
-//      //TODO: only print log if failed...
-//      steps.sh 'aws --region ' + awsRegion + ' logs get-log-events --log-group-name fugue' +
-//      ' --log-stream-name ' + taskDefFamily + '/' + taskDefFamily + '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/",$//\' | sed -e \'s/\\\\t/      /\''
-//      if(taskDescription.tasks[0].containers[0].exitCode != 0) {
-//        
-//        throw new IllegalStateException('Init task fugue-deploy failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
-//      }
-//    }
   }
   
   public void pushDockerImage(String env, String localimage) {
