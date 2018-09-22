@@ -228,13 +228,12 @@ class FuguePipeline implements Serializable
     steps.sh 'ls -l config'
     steps.sh 'ls -l config/environment'
     
-    steps.sh 'steps.workspace = ' + steps.workspace
+    String pwd = steps.sh(script: "pwd", returnStdout: true).toString().trim()
     
-    File working = new File("$steps.workspace");
     
-    steps.echo "working.absolutePath =" + working.absolutePath 
+    steps.echo "pwd =" + pwd 
     
-    File dir = new File(working, 'config/environment');
+    File dir = new File("$pwd/config/environment");
     
     steps.echo "dir.absolutePath =" + dir.absolutePath
     
