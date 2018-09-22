@@ -242,23 +242,20 @@ class FuguePipeline implements Serializable
     dir.listFiles().each
     {
       File environmentType -> 
+        def config = steps.readJSON file: environmentType.absolutePath + '/environmentType.json'
       
-      String configFile = environmentType.absolutePath + '/environmentType.json'
-      steps.echo "configFile =" + configFile
-      def config = steps.readJSON file: configFile
-    
-      steps.echo 'config=' + config
-      
-      
-      def conf = new EnvironmentTypeConfig(steps, config."amazon")
-      steps.echo 'T2'
-      steps.echo 'conf=' + conf
-      environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
-      steps.echo 'T3'
+//        steps.echo 'config=' + config
+//        
+//        
+//        def conf = new EnvironmentTypeConfig(steps, config."amazon")
+//        steps.echo 'T2'
+//        steps.echo 'conf=' + conf
+        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
+//        steps.echo 'T3'
     }
     
-    steps.echo 'T4'
-    throw new IllegalStateException('STOP')
+//    steps.echo 'T4'
+//    throw new IllegalStateException('STOP')
   }
   
   public void toolsPreFlight()
