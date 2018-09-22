@@ -228,11 +228,11 @@ class FuguePipeline implements Serializable
     steps.sh 'ls -l config'
     steps.sh 'ls -l config/environment'
     
-//    File working = new File();
-//    
-//    steps.echo "working.absolutePath =" + working.absolutePath 
+    File working = new File('.');
     
-    File dir = new File('.', 'config/environment');
+    steps.echo "working.absolutePath =" + working.absolutePath 
+    
+    File dir = new File(working, 'config/environment');
     
     steps.echo "dir.absolutePath =" + dir.absolutePath
     
