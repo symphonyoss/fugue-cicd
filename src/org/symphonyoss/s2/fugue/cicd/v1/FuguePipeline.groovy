@@ -228,7 +228,9 @@ class FuguePipeline implements Serializable
     steps.sh 'ls -l config'
     steps.sh 'ls -l config/environment'
     
-    File working = new File('.');
+    steps.sh 'steps.workspace = ' + steps.workspace
+    
+    File working = new File("$steps.workspace");
     
     steps.echo "working.absolutePath =" + working.absolutePath 
     
