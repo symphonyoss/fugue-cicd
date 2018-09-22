@@ -16,7 +16,7 @@ class FugueDeploy implements Serializable
   private String  task_
   private String  logGroup_
   private String  awsRegion_
-  private String  dockerLabel_  = 'latest'
+  private String  dockerLabel_  = ':latest'
 
 
   private String  awsAccount_
@@ -151,7 +151,7 @@ FugeDeploy execute start
     String taskRoleArn    = 'arn:aws:iam::' + awsAccount_ + ':role/' + role_
     String executionRoleArn    = 'arn:aws:iam::' + awsAccount_ + ':role/' + executionRole_
     String taskDefFamily  = 'fugue-deploy-' + environmentType_ + '-' + environment_
-    String serviceImage   = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy:' + dockerLabel_
+    String serviceImage   = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + dockerLabel_
 
     String consulToken
     String gitHubToken
