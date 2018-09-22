@@ -18,7 +18,7 @@ class CreateEnvironmentTask implements Serializable
   private String  environment_
   private String  realm_
   private String  region_
-  private String  dockerLabel_      = 'latest'
+  private String  dockerLabel_      = ':latest'
   private String  awsRegion_        = 'us-east-1'
   private String  cluster_
   private String  clusterArn_

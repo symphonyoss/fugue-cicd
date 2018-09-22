@@ -15,7 +15,7 @@ class CreateEnvironmentTypeTask implements Serializable
   
   private String  logGroup_
   private String  environmentType_
-  private String  dockerLabel_      = 'latest'
+  private String  dockerLabel_      = ':latest'
   private String  awsRegion_        = 'us-east-1'
   private String  cluster_
   private String  clusterArn_
