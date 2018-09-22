@@ -35,8 +35,7 @@ class CreateEnvironmentTask implements Serializable
       environment_     = environment
       realm_           = realm
       region_          = region
-      cluster_         = 'fugue-' + environmentType_
-      
+      cluster_         = environmentType_ + '-' + environment_ + '-' + region_
   }
   
   public CreateEnvironmentTask withAwsRegion(String n)
