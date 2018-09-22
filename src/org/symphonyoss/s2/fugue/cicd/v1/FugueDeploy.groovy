@@ -91,7 +91,7 @@ class FugueDeploy implements Serializable
   public FugueDeploy withAccountId(String s)
   {
     accountId_ = s
-    awsAccount_     = pipeLine.aws_identity[accountId_].Account;
+    awsAccount_     = pipeLine_.aws_identity[accountId_].'Account';
     
     return this
   }
@@ -107,7 +107,7 @@ class FugueDeploy implements Serializable
     role_               = environmentType_ + '-' + environment_ + '-admin-role'
     consulTokenId_      = 'sym-consul-' + environmentType_
     accountId_          = 'fugue-' + environmentType_ + '-cicd'
-    awsAccount_         = pipeLine.aws_identity[accountId_].Account;
+    awsAccount_         = pipeLine_.aws_identity[accountId_].'Account';
     cluster_            = environmentType_ + '-' + environment_
     
     return this
