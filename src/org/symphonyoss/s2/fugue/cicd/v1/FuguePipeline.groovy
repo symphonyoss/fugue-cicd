@@ -689,7 +689,7 @@ public void deployServiceContainers(Station tenantStage)
         .withServiceName(servicename)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(release + '-' + buildNumber)
+      deploy.withDockerLabel(':' + release + '-' + buildNumber)
       
     deploy.execute() 
   }
