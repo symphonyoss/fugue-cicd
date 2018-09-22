@@ -223,39 +223,18 @@ class FuguePipeline implements Serializable
     
     steps.echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
-
-    steps.sh 'pwd'
-    steps.sh 'ls -l config'
-    steps.sh 'ls -l config/environment'
     
     String pwd = steps.sh(script: "pwd", returnStdout: true).toString().trim()
-    
-    
-    steps.echo "pwd =" + pwd 
+
     
     File dir = new File("$pwd/config/environment");
-    
-    steps.echo "dir.absolutePath =" + dir.absolutePath
-    
-    steps.echo "dir.listFiles() =" + dir.listFiles()
     
     dir.listFiles().each
     {
       File environmentType -> 
         def config = steps.readJSON file: environmentType.absolutePath + '/environmentType.json'
-      
-//        steps.echo 'config=' + config
-//        
-//        
-//        def conf = new EnvironmentTypeConfig(steps, config."amazon")
-//        steps.echo 'T2'
-//        steps.echo 'conf=' + conf
         environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(steps, config."amazon")
-        steps.echo 'environmentTypeConfig['+ environmentType.name + ']=' + environmentTypeConfig[environmentType.name]
     }
-    
-//    steps.echo 'T4'
-//    throw new IllegalStateException('STOP')
   }
   
   public void toolsPreFlight()
