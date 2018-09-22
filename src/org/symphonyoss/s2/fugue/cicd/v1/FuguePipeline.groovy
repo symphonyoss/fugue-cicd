@@ -250,8 +250,8 @@ class FuguePipeline implements Serializable
 //        def conf = new EnvironmentTypeConfig(steps, config."amazon")
 //        steps.echo 'T2'
 //        steps.echo 'conf=' + conf
-        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
-//        steps.echo 'T3'
+        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(steps, config."amazon")
+        steps.echo 'environmentTypeConfig['+ environmentType.name + ']=' + environmentTypeConfig[environmentType.name]
     }
     
 //    steps.echo 'T4'
