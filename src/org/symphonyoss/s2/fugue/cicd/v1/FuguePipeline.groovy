@@ -242,7 +242,7 @@ class FuguePipeline implements Serializable
     dir.listFiles().each
     {
       environmentType -> 
-      def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
+      def config = steps.readJSON file: environmentType + '/environmentType.json'
     
       steps.echo 'config=' + config
       
