@@ -78,8 +78,6 @@ region_             ${region_}
     String  accountId = 'fugue-' + environmentType_ + '-cicd'
     String  roleName  = 'fugue-' + environmentType_ + '-admin-role'
     
-    steps_.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg_ + '/' + configGitRepo_ + '.git', branch: configGitBranch_
-    
     pipeLine_.verifyUserAccess(accountId)
     
     steps_.withCredentials([[
@@ -97,7 +95,7 @@ region_             ${region_}
         pipeLine_.aws_identity[accountId].Account,
         cluster_,
         awsRegion_)
-          .withConfigGitRepo('SymphonyOSF', 'S2-fugue-config', 'master')
+          .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
           .withEnvironmentType(environmentType_)
           .withEnvironment(environment_)
           .withRealm(realm_)

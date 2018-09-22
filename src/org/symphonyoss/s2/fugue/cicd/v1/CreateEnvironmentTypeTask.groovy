@@ -69,8 +69,6 @@ accountId           ${accountId}
 roleName            ${roleName}
 ------------------------------------------------------------------------------------------------------------------------
 """
-    steps_.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg_ + '/' + configGitRepo_ + '.git', branch: configGitBranch_
-    
     pipeLine_.verifyUserAccess(accountId, environmentType_)
     
     steps_.withCredentials([[
