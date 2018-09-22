@@ -252,6 +252,9 @@ class FuguePipeline implements Serializable
       environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
       steps.echo 'T3'
     }
+    
+    steps.echo 'T4'
+    throw new IllegalStateException('STOP')
   }
   
   public void toolsPreFlight()
