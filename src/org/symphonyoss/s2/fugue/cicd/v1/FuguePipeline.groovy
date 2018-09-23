@@ -323,7 +323,6 @@ class FuguePipeline implements Serializable
     
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
 
-    verifyCreds('smoke')
     verifyCreds('dev')
 
     try
