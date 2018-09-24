@@ -47,9 +47,14 @@ class JenkinsTask implements Serializable
     return steps_."readJSON"(args)
   }
   
-  public def withCredentials(Map args, CpsClosure2 closure)
+  public def withCredentials(List args, CpsClosure2 closure)
   {
     return steps_."withCredentials"(args, closure) 
+  }
+  
+  public def withCredentials(Map args, CpsClosure2 closure)
+  {
+    return steps_."withCredentials"(args, closure)
   }
   
   public def git(Map args)
