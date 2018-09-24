@@ -272,9 +272,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'HERE I AM!'
     //new JenkinsTask(env, steps).execute()
     
-    new FuguePipelineTask(environ, steps, this).execute()
+    //new FuguePipelineTask(environ, steps, this).execute()
     
-    throw new IllegalStateException("STOP")
+    //throw new IllegalStateException("STOP")
     
     steps.sh 'rm -rf *'
 
@@ -380,8 +380,10 @@ class FuguePipeline extends JenkinsTask implements Serializable
       credentialsId:      credentialId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
-      aws_identity[credentialId] = steps.readJSON(text: steps.sh(returnStdout: true, script: 'aws sts get-caller-identity'))
+      aws_identity[credentialId] = steps.readJSON(text: sh(returnStdout: true, script: 'aws sts get-caller-identity'))
 
+      throw new IllegalStateException("STOP")
+      
       //steps.sh 'aws --region ' + awsRegion + ' ecs list-clusters'
 
       if(environmentType != null)
