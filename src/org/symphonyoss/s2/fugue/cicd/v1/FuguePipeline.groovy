@@ -50,19 +50,17 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
       this.environ = env
       this.steps = steps
-      
-      
   }
 
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
   {
     return new FuguePipeline(env, steps)
   }
-  
-//  public void echo(String message)
-//  {
-//    steps."echo" message
-//  }
+
+  public EnvironmentTypeConfig  getEnvironmentTypeConfig(String environmentType)
+  {
+    return environmentTypeConfig[environmentType];
+  }
   
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -246,7 +244,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     {
       File environmentType -> 
         def config = readJSON file: environmentType.absolutePath + '/environmentType.json'
-        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(steps, config."amazon")
+        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
     }
   }
   

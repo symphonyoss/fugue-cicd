@@ -121,6 +121,8 @@ CreateEnvironmentTypeTask Finished
   
   public void getOrCreateCluster()
   {
+    cluster_ = pipeLine_.getEnvironmentConfig(environmentType_).getClusterId();
+    
     def clusters = readJSON(text:
       sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
 
@@ -137,6 +139,8 @@ CreateEnvironmentTypeTask Finished
     if(clusterArn_ == null)
     {
       echo 'Cluster ' + cluster_ + ' does not exist, creating...'
+      
+      throw new IllegalStateException("Can't create EC2 cluster yet...")
       
       def createdCluster = readJSON(text:
         sh(returnStdout: true, script: 'aws ecs create-cluster --region us-east-1 --cluster-name ' + cluster_ ))
