@@ -99,7 +99,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
     if(service_map.containsKey(s.name))
       throw new IllegalArgumentException("Container \"" + s.name + "\" redefined.")
     
-    s.withPipeline(this)
     service_map.put(s.name, s)
     
     return this
@@ -285,7 +284,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
       def service = readJSON file:'config/service/' + servicename + '/service.json'
 
       echo 'service is ' + service
-      echo 'service.containers is ' + service.containers
       echo 'service."containers" is ' + service."containers"
 
       service."containers".each { name, containerDef ->
