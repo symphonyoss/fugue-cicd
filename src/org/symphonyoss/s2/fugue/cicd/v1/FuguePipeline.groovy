@@ -51,6 +51,11 @@ class FuguePipeline extends JenkinsTask implements Serializable
       this.environ = env
       this.steps = steps
       
+      steps.echo 'T1'
+      this.steps.echo 'T2'
+      
+      steps_.echo 'T3'
+      
       echo 'HERE I AM!'
       //new JenkinsTask(env, steps).execute()
   }
@@ -59,6 +64,11 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     return new FuguePipeline(env, steps)
   }
+  
+//  public void echo(String message)
+//  {
+//    steps."echo" message
+//  }
   
   public String toString() {
     StringBuilder b = new StringBuilder();
