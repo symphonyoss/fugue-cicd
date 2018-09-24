@@ -19,7 +19,7 @@ abstract class FuguePipelineTask extends JenkinsTask implements Serializable
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
-    pipeLine_.verifyCreds(credentialId, environmentType)
+    pipeLine_.verifyUserAccess(credentialId, environmentType)
   }
   
   public abstract void execute()
