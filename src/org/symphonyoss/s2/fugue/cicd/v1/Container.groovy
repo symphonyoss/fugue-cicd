@@ -38,7 +38,7 @@ class Container extends FuguePipelineTask implements Serializable {
   }
   
   String getRole() {
-    containerRole == null ? pipeLine.servicename : containerRole
+    containerRole == null ? pipeLine_.servicename : containerRole
   }
 
   public Container withName(String n) {
@@ -77,12 +77,12 @@ class Container extends FuguePipelineTask implements Serializable {
   }
   
   String getPath() {
-    containerPath == null ? pipeLine.servicePath : containerPath
+    containerPath == null ? pipeLine_.servicePath : containerPath
   }
   
   void deployInit(Station tenantStage, String tenant) {
     
-//    RunInitContainer deploy = new RunInitContainer(pipeLine, tenantStage, tenant)
+//    RunInitContainer deploy = new RunInitContainer(pipeLine_, tenantStage, tenant)
 //      
 //    deploy.execute()
 //    
@@ -103,10 +103,10 @@ class Container extends FuguePipelineTask implements Serializable {
         withCredentials([[
           $class: 'AmazonWebServicesCredentialsBinding',
           accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          credentialsId: pipeLine.getCredentialName(tenantStage.environmentType),
+          credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
           secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
         
-        String logGroupName = pipeLine.createLogGroup(tenantStage, tenant);
+        String logGroupName = pipeLine_.createLogGroup(tenantStage, tenant);
                          
         String override = '{"containerOverrides": [{"name": "' + serviceFullName(tenantStage, tenant) +
          '","environment": ['
@@ -247,7 +247,7 @@ DRAINING:    ${svcstate.events.size()>=1?svcstate.events[0].message.contains('ha
     withCredentials([[
       $class: 'AmazonWebServicesCredentialsBinding',
       accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-      credentialsId: pipeLine.getCredentialName(tenantStage.environmentType),
+      credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
       sh 'aws --region us-east-1 ecs update-service --cluster '+clusterId+' --service '+serviceFullName(tenantStage, tenant)+(taskdef!=null?(' --task-definition '+serviceFullName(tenantStage, tenant)):'')+(desired>=0?(' --desired-count '+desired):'')+' > ecs-service-update-'+tenantStage.environment+'-'+tenant+'.json'
@@ -264,11 +264,11 @@ DRAINING:    ${svcstate.events.size()>=1?svcstate.events[0].message.contains('ha
           withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
             accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            credentialsId: pipeLine.getCredentialName(tenantStage.environmentType),
+            credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
             ]])
           {
-              String logGroupName = pipeLine.createLogGroup(tenantStage, tenant);
+              String logGroupName = pipeLine_.createLogGroup(tenantStage, tenant);
               
               
               //TODO: this needs to move to DeployConfig and we need to make it work with multiple containers, we
@@ -302,7 +302,7 @@ DRAINING:    ${svcstate.events.size()>=1?svcstate.events[0].message.contains('ha
         withCredentials([[
           $class: 'AmazonWebServicesCredentialsBinding',
           accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          credentialsId: pipeLine.getCredentialName(tenantStage.environmentType),
+          credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
           secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
           ]])
         {
@@ -330,20 +330,20 @@ ECS Service Event[2]: ${svcstate.services[0].events.size()>=3?svcstate.services[
   String fugueConfig(Station tenantStage, String tenant)
   {
     echo """
-pipeLine.awsRegion = ${pipeLine.awsRegion}
+pipeLine_.awsRegion = ${pipeLine_.awsRegion}
 tenantStage.environmentType = ${tenantStage.environmentType}
 tenantStage.environment =${tenantStage.environment}
 tenantStage.realm = ${tenantStage.realm}
 tenantStage.region =${tenantStage.region}
 """
-    String prefix = 'https://s3.' + pipeLine.awsRegion + '.amazonaws.com/fugue-' +
-      tenantStage.environmentType + '-' + pipeLine.awsRegion +
+    String prefix = 'https://s3.' + pipeLine_.awsRegion + '.amazonaws.com/fugue-' +
+      tenantStage.environmentType + '-' + pipeLine_.awsRegion +
       '-config/config/' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenantStage.realm + '-' + tenantStage.region;
     
     if(tenant != null)
       prefix = prefix  + '-' + tenant;
       
-    return prefix + '-' + pipeLine.servicename + ".json"
+    return prefix + '-' + pipeLine_.servicename + ".json"
   }
   
   private void registerTaskDef(Station tenantStage, String tenant)
@@ -362,27 +362,27 @@ tenantStage.region =${tenantStage.region}
     
     // dev-s2dev3-sym-ac8-s2fwd-init-role
     String baseRoleName = tenant == null ? 
-      tenantStage.environmentType + '-' + tenantStage.environment + '-' + pipeLine.servicename + '-' + containerRole :
-      tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenant + '-' + pipeLine.servicename + '-' + containerRole
+      tenantStage.environmentType + '-' + tenantStage.environment + '-' + pipeLine_.servicename + '-' + containerRole :
+      tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenant + '-' + pipeLine_.servicename + '-' + containerRole
     
-    String roleArn = 'arn:aws:iam::' + pipeLine.aws_identity[pipeLine.getCredentialName(tenantStage.environmentType)].Account + ':role/' + baseRoleName + '-role'
+    String roleArn = 'arn:aws:iam::' + pipeLine_.aws_identity[pipeLine_.getCredentialName(tenantStage.environmentType)].Account + ':role/' + baseRoleName + '-role'
     
     def template_args = 
     [
       'ENV':'dev',
       'REGION':'ause1',
-      'AWSREGION':pipeLine.awsRegion,
+      'AWSREGION':pipeLine_.awsRegion,
       'FUGUE_ENVIRONMENT_TYPE':tenantStage.environmentType,
       'FUGUE_ENVIRONMENT':tenantStage.environment,
       'FUGUE_REALM':tenantStage.realm,
       'FUGUE_REGION':tenantStage.region,
       'FUGUE_CONFIG':fugueConfig(tenantStage, tenant),
-      'FUGUE_SERVICE':pipeLine.servicename,
+      'FUGUE_SERVICE':pipeLine_.servicename,
       'FUGUE_PRIMARY_ENVIRONMENT':tenantStage.primaryEnvironment,
       'FUGUE_PRIMARY_REGION':tenantStage.primaryRegion,
       'TASK_ROLE_ARN':roleArn,
       'LOG_GROUP':'',
-      'SERVICE_GROUP':pipeLine.symteam,
+      'SERVICE_GROUP':pipeLine_.symteam,
       'SERVICE':serviceFullName(tenantStage, tenant),
       'SERVICE_PORT':port,
       'FUGUE_TENANT':tenant,
@@ -390,7 +390,7 @@ tenantStage.region =${tenantStage.region}
       'JVM_MEM':1024,
       'PERSIST_POD_ID':tenant+'-'+tenantStage.environment+'-glb-ause1-1',
       'LEGACY_POD_ID':tenant+'-'+tenantStage.environment+'-glb-ause1-1',
-      'SERVICE_IMAGE':pipeLine.docker_repo[tenantStage.environmentType]+name + pipeLine.dockerLabel,
+      'SERVICE_IMAGE':pipeLine_.docker_repo[tenantStage.environmentType]+name + pipeLine_.dockerLabel,
       'CONSUL_TOKEN':'',
       'GITHUB_TOKEN':''
     ]
@@ -414,11 +414,11 @@ tenantStage.region =${tenantStage.region}
     withCredentials([[
       $class: 'AmazonWebServicesCredentialsBinding',
       accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-      credentialsId: pipeLine.getCredentialName(tenantStage.environmentType),
+      credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
 
-      template_args['LOG_GROUP'] = pipeLine.createLogGroup(tenantStage, tenant)
+      template_args['LOG_GROUP'] = pipeLine_.createLogGroup(tenantStage, tenant)
       
         //def taskdef = (new groovy.text.SimpleTemplateEngine()).createTemplate(taskdef_template).make(template_args).toString()
         def taskdef = (new org.apache.commons.lang3.text.StrSubstitutor(template_args)).replace(taskdef_template)
