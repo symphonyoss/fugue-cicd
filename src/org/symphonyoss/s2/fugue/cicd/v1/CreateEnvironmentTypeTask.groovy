@@ -121,7 +121,7 @@ CreateEnvironmentTypeTask Finished
   
   public void getOrCreateCluster()
   {
-    cluster_ = pipeLine_.getEnvironmentConfig(environmentType_).getClusterId();
+    cluster_ = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
     
     def clusters = readJSON(text:
       sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
