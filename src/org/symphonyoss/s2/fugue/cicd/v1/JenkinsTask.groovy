@@ -6,6 +6,7 @@
 
 package org.symphonyoss.s2.fugue.cicd.v1
 
+import org.jenkinsci.plugins.workflow.cps.CpsClosure2
 import org.jenkinsci.plugins.workflow.cps.DSL
 import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
@@ -46,9 +47,9 @@ class JenkinsTask implements Serializable
     return steps_."readJSON"(args)
   }
   
-  public def withCredentials(Map args)
+  public def withCredentials(Map args, CpsClosure2 closure)
   {
-    return steps_."withCredentials"(args)
+    return steps_."withCredentials"(args, closure) 
   }
   
   public def git(Map args)
