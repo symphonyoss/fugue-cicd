@@ -54,7 +54,7 @@ class FuguePipeline implements Serializable
       steps.echo 'T1'
       this.steps.echo 'T2'
       
-      steps_.echo 'T3'
+//      steps_.echo 'T3'
       
       echo 'HERE I AM!'
       //new JenkinsTask(env, steps).execute()
