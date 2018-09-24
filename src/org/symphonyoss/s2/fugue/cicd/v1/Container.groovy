@@ -84,7 +84,7 @@ class Container implements Serializable {
   
   void deployInit(Station tenantStage, String tenant) {
     
-    RunInitContainer deploy = new RunInitContainer(steps, tenantStage, tenant)
+    RunInitContainer deploy = new RunInitContainer(pipeLine, tenantStage, tenant)
       
     deploy.execute()
     
