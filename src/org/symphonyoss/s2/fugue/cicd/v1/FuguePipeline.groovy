@@ -51,13 +51,7 @@ class FuguePipeline implements Serializable
       this.environ = env
       this.steps = steps
       
-      steps.echo 'T1'
-      this.steps.echo 'T2'
       
-//      steps_.echo 'T3'
-      
-      echo 'HERE I AM!'
-      //new JenkinsTask(env, steps).execute()
   }
 
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
@@ -270,6 +264,14 @@ class FuguePipeline implements Serializable
   
   public void preflight()
   {
+    steps.echo 'T1'
+    this.steps.echo 'T2'
+    
+//      steps_.echo 'T3'
+    
+    echo 'HERE I AM!'
+    //new JenkinsTask(env, steps).execute()
+    
     new FuguePipelineTask(environ, steps, this).execute()
     
     throw new IllegalStateException("STOP")
