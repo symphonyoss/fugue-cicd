@@ -20,10 +20,18 @@ class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializabl
   private String  configGitRepo_ 
   private String  configGitBranch_
   
-  public CreateEnvironmentTypeTask(FuguePipelineOrTask pipeLine, String environmentType)
+  public CreateEnvironmentTypeTask(FuguePipelineTask pipeLine, String environmentType)
   {
       super(pipeLine)
-    echo 'TA2'
+    echo 'TA2a'
+      
+      environmentType_ = environmentType
+  }
+  
+  public CreateEnvironmentTypeTask(FuguePipeline pipeLine, String environmentType)
+  {
+      super(pipeLine)
+    echo 'TA2b'
       
       environmentType_ = environmentType
   }

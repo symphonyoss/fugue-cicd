@@ -6,7 +6,7 @@ import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 import java.util.Map.Entry
 
-class FuguePipeline extends JenkinsTask implements FuguePipelineOrTask, Serializable
+class FuguePipeline extends JenkinsTask implements Serializable
 {
   private EnvActionImpl environ
   private DSL           steps
@@ -55,18 +55,6 @@ class FuguePipeline extends JenkinsTask implements FuguePipelineOrTask, Serializ
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
   {
     return new FuguePipeline(env, steps)
-  }
-
-  @Override
-  public FuguePipeline getPipeLine()
-  {
-    return this;
-  }
-
-  @Override
-  public JenkinsTask getTask()
-  {
-    return this;
   }
 
   public EnvironmentTypeConfig  getEnvironmentTypeConfig(String environmentType)
@@ -230,7 +218,7 @@ class FuguePipeline extends JenkinsTask implements FuguePipelineOrTask, Serializ
   public CreateEnvironmentTypeTask  createEnvironmentTypeTask(String environmentType)
   {
     echo 'TA1a'
-    return new CreateEnvironmentTypeTask((FuguePipelineOrTask)this, environmentType)
+    return new CreateEnvironmentTypeTask(this, environmentType)
       .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
   }
   

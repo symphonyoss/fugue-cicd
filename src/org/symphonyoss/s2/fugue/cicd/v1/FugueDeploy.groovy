@@ -41,7 +41,17 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private boolean fargateLaunch_
   private String  launchType_
   
-  public FugueDeploy(FuguePipelineOrTask pipeLine, String task, String logGroup, String awsRegion)
+  public FugueDeploy(FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
+  {
+    this(pipeLine, pipeLine, logGroup, awsRegion)
+  }
+
+  public FugueDeploy(FuguePipelineTask pipeLineTask, String task, String logGroup, String awsRegion)
+  {
+    this(pipeLineTask, pipeLineTask.pipeLine_, logGroup, awsRegion)
+  }
+
+  public FugueDeploy(JenkinsTask jenkinsTask, FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
   {
     super(pipeLine)
     
