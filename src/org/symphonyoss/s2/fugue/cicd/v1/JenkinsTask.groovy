@@ -11,8 +11,8 @@ import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 class JenkinsTask
 {
-  private EnvActionImpl     env_
-  private DSL               steps_
+  protected EnvActionImpl     env_
+  protected DSL               steps_
   
   public JenkinsTask(EnvActionImpl env, DSL steps)
   {
