@@ -3,7 +3,7 @@ package org.symphonyoss.s2.fugue.cicd.v1
 import org.apache.commons.lang3.text.StrSubstitutor;
 import java.util.Map.Entry
 
-class FuguePipeline implements Serializable
+class FuguePipeline extends JenkinsTask
 {
   private Map tenants = [:]
 
@@ -41,6 +41,8 @@ class FuguePipeline implements Serializable
   
   private FuguePipeline(env, steps)
   {
+    super(env, steps)
+    
       this.environ = env
       this.steps = steps
   }

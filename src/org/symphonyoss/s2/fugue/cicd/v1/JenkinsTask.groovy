@@ -6,13 +6,25 @@
 
 package org.symphonyoss.s2.fugue.cicd.v1
 
+import org.jenkinsci.plugins.workflow.cps.DSL
+
 class JenkinsTask
 {
-  private def     steps_
+  private def     env_
+  private DSL     steps_
   
-  public JenkinsTask(steps)
+  public JenkinsTask(env, steps)
   {
-      steps_          = steps
+    env_            = env
+    steps_          = steps
+    
+    echo 'env_ = ' + env_.getClass()
+    echo 'steps_ = ' + steps_.getClass()
+  }
+  
+  public void echo(String message)
+  {
+    steps_."echo" message
   }
   
   public void execute()
