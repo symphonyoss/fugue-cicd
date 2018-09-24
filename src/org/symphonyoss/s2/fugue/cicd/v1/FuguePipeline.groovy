@@ -44,7 +44,7 @@ class FuguePipeline implements Serializable
       this.environ = env
       this.steps = steps
       
-      new JenkinsTask(env, steps).execute()
+      //new JenkinsTask(env, steps).execute()
   }
 
   public static FuguePipeline instance(env, steps) {

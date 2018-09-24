@@ -11,9 +11,9 @@ class FuguePipelineTask extends JenkinsTask
   private def     steps_
   private FuguePipeline pipeLine_
   
-  public FuguePipelineTask(steps, FuguePipeline pipeLine)
+  public FuguePipelineTask(env, steps, FuguePipeline pipeLine)
   {
-    super(steps)
+    super(env, steps)
       steps_          = steps
     pipeLine_       = pipeLine
   }
