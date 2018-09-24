@@ -8,11 +8,8 @@ import java.util.Map.Entry
  * @author Bruce Skingle
  *
  */
-class CreateEnvironmentTypeTask implements Serializable
+class CreateEnvironmentTypeTask extends JenkinsTask implements Serializable
 {
-  private def           steps_
-  private FuguePipeline pipeLine_
-  
   private String  logGroup_
   private String  environmentType_
   private String  dockerLabel_      = ':latest'
@@ -23,10 +20,10 @@ class CreateEnvironmentTypeTask implements Serializable
   private String  configGitRepo_ 
   private String  configGitBranch_
   
-  public CreateEnvironmentTypeTask(steps, pipeLine, environmentType)
+  public CreateEnvironmentTypeTask(JenkinsTask pipeLine, String environmentType)
   {
-      steps_           = steps
-      pipeLine_        = pipeLine
+      super(pipeLine)
+      
       environmentType_ = environmentType
       cluster_         = 'fugue-' + environmentType_
   }
@@ -59,7 +56,7 @@ class CreateEnvironmentTypeTask implements Serializable
     String  accountId = 'fugue-' + environmentType_ + '-root'
     String  roleName  = accountId + '-role'
 
-    steps_.echo """
+    echo """
 ------------------------------------------------------------------------------------------------------------------------
 CreateEnvironmentTypeTask V2
 
@@ -71,7 +68,7 @@ roleName            ${roleName}
 """
     pipeLine_.verifyUserAccess(accountId, environmentType_)
     
-    steps_.withCredentials([[
+    withCredentials([[
       $class:             'AmazonWebServicesCredentialsBinding',
       accessKeyVariable:  'AWS_ACCESS_KEY_ID',
       credentialsId:      accountId,
@@ -82,7 +79,7 @@ roleName            ${roleName}
       logGroup_ = pipeLine_.createLogGroup('fugue')
       pipeLine_.createRole(accountId, 'fugue-' + environmentType_ + "-root-policy", roleName)
     
-      FugueDeploy deploy = new FugueDeploy(steps_, pipeLine_, 'CreateEnvironmentType',
+      FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironmentType',
         logGroup_,
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
@@ -94,15 +91,15 @@ roleName            ${roleName}
         
       deploy.execute()
       
-      def creds = steps_.readJSON(text:
-        steps_.sh(returnStdout: true, script: 'aws secretsmanager get-secret-value --region us-east-1 --secret-id fugue-' + environmentType_ + '-root-cred'))
+      def creds = readJSON(text:
+        sh(returnStdout: true, script: 'aws secretsmanager get-secret-value --region us-east-1 --secret-id fugue-' + environmentType_ + '-root-cred'))
     
-      def secrets = steps_.readJSON(text: creds."SecretString")
+      def secrets = readJSON(text: creds."SecretString")
       
       secrets.each
       {
           name, value ->
-            steps_.echo """
+            echo """
 ---------------------------------------------------
 Store credential
 
@@ -115,7 +112,7 @@ accessKeyId   ${value."accessKeyId"}
       }
     }
     
-    steps_.echo """
+    echo """
 ------------------------------------------------------------------------------------------------------------------------
 CreateEnvironmentTypeTask Finished
 ------------------------------------------------------------------------------------------------------------------------
@@ -124,8 +121,8 @@ CreateEnvironmentTypeTask Finished
   
   public void getOrCreateCluster()
   {
-    def clusters = steps_.readJSON(text:
-      steps_.sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
+    def clusters = readJSON(text:
+      sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
 
     clusters."clusters".each
     {
@@ -133,20 +130,20 @@ CreateEnvironmentTypeTask Finished
         if(cluster_.equals(c."clusterName"))
         {
           clusterArn_ = c."clusterArn"
-          steps_.echo 'clusterArn_ is ' + clusterArn_
+          echo 'clusterArn_ is ' + clusterArn_
         }
     }
     
     if(clusterArn_ == null)
     {
-      steps_.echo 'Cluster ' + cluster_ + ' does not exist, creating...'
+      echo 'Cluster ' + cluster_ + ' does not exist, creating...'
       
-      def createdCluster = steps_.readJSON(text:
-        steps_.sh(returnStdout: true, script: 'aws ecs create-cluster --region us-east-1 --cluster-name ' + cluster_ ))
+      def createdCluster = readJSON(text:
+        sh(returnStdout: true, script: 'aws ecs create-cluster --region us-east-1 --cluster-name ' + cluster_ ))
   
       clusterArn_ = createdCluster."cluster"."clusterArn"
       
-      steps_.echo 'created clusterArn_ ' + clusterArn_
+      echo 'created clusterArn_ ' + clusterArn_
     }
   }
 }

@@ -16,8 +16,14 @@ class JenkinsTask implements Serializable
   
   public JenkinsTask(EnvActionImpl env, DSL steps)
   {
-    env_            = env
-    steps_          = steps
+    env_    = env
+    steps_  = steps
+  }
+  
+  public JenkinsTask(JenkinsTask task)
+  {
+    env_    = task.env_
+    steps_  = task.steps_
   }
   
   public void echo(String message)
@@ -40,14 +46,28 @@ class JenkinsTask implements Serializable
     return steps_."readJSON"(args)
   }
   
-  public void execute()
+  public def withCredentials(Map args)
   {
-    steps_.echo 'JenkinsTask.execute()'
-    steps_.echo 'env_ = ' + env_.getClass()
-    steps_.echo 'steps_ = ' + steps_.getClass()
-    
-    
-    echo '2 env_ = ' + env_.getClass()
-    echo '2 steps_ = ' + steps_.getClass()
+    return steps_."withCredentials"(args)
+  }
+  
+  public def git(Map args)
+  {
+    return steps_."git"(args)
+  }
+  
+  public def string(Map args)
+  {
+    return steps_."string"(args)
+  }
+  
+  public def readFile(Map args)
+  {
+    return steps_."readFile"(args)
+  }
+  
+  public def writeFile(Map args)
+  {
+    return steps_."writeFile"(args)
   }
 }

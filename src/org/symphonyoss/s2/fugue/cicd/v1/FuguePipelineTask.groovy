@@ -6,25 +6,21 @@
 
 package org.symphonyoss.s2.fugue.cicd.v1
 
-class FuguePipelineTask extends JenkinsTask
+abstract class FuguePipelineTask extends JenkinsTask implements Serializable
 {
-//  private def     env_
-//  private def     steps_
-  private FuguePipeline pipeLine_
+  protected FuguePipeline pipeLine_
   
-  public FuguePipelineTask(env, steps, FuguePipeline pipeLine)
+  public FuguePipelineTask(FuguePipeline pipeLine)
   {
-    super(env, steps)
-//      steps_          = steps
-//    pipeLine_       = pipeLine
+    super(pipeLine)
+    
+    pipeLine_ = pipeLine
   }
   
-  public void execute()
+  public void verifyUserAccess(String credentialId, String environmentType = null)
   {
-    super.execute()
-    
-    echo 'FuguePipelineTask.execute()'
-    echo 'pipeLine_ = ' + pipeLine_.getClass()
-    
+    pipeLine_.verifyCreds(credentialId, environmentType)
   }
+  
+  public abstract void execute()
 }

@@ -8,11 +8,8 @@ import java.util.Map.Entry
  * @author Bruce Skingle
  *
  */
-class FugueDeploy implements Serializable
+class FugueDeploy extends JenkinsTask implements Serializable
 {
-  private def     steps_
-  private FuguePipeline pipeLine_
-  
   private String  task_
   private String  logGroup_
   private String  awsRegion_
@@ -42,10 +39,10 @@ class FugueDeploy implements Serializable
   private String  consulTokenId_
   private String  accountId_
   
-  public FugueDeploy(steps, FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
+  public FugueDeploy(JenkinsTask pipeLine, String task, String logGroup, String awsRegion)
   {
-      steps_          = steps
-      pipeLine_       = pipeLine
+      super(pipeLine)
+      
       task_           = task
       logGroup_       = logGroup
       awsRegion_      = awsRegion
@@ -150,7 +147,7 @@ class FugueDeploy implements Serializable
 
   public void execute()
   {
-    steps_.echo """
+    echo """
 ------------------------------------------------------------------------------------------------------------------------
 FugeDeploy execute start
 ------------------------------------------------------------------------------------------------------------------------
@@ -166,15 +163,15 @@ FugeDeploy execute start
     
     if(consulTokenId_ != null)
     {
-      steps_.withCredentials([steps_.string(credentialsId: consulTokenId_, variable: 'CONSUL_TOKEN')])
+      withCredentials([string(credentialsId: consulTokenId_, variable: 'CONSUL_TOKEN')])
       {
-        consulToken = steps_.sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
+        consulToken = sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
       }
     }
     
-    steps_.withCredentials([steps_.string(credentialsId: 'symphonyjenkinsauto-token', variable: 'GITHUB_TOKEN')])
+    withCredentials([string(credentialsId: 'symphonyjenkinsauto-token', variable: 'GITHUB_TOKEN')])
     {
-      gitHubToken = steps_.sh(returnStdout:true, script:'echo -n $GITHUB_TOKEN').trim()
+      gitHubToken = sh(returnStdout:true, script:'echo -n $GITHUB_TOKEN').trim()
     }
     
     configTaskdef_ =
@@ -240,22 +237,22 @@ FugeDeploy execute start
     ]
 }'''
 
-    steps_.echo 'configTaskdef_=' + configTaskdef_
+    echo 'configTaskdef_=' + configTaskdef_
     
-    steps_.withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
       accessKeyVariable: 'AWS_ACCESS_KEY_ID',
       credentialsId: accountId_,
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
       def taskdef_file = 'ecs-' + environment_ + '-' + tenantId_ + '.json'
-      steps_.writeFile file:taskdef_file, text:configTaskdef_
+      writeFile file:taskdef_file, text:configTaskdef_
       
-      steps_.sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-' + environment_ + '-' + tenantId_ + '.json'
+      sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-' + environment_ + '-' + tenantId_ + '.json'
 
-      steps_.sh 'aws sts get-caller-identity'
+      sh 'aws sts get-caller-identity'
       
-      def taskRun = steps_.readJSON(text:
-        steps_.sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
+      def taskRun = readJSON(text:
+        sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
         ' --launch-type FARGATE' +
         ' --network-configuration "awsvpcConfiguration={subnets=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSubnets_ +
            ',securityGroups=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSecurityGroups_ +
@@ -264,7 +261,7 @@ FugeDeploy execute start
         )
       )
         
-      steps_.echo """
+      echo """
 Task run
 taskArn: ${taskRun.tasks[0].taskArn}
 lastStatus: ${taskRun.tasks[0].lastStatus}
@@ -272,18 +269,18 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
       String taskArn = taskRun.tasks[0].taskArn
       String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
       
-      steps_.sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + cluster_ +
+      sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + cluster_ +
         ' --tasks ' + taskArn
       
 
-      def taskDescription = steps_.readJSON(text:
-        steps_.sh(returnStdout: true, script: 'aws --region us-east-1 ecs describe-tasks  --cluster ' + 
+      def taskDescription = readJSON(text:
+        sh(returnStdout: true, script: 'aws --region us-east-1 ecs describe-tasks  --cluster ' + 
           cluster_ +
           ' --tasks ' + taskArn
         )
       )
       
-      steps_.echo """
+      echo """
 Task run
 taskArn: ${taskDescription.tasks[0].taskArn}
 lastStatus: ${taskDescription.tasks[0].lastStatus}
@@ -291,7 +288,7 @@ stoppedReason: ${taskDescription.tasks[0].stoppedReason}
 exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 """
       //TODO: only print log if failed...
-      steps_.sh 'aws --region us-east-1 logs get-log-events --log-group-name fugue' +
+      sh 'aws --region us-east-1 logs get-log-events --log-group-name fugue' +
       ' --log-stream-name ' + taskDefFamily + '/' + taskDefFamily + '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/"$//\' | sed -e \'s/\\\\t/      /\''
       if(taskDescription.tasks[0].containers[0].exitCode != 0) {
         
@@ -300,7 +297,7 @@ exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
     }
     
     
-    steps_.echo """
+    echo """
 ------------------------------------------------------------------------------------------------------------------------
 FugeDeploy execute finish
 ------------------------------------------------------------------------------------------------------------------------
@@ -309,7 +306,7 @@ FugeDeploy execute finish
   
   private void addIfNotNull(String name, Object value)
   {
-    //steps_.echo 'name=' + name + ', value=' + value
+    //echo 'name=' + name + ', value=' + value
     
     if(value != null)
     {
