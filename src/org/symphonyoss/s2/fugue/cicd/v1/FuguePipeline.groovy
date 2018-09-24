@@ -65,10 +65,10 @@ class FuguePipeline extends JenkinsTask implements Serializable
     return new FuguePipeline(env, steps)
   }
   
-//  public void echo(String message)
-//  {
-//    steps."echo" message
-//  }
+  public void echo(String message)
+  {
+    steps."echo" message
+  }
   
   public String toString() {
     StringBuilder b = new StringBuilder();
