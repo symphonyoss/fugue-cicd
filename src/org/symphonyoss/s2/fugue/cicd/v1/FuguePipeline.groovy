@@ -388,6 +388,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
       echo 'credentialId=' + credentialId
       echo 'aws_identity[credentialId]=' + aws_identity[credentialId]
+      
+      sh 'ls -l'
       throw new IllegalStateException("STOP")
       
       //steps.sh 'aws --region ' + awsRegion + ' ecs list-clusters'
