@@ -20,7 +20,9 @@ class FuguePipelineTask extends JenkinsTask
   
   public void execute()
   {
-    steps_.echo 'FuguePipeline.execute()'
+    super.execute()
+    
+    steps_.echo 'FuguePipelineTask.execute()'
     steps_.echo 'pipeLine_ = ' + pipeLine_.getClass()
     
   }
