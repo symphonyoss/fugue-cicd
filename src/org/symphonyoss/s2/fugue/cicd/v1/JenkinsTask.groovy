@@ -35,6 +35,12 @@ class JenkinsTask implements Serializable
     return steps_."sh"(script: script, returnStdout: returnStdout, returnStatus: returnStatus)
   }
   
+  public def sh(Map args)
+  {
+    steps_."echo" 'TT3'
+    return steps_."sh"(args)
+  }
+  
   public void execute()
   {
     steps_.echo 'JenkinsTask.execute()'
