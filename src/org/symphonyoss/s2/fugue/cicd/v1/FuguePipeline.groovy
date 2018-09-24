@@ -1,6 +1,9 @@
 package org.symphonyoss.s2.fugue.cicd.v1
 
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.jenkinsci.plugins.workflow.cps.DSL
+import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
+
 import java.util.Map.Entry
 
 class FuguePipeline implements Serializable
@@ -39,7 +42,7 @@ class FuguePipeline implements Serializable
   
   private String releaseTrack
   
-  private FuguePipeline(env, steps)
+  private FuguePipeline(EnvActionImpl env, DSL steps)
   {
       this.environ = env
       this.steps = steps
