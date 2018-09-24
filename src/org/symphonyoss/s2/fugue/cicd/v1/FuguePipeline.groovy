@@ -6,7 +6,7 @@ import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 import java.util.Map.Entry
 
-class FuguePipeline implements Serializable
+class FuguePipeline extends JenkinsTask implements Serializable
 {
   private EnvActionImpl environ
   private DSL           steps
@@ -59,10 +59,10 @@ class FuguePipeline implements Serializable
     return new FuguePipeline(env, steps)
   }
   
-  public void echo(String message)
-  {
-    steps."echo" message
-  }
+//  public void echo(String message)
+//  {
+//    steps."echo" message
+//  }
   
   public String toString() {
     StringBuilder b = new StringBuilder();
