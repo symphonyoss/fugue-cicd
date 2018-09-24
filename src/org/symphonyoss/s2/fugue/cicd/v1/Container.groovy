@@ -154,12 +154,14 @@ lastStatus: ${taskDescription.tasks[0].lastStatus}
 stoppedReason: ${taskDescription.tasks[0].stoppedReason}
 exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 """
+        sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroupName +
+        ' --log-stream-name '+serviceFullName(tenantStage, tenant)+
+        '/'+serviceFullName(tenantStage, tenant)+
+        '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/",$//\' | sed -e \'s/\\\\t/      /\''
+
+        
         if(taskDescription.tasks[0].containers[0].exitCode != 0) {
           
-          sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroupName +
-          ' --log-stream-name '+serviceFullName(tenantStage, tenant)+
-          '/'+serviceFullName(tenantStage, tenant)+
-          '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/",$//\' | sed -e \'s/\\\\t/      /\''
           
           throw new IllegalStateException('Init task ' + name + ' failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
         }
