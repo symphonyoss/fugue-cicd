@@ -9,7 +9,7 @@ package org.symphonyoss.s2.fugue.cicd.v1
 import org.jenkinsci.plugins.workflow.cps.DSL
 import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
-class JenkinsTask
+class JenkinsTask implements Serializable
 {
   protected EnvActionImpl     env_
   protected DSL               steps_
