@@ -18,8 +18,7 @@ class JenkinsTask
     env_            = env
     steps_          = steps
     
-    echo 'env_ = ' + env_.getClass()
-    echo 'steps_ = ' + steps_.getClass()
+   
   }
   
   public void echo(String message)
@@ -30,7 +29,11 @@ class JenkinsTask
   public void execute()
   {
     steps_.echo 'JenkinsTask.execute()'
+    steps_.echo 'env_ = ' + env_.getClass()
     steps_.echo 'steps_ = ' + steps_.getClass()
     
+    
+    echo '2 env_ = ' + env_.getClass()
+    echo '2 steps_ = ' + steps_.getClass()
   }
 }
