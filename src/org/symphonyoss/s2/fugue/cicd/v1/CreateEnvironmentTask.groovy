@@ -23,7 +23,7 @@ class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
   private String  configGitRepo_
   private String  configGitBranch_
 
-  public CreateEnvironmentTask(FuguePipelineTask pipeLine, String environmentType, String environment,
+  public CreateEnvironmentTask(FuguePipeline pipeLine, String environmentType, String environment,
     String realm, String region)
   {
       super(pipeLine)
