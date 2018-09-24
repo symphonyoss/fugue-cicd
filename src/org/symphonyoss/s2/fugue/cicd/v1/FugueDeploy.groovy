@@ -254,7 +254,7 @@ FugeDeploy execute start
       sh 'aws sts get-caller-identity'
       
       String runCommand = 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
-        ' --launch-type ' + launchType_ +
+        ' --launch-type ' + launchType_
       
       if(fargateLaunch_)
       {
