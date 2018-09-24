@@ -8,7 +8,7 @@ import java.util.Map.Entry
  * @author Bruce Skingle
  *
  */
-class CreateEnvironmentTypeTask extends JenkinsTask implements Serializable
+class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializable
 {
   private String  logGroup_
   private String  environmentType_
@@ -20,7 +20,7 @@ class CreateEnvironmentTypeTask extends JenkinsTask implements Serializable
   private String  configGitRepo_ 
   private String  configGitBranch_
   
-  public CreateEnvironmentTypeTask(JenkinsTask pipeLine, String environmentType)
+  public CreateEnvironmentTypeTask(FuguePipeline pipeLine, String environmentType)
   {
       super(pipeLine)
       
@@ -66,7 +66,7 @@ accountId           ${accountId}
 roleName            ${roleName}
 ------------------------------------------------------------------------------------------------------------------------
 """
-    pipeLine_.verifyUserAccess(accountId, environmentType_)
+    verifyUserAccess(accountId, environmentType_)
     
     withCredentials([[
       $class:             'AmazonWebServicesCredentialsBinding',
