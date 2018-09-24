@@ -32,8 +32,6 @@ class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
       environment_     = environment
       realm_           = realm
       region_          = region
-//      cluster_         = environmentType_ + '-' + environment_ + '-' + region_
-      cluster_         = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
   }
   
   public CreateEnvironmentTask withAwsRegion(String n)
@@ -133,6 +131,12 @@ CreateEnvironmentTask Finished
   
   public void getOrCreateCluster()
   {
+    if(cluster_ == null)
+      {
+        cluster_ = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
+        //      cluster_         = environmentType_ + '-' + environment_ + '-' + region_
+      }
+      
     def clusters = readJSON(text:
       sh(returnStdout: true, script: 'aws ecs describe-clusters --region us-east-1 --clusters ' + cluster_ ))
 
