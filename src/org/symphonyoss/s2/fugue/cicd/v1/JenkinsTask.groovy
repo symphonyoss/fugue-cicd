@@ -29,7 +29,7 @@ class JenkinsTask implements Serializable
     steps_."echo" message
   }
   
-  public def sh(String script, boolean returnStdout, boolean returnStatus)
+  public def sh(String script, boolean returnStdout = false, boolean returnStatus = false)
   {
     steps_."echo" 'TT2'
     return steps_."sh"(script: script, returnStdout: returnStdout, returnStatus: returnStatus)
