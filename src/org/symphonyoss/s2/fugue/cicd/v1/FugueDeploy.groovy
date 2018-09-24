@@ -52,15 +52,6 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     
     fargateLaunch_     = false
     launchType_        = (fargateLaunch_ ? "FARGATE" : "EC2")
-    
-    echo """
-------------------------------------------------------------------------------------------------------------------------
-FugeDeploy V2 construct
-
-fargateLaunch_  = ${fargateLaunch_}
-launchType_     = ${launchType_}
-------------------------------------------------------------------------------------------------------------------------
-"""
   }
   
   public FugueDeploy withCluster(String n)
