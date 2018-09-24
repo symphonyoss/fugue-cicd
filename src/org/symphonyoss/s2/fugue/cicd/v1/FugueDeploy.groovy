@@ -111,7 +111,8 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     consulTokenId_      = 'sym-consul-' + environmentType_
     accountId_          = 'fugue-' + environmentType_ + '-cicd'
     awsAccount_         = pipeLine_.aws_identity[accountId_].'Account';
-    cluster_            = environmentType_ + '-' + environment_ + '-' + region_
+//    cluster_            = environmentType_ + '-' + environment_ + '-' + region_
+    cluster_            = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
     
     return this
   }
