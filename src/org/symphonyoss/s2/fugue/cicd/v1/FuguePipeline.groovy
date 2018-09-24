@@ -6,7 +6,7 @@ import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 import java.util.Map.Entry
 
-class FuguePipeline extends JenkinsTask implements Serializable
+class FuguePipeline extends JenkinsTask implements FuguePipelineOrTask, Serializable
 {
   private EnvActionImpl environ
   private DSL           steps
@@ -55,6 +55,18 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
   {
     return new FuguePipeline(env, steps)
+  }
+
+  @Override
+  public FuguePipeline getPipeLine()
+  {
+    return this;
+  }
+
+  @Override
+  public JenkinsTask getTask()
+  {
+    return this;
   }
 
   public EnvironmentTypeConfig  getEnvironmentTypeConfig(String environmentType)

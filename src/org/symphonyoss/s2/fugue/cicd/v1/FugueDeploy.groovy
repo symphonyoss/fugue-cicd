@@ -38,16 +38,29 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  port_           = '80'
   private String  consulTokenId_
   private String  accountId_
-  private String  fargateLaunch_     = false
-  private String  launchType_        = (fargateLaunch_ ? "FARGATE" : "EC2")
+  private boolean fargateLaunch_
+  private String  launchType_
   
-  public FugueDeploy(FuguePipelineTask pipeLine, String task, String logGroup, String awsRegion)
+  public FugueDeploy(FuguePipelineOrTask pipeLine, String task, String logGroup, String awsRegion)
   {
-      super(pipeLine)
-      
-      task_           = task
-      logGroup_       = logGroup
-      awsRegion_      = awsRegion
+    super(pipeLine)
+    
+    task_           = task
+    logGroup_       = logGroup
+    awsRegion_      = awsRegion
+    
+    
+    fargateLaunch_     = false
+    launchType_        = (fargateLaunch_ ? "FARGATE" : "EC2")
+    
+    echo """
+------------------------------------------------------------------------------------------------------------------------
+FugeDeploy V2 construct
+
+fargateLaunch_  = ${fargateLaunch_}
+launchType_     = ${launchType_}
+------------------------------------------------------------------------------------------------------------------------
+"""
   }
   
   public FugueDeploy withCluster(String n)
