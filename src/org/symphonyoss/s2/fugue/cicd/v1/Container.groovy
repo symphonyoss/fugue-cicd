@@ -86,10 +86,12 @@ class Container extends FuguePipelineTask implements Serializable {
 //      
 //    deploy.execute()
 //    
-    echo 'T1 Init MULTI ' + ms.name
+    echo 'T1 Init MULTI '
     registerTaskDef(tenantStage, tenant)
     
+    echo 'T2 Init MULTI '
     runTask(tenantStage, tenant)
+    echo 'T3 Init MULTI '
   }
   
   void runTask(Station tenantStage, String tenant)
