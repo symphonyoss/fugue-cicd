@@ -20,7 +20,7 @@ class JenkinsTask implements Serializable
     steps_          = steps
     
     steps_.echo 'env_ = ' + env_.getClass()
-    steps_.echo 'one' 'two' 'three'
+    steps_.echo ('one', 'two', 'three')
   }
   
   public void echo(String message)
