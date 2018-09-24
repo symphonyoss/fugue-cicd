@@ -8,7 +8,7 @@ import java.util.Map.Entry
  * @author Bruce Skingle
  *
  */
-class FugueDeploy extends JenkinsTask implements Serializable
+class FugueDeploy extends FuguePipelineTask implements Serializable
 {
   private String  task_
   private String  logGroup_
@@ -39,7 +39,7 @@ class FugueDeploy extends JenkinsTask implements Serializable
   private String  consulTokenId_
   private String  accountId_
   
-  public FugueDeploy(JenkinsTask pipeLine, String task, String logGroup, String awsRegion)
+  public FugueDeploy(FuguePipelineTask pipeLine, String task, String logGroup, String awsRegion)
   {
       super(pipeLine)
       
