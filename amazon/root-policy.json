@@ -1,0 +1,96 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllResources",
+            "Effect": "Allow",
+            "Action": [
+                "logs:DescribeLogGroups",
+                "ecr:*",
+                "ecs:ListClusters",
+                "ecs:DescribeClusters",
+                "ecs:CreateCluster",
+                "ecs:RegisterTaskDefinition",
+                "ecs:DescribeTasks",
+                "secretsmanager:CreateSecret"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "LogsAll",
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": [
+                "arn:aws:logs:*:*:log-group:fugue:*:*",
+                "arn:aws:logs:*:*:log-group:fugue"
+            ]
+        },
+        {
+            "Sid": "RootAdmin",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole",
+                "iam:CreateRole",
+                "iam:AttachRolePolicy"
+            ],
+            "Resource": [
+              "arn:aws:iam::*:role/*-root-role",
+              "arn:aws:iam::*:role/*-admin-role",
+              "arn:aws:iam::*:role/ecsTaskExecutionRole"
+            ]
+        },
+        {
+            "Sid": "FugueAdmin",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:GetPolicyVersion",
+                "iam:ListPolicyVersions",
+                "iam:CreatePolicyVersion",
+                "iam:DeletePolicyVersion",
+                "iam:GetPolicy",
+                "iam:CreatePolicy",
+                "iam:CreateAccessKey",
+                "iam:DeleteAccessKey",
+                "iam:CreateRole",
+                "iam:ListAttachedRolePolicies",
+                "iam:AttachRolePolicy",
+                "iam:GetUser",
+                "iam:CreateUser",
+                "iam:DeleteUser",
+                "iam:ListGroupsForUser",
+                "iam:CreateGroup",
+                "iam:AttachGroupPolicy",
+                "iam:ListAttachedGroupPolicies",
+                "iam:GetGroup",
+                "iam:AddUserToGroup",
+                "iam:RemoveUserFromGroup",
+                "ecs:RunTask",
+                "iam:ListAccessKeys",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:PutSecretValue"
+            ],
+            "Resource": [
+                "arn:aws:ecs:*:*:task-definition/fugue-*",
+                "arn:aws:iam::*:policy/fugue-*",
+                "arn:aws:iam::*:role/fugue-*",
+                "arn:aws:iam::*:user/fugue-*",
+                "arn:aws:iam::*:group/fugue-*",
+                "arn:aws:secretsmanager:*:*:secret:fugue-*"
+            ]
+        },
+        {
+            "Sid": "S3",
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:PutEncryptionConfiguration",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": [
+                "arn:aws:s3:::fugue-*"
+            ]
+        }
+    ]
+}

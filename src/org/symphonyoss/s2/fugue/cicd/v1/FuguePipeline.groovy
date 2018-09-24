@@ -6,7 +6,7 @@ import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 import java.util.Map.Entry
 
-class FuguePipeline implements Serializable
+class FuguePipeline extends JenkinsTask implements Serializable
 {
   private EnvActionImpl environ
   private DSL           steps
@@ -46,6 +46,8 @@ class FuguePipeline implements Serializable
   
   private FuguePipeline(EnvActionImpl env, DSL steps)
   {
+    super(env, steps)
+    
       this.environ = env
       this.steps = steps
       
