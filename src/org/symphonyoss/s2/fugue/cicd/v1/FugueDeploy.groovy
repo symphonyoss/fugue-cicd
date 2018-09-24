@@ -39,6 +39,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  consulTokenId_
   private String  accountId_
   private String  fargateLaunch_     = false
+  private String  launchType_        = (fargateLaunch_ ? "FARGATE" : "EC2")
   
   public FugueDeploy(FuguePipelineTask pipeLine, String task, String logGroup, String awsRegion)
   {
@@ -252,18 +253,15 @@ FugeDeploy execute start
 
       sh 'aws sts get-caller-identity'
       
-      String runCommand = 'aws --region us-east-1 ecs run-task --cluster ' + cluster_
+      String runCommand = 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
+        ' --launch-type ' + launchType_ +
       
       if(fargateLaunch_)
       {
-        runCommand = runCommand + ' --launch-type FARGATE' +
+        runCommand = runCommand +
           ' --network-configuration "awsvpcConfiguration={subnets=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSubnets_ +
              ',securityGroups=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSecurityGroups_ +
              ',assignPublicIp=ENABLED}"'
-      }
-      else
-      {
-        runCommand = runCommand + ' --launch-type EC2'
       }
            
       runCommand = runCommand +
