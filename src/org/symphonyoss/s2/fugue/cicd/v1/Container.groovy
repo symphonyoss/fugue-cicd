@@ -86,7 +86,7 @@ class Container extends FuguePipelineTask implements Serializable {
 //      
 //    deploy.execute()
 //    
-    
+    echo 'T1 Init MULTI ' + ms.name
     registerTaskDef(tenantStage, tenant)
     
     runTask(tenantStage, tenant)
@@ -98,6 +98,16 @@ class Container extends FuguePipelineTask implements Serializable {
     
     echo 'runTask tenant=' + tenant + ", tenantStage=" + tenantStage.toString() + ', this=' + toString()
     echo 'envOverride=' + envOverride
+    echo """
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+tenantStage.environment = ${tenantStage.environment}
+tenant=${tenant}
+
+tenants[tenantStage.environment][tenant]['ecs-taskdef-family']  = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-family']}
+tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-revision']}
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+"""
     if(tenants[tenantStage.environment][tenant]['ecs-taskdef-family'] != null &&
        tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] != null) {
         withCredentials([[
@@ -443,6 +453,18 @@ ECS Task Definition ARN:      ${tenants[tenantStage.environment][tenant]['ecs-ta
 ECS Task Definition Family:   ${tenants[tenantStage.environment][tenant]['ecs-taskdef-family']}
 ECS Task Definition Revision: ${tenants[tenantStage.environment][tenant]['ecs-taskdef-revision']}
 """
+            
+echo """
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+tenantStage.environment = ${tenantStage.environment}
+tenant=${tenant}
+
+tenants[tenantStage.environment][tenant]['ecs-taskdef-family']  = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-family']}
+tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-revision']}
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+"""
+      
     }
   }
   

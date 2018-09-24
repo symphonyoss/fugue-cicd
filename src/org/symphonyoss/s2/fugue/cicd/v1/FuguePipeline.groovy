@@ -522,10 +522,12 @@ public void deployInitContainers(Station tenantStage)
 {
   echo 'Init Containers'
   
-  service_map.values().each {
+  service_map.values().each
+  {
     Container ms = it
     
-    if(ms.containerType == ContainerType.Init) {
+    if(ms.containerType == ContainerType.Init)
+    {
       switch(ms.tenancy)
       {
         case Tenancy.SingleTenant:
@@ -542,6 +544,7 @@ public void deployInitContainers(Station tenantStage)
         case Tenancy.MultiTenant:
           echo 'Init MULTI ' + ms.toString()
           ms.deployInit(tenantStage, null)
+          echo 'DONE Init MULTI ' + ms.name
           break
       }
     }
