@@ -76,4 +76,9 @@ class JenkinsTask implements Serializable
   {
     return steps_."writeFile"(args)
   }
+  
+  public def fileExists(String fileName)
+  {
+    return steps_.'fileExists'(fileName)
+  }
 }
