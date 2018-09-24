@@ -251,6 +251,10 @@ class FuguePipeline implements Serializable
   
   public void preflight()
   {
+    new FuguePipelineTask(steps, this).execute()
+    
+    throw new IllegalStateException("STOP")
+    
     steps.sh 'rm -rf *'
 
     if(configGitRepo != null)

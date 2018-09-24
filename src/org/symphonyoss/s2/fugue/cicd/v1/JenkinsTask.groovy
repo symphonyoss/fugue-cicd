@@ -6,20 +6,18 @@
 
 package org.symphonyoss.s2.fugue.cicd.v1
 
-class RunTask
+class JenkinsTask
 {
   private def     steps_
-  private FuguePipeline pipeLine_
   
-  public RunTask(steps, FuguePipeline pipeLine)
+  public JenkinsTask(steps)
   {
-      steps_          = pipeLine.steps
-      pipeLine_       = pipeLine
+      steps_          = steps
   }
   
   public void execute()
   {
-    steps_.echo 'RunTask.execute()'
+    steps_.echo 'JenkinsTask.execute()'
     steps_.echo 'steps_ = ' + steps_.getClass()
     
   }

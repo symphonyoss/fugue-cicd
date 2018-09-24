@@ -11,9 +11,9 @@ class RunInitContainer extends RunTask
   private Station tenantStage_
   private String tenant_
   
-  public RunInitContainer(steps, FuguePipeline pipeLine, Station tenantStage, String tenant)
+  public RunInitContainer(FuguePipeline pipeLine, Station tenantStage, String tenant)
   {
-      super(steps, pipeLine)
+      super(pipeLine)
       
       tenantStage_ = tenantStage
       tenant_ = tenant
