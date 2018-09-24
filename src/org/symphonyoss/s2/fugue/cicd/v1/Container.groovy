@@ -200,46 +200,46 @@ exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 //    }
   }
 
-  private def waitServiceStable(Station tenantStage, String tenant, int maxseconds = 300) {
-    def svcstate = getServiceState(tenantStage, tenant)
-    while(!(svcstate.runningCount > 0
-            && svcstate.deployments.size() == 1
-            && svcstate.runningCount == svcstate.desiredCount
-            && svcstate.events.size() >= 1
-            && svcstate.events[0].message.contains('reached a steady state'))
-          && !(svcstate.runningCount > 0
-               && svcstate.deployments.size() >= 1
-               && svcstate.runningCount > svcstate.desiredCount
-               && svcstate.events.size() >= 1
-               && svcstate.events[0].message.contains('has begun draining connections'))) {
-        echo """WAITING:
-RUNNING:     ${svcstate.runningCount}
-DEPLOYMENTS: ${svcstate.deployments.size()}
-EXPECTED:    ${svcstate.runningCount} == ${svcstate.desiredCount}
-STABLE:      ${svcstate.events.size()>=1?svcstate.events[0].message.contains('reached a steady state'):false}
-DRAINING:    ${svcstate.events.size()>=1?svcstate.events[0].message.contains('has begun draining connections'):false}
-"""
-        maxseconds -= 15
-        if(maxseconds<0) {
-            if(!(svcstate.runningCount > 0)) {
-                throw new Exception('Timeout Waiting for stable - running count')
-            } else if(svcstate.deployments.size() != 1) {
-                throw new Exception('Timeout Waiting for stable - deployments: '+svcstate.deployments.size())
-            } else if (svcstate.runningCount < svcstate.desiredCount) {
-                throw new Exception('Timeout Waiting for stable - desired count')
-            } else if (svcstate.events.size()<1 || !svcstate.events[0].message.contains('reached a steady state')) {
-                throw new Exception('Timeout Waiting for stable - steady state')
-            } else {
-                throw new Exception('Timeout Waiting for stable')
-            }
-        }
-        //echo 'Sleeping 15 s'
-        sleep 15000
-        //sleep time:15 unit:steps.SECONDS
-        svcstate = getServiceState(tenantStage, tenant)
-    }
-    return svcstate
-}
+//  private def waitServiceStable(Station tenantStage, String tenant, int maxseconds = 300) {
+//    def svcstate = getServiceState(tenantStage, tenant)
+//    while(!(svcstate.runningCount > 0
+//            && svcstate.deployments.size() == 1
+//            && svcstate.runningCount == svcstate.desiredCount
+//            && svcstate.events.size() >= 1
+//            && svcstate.events[0].message.contains('reached a steady state'))
+//          && !(svcstate.runningCount > 0
+//               && svcstate.deployments.size() >= 1
+//               && svcstate.runningCount > svcstate.desiredCount
+//               && svcstate.events.size() >= 1
+//               && svcstate.events[0].message.contains('has begun draining connections'))) {
+//        echo """WAITING:
+//RUNNING:     ${svcstate.runningCount}
+//DEPLOYMENTS: ${svcstate.deployments.size()}
+//EXPECTED:    ${svcstate.runningCount} == ${svcstate.desiredCount}
+//STABLE:      ${svcstate.events.size()>=1?svcstate.events[0].message.contains('reached a steady state'):false}
+//DRAINING:    ${svcstate.events.size()>=1?svcstate.events[0].message.contains('has begun draining connections'):false}
+//"""
+//        maxseconds -= 15
+//        if(maxseconds<0) {
+//            if(!(svcstate.runningCount > 0)) {
+//                throw new Exception('Timeout Waiting for stable - running count')
+//            } else if(svcstate.deployments.size() != 1) {
+//                throw new Exception('Timeout Waiting for stable - deployments: '+svcstate.deployments.size())
+//            } else if (svcstate.runningCount < svcstate.desiredCount) {
+//                throw new Exception('Timeout Waiting for stable - desired count')
+//            } else if (svcstate.events.size()<1 || !svcstate.events[0].message.contains('reached a steady state')) {
+//                throw new Exception('Timeout Waiting for stable - steady state')
+//            } else {
+//                throw new Exception('Timeout Waiting for stable')
+//            }
+//        }
+//        //echo 'Sleeping 15 s'
+//        sleep 15000
+//        //sleep time:15 unit:steps.SECONDS
+//        svcstate = getServiceState(tenantStage, tenant)
+//    }
+//    return svcstate
+//}
   
   private void updateService(Station tenantStage, String tenant) {
     echo 'updateService'
@@ -310,36 +310,36 @@ DRAINING:    ${svcstate.events.size()>=1?svcstate.events[0].message.contains('ha
       }
   }
   
-  private def getServiceState(Station tenantStage, String tenant) {
-    def retval
-    try {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
-          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-          ]])
-        {
-            String clusterId = pipeLine_.getEnvironmentTypeConfig(tenantStage.environmentType).getClusterId();
-    
-            sh 'aws --region us-east-1 ecs describe-services --cluster '+clusterId+' --services '+serviceFullName(tenantStage, tenant)+' > ecs-service-'+tenantStage.environment+'-'+tenant+'.json'
-            def svcstate = readJSON file: 'ecs-service-'+tenantStage.environment+'-'+tenant+'.json'
-            echo """
-ECS Service State:    ${svcstate.services[0].status}
-ECS Service Running:  ${svcstate.services[0].runningCount}
-ECS Service Pending:  ${svcstate.services[0].pendingCount}
-ECS Service Desired:  ${svcstate.services[0].desiredCount}
-ECS Service Event[0]: ${svcstate.services[0].events.size()>=1?svcstate.services[0].events[0].message:''}
-ECS Service Event[1]: ${svcstate.services[0].events.size()>=2?svcstate.services[0].events[1].message:''}
-ECS Service Event[2]: ${svcstate.services[0].events.size()>=3?svcstate.services[0].events[2].message:''}
-"""
-            retval = svcstate.services[0]
-        }
-    } catch(Exception e) {
-        echo 'Failed Getting Service State: '+e
-    }
-    return retval
-}
+//  private def getServiceState(Station tenantStage, String tenant) {
+//    def retval
+//    try {
+//        withCredentials([[
+//          $class: 'AmazonWebServicesCredentialsBinding',
+//          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//          credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
+//          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+//          ]])
+//        {
+//            String clusterId = pipeLine_.getEnvironmentTypeConfig(tenantStage.environmentType).getClusterId();
+//    
+//            sh 'aws --region us-east-1 ecs describe-services --cluster '+clusterId+' --services '+serviceFullName(tenantStage, tenant)+' > ecs-service-'+tenantStage.environment+'-'+tenant+'.json'
+//            def svcstate = readJSON file: 'ecs-service-'+tenantStage.environment+'-'+tenant+'.json'
+//            echo """
+//ECS Service State:    ${svcstate.services[0].status}
+//ECS Service Running:  ${svcstate.services[0].runningCount}
+//ECS Service Pending:  ${svcstate.services[0].pendingCount}
+//ECS Service Desired:  ${svcstate.services[0].desiredCount}
+//ECS Service Event[0]: ${svcstate.services[0].events.size()>=1?svcstate.services[0].events[0].message:''}
+//ECS Service Event[1]: ${svcstate.services[0].events.size()>=2?svcstate.services[0].events[1].message:''}
+//ECS Service Event[2]: ${svcstate.services[0].events.size()>=3?svcstate.services[0].events[2].message:''}
+//"""
+//            retval = svcstate.services[0]
+//        }
+//    } catch(Exception e) {
+//        echo 'Failed Getting Service State: '+e
+//    }
+//    return retval
+//}
   
   String fugueConfig(Station tenantStage, String tenant)
   {

@@ -261,18 +261,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void preflight()
   {
-    echo 'T1'
-    this.echo 'T2'
-    
-//      steps_.echo 'T3'
-    
-    echo 'HERE I AM!'
-    //new JenkinsTask(env, steps).execute()
-    
-    //new FuguePipelineTask(environ, steps, this).execute()
-    
-    //throw new IllegalStateException("STOP")
-    
     sh 'rm -rf *'
 
     if(configGitRepo != null)
@@ -284,7 +272,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
       def service = readJSON file:'config/service/' + servicename + '/service.json'
 
       echo 'service is ' + service
-      echo 'service."containers" is ' + service."containers"
 
       service."containers".each { name, containerDef ->
         echo 'Container ' + name + ' = ' + containerDef
@@ -385,27 +372,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
       if(environmentType != null)
       {
-//        echo 'T1'
-//        
-//        
-//        echo 'TA1'
-//        echo 'environmentType=' + environmentType
-//        sh 'ls -l'
-//        echo 'TA2'
-//        sh 'ls'
-//        echo 'TA3'
-//        sh 'ls config/environment/' + environmentType
-//        echo 'TA4'
-//        def config = readJSON file:'config/environment/' + environmentType + '/environmentType.json'
-//        
-//        echo 'config=' + config
-//        
-//        
-//        def conf = new EnvironmentTypeConfig(steps, config."amazon")
-//        echo 'T2'
-//        echo 'conf=' + conf
-//        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
-//        echo 'T3'
         docker_repo[environmentType] = aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/'+symteam+'/'
         
         service_map.values().each
@@ -435,8 +401,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
             sh 'cp $FILE /usr/share/maven/conf/settings.xml'
             
           }
-  
-          //sh 'aws s3 cp s3://sym-build-secrets/sbe/settings.xml  /usr/share/maven/conf/settings.xml'
           
           if(!toolsDeploy)
           {
@@ -470,116 +434,72 @@ class FuguePipeline extends JenkinsTask implements Serializable
     //echo 'AWS '+environmentType+' docker repo: '+docker_repo[environmentType]
   }
   
-
-
-//  private def R53RecordSetExist(String environmentType, String environment, String tenant) {
-//      steps.withCredentials([[
-//        $class: 'AmazonWebServicesCredentialsBinding',
-//        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-//        credentialsId: getCredentialName(environmentType),
-//        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
-//      {
-//        echo 'R53RecordSetExist environmentType=' + environmentType +
-//        ', environment=' + environment + ', tenant ' + tenant
-//        echo 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
-//        
-//        sh 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
-//          def resource_record = readJSON file:'r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
-//          if(resource_record) {
-//              echo """
-//R53 record set exists.
-//Value: ${resource_record[0].ResourceRecords[0].Value}
-//Name:  ${resource_record[0].Name}
-//"""
-//              return true
-//          } else {
-//              echo "R53 record set does not exist."
-//              return false
-//          }
-//      }
-//  }
-//
-//  private def createR53RecordSet(String environmentType, String environment, String tenant) {
-//      if(!R53RecordSetExist(environmentType, environment, tenant)) {
-//          def rs_template_args = ['SERVICE_NAME':servicename,
-//                                  'TENANT_ID':tenant,
-//                                  'DNS_SUFFIX':ECSClusterMaps.env_cluster[environment]['dns_suffix'],
-//                                  'ALB_DNS':ECSClusterMaps.env_cluster[environment]['ialb_dns']
-//          ]
-//          def rs_def = (new StrSubstitutor(rs_template_args)).replace(record_set_template)
-//          def rs_def_file = 'r53-rs-'+environment+'-'+tenant+'-'+servicename+'.json'
-//          steps.writeFile file:rs_def_file, text:rs_def
-//          //sh 'ls -alh'
-//          steps.withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: getCredentialName(environmentType), secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-//              sh 'aws --region ' + awsRegion + ' route53 change-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --change-batch file://'+rs_def_file+' > r53-rs-create-out-'+environment+'-'+tenant+'-'+servicename+'.json'
-//          }
-//      }
-//  }
-  
-  
-
-public void deployInitContainers(Station tenantStage)
-{
-  echo 'Init Containers'
-  
-  service_map.values().each
+  public void deployInitContainers(Station tenantStage)
   {
-    Container ms = it
+    echo 'Init Containers'
     
-    if(ms.containerType == ContainerType.Init)
+    service_map.values().each
     {
-      switch(ms.tenancy)
+      Container ms = it
+      
+      if(ms.containerType == ContainerType.Init)
       {
-        case Tenancy.SingleTenant:
-          tenantStage.tenants.each {
-            String tenant = it
-            
-    
-            echo 'Init ' + tenant + ' ' + ms.toString()
-            
-            ms.deployInit(tenantStage, tenant)
-          }
-          break
-
-        case Tenancy.MultiTenant:
-          echo 'Init MULTI ' + ms.toString()
-          ms.deployInit(tenantStage, null)
-          echo 'DONE Init MULTI ' + ms.name
-          break
-      }
-    }
-  }
-}
-
-public void deployServiceContainers(Station tenantStage)
-{
-  echo 'Runtime Containers'
+        switch(ms.tenancy)
+        {
+          case Tenancy.SingleTenant:
+            tenantStage.tenants.each {
+              String tenant = it
+              
+      
+              echo 'Init ' + tenant + ' ' + ms.toString()
+              
+              ms.deployInit(tenantStage, tenant)
+            }
+            break
   
-  service_map.values().each {
-    Container ms = it
-    
-    if(ms.containerType == ContainerType.Runtime) {
-      switch(ms.tenancy)
-      {
-        case Tenancy.SingleTenant:
-          tenantStage.tenants.each {
-            String tenant = it
-            
-            echo 'Runtime ' + tenant + ' ' + ms.toString()
-            ms.deployService(tenantStage, tenant)
-          }
-          break
-
-        case Tenancy.MultiTenant:
-          echo 'Runtime MULTI ' + ms.toString()
-            ms.deployService(tenantStage, null)
+          case Tenancy.MultiTenant:
+            echo 'Init MULTI ' + ms.toString()
+            ms.deployInit(tenantStage, null)
+            echo 'DONE Init MULTI ' + ms.name
             break
         }
       }
     }
   }
   
-  public void deployInitContainers(String tenantStageName) {
+  public void deployServiceContainers(Station tenantStage)
+  {
+    echo 'Runtime Containers'
+    
+    service_map.values().each
+    {
+      Container ms = it
+      
+      if(ms.containerType == ContainerType.Runtime)
+      {
+        switch(ms.tenancy)
+        {
+          case Tenancy.SingleTenant:
+            tenantStage.tenants.each
+            {
+              String tenant = it
+              
+              echo 'Runtime ' + tenant + ' ' + ms.toString()
+              ms.deployService(tenantStage, tenant)
+            }
+            break
+  
+          case Tenancy.MultiTenant:
+            echo 'Runtime MULTI ' + ms.toString()
+              ms.deployService(tenantStage, null)
+              break
+        }
+      }
+    }
+  }
+  
+  public void deployInitContainers(String tenantStageName)
+  {
     Station tenantStage = tenant_stage_map.get(tenantStageName)
  
     deployInitContainers(tenantStage)
@@ -777,25 +697,25 @@ public void deployServiceContainers(Station tenantStage)
     return name
   }
 
-  private static final String record_set_template =
-      '''{
-    "Comment": "DNS for ${TENANT_ID} during ${SERVICE_NAME} service",
-    "Changes": [
-      {
-        "Action": "UPSERT",
-        "ResourceRecordSet": {
-          "Name": "${TENANT_ID}.${DNS_SUFFIX}.",
-          "Type": "CNAME",
-          "TTL": 300,
-          "ResourceRecords": [
-            {
-              "Value": "${ALB_DNS}"
-            }
-          ]
-        }
-      }
-    ]
-  }'''
+//  private static final String record_set_template =
+//      '''{
+//    "Comment": "DNS for ${TENANT_ID} during ${SERVICE_NAME} service",
+//    "Changes": [
+//      {
+//        "Action": "UPSERT",
+//        "ResourceRecordSet": {
+//          "Name": "${TENANT_ID}.${DNS_SUFFIX}.",
+//          "Type": "CNAME",
+//          "TTL": 300,
+//          "ResourceRecords": [
+//            {
+//              "Value": "${ALB_DNS}"
+//            }
+//          ]
+//        }
+//      }
+//    ]
+//  }'''
       
   public def createRole(String accountId, String policyName, String roleName)
   {
@@ -838,95 +758,5 @@ public void deployServiceContainers(Station tenantStage)
       "Action": "sts:AssumeRole"
     }
   ]
-}'''
-  
-//  private static final String config_taskdef_template =
-//  '''{
-//    "taskRoleArn": "${TASK_ROLE_ARN}",
-//    "family": "fugue-deploy",
-//    "containerDefinitions": [
-//        {
-//            "name": "${TASK_FAMILY}",
-//            "image": "${SERVICE_IMAGE}",
-//            "memory": ${MEMORY},
-//            "essential": true,
-//            "logConfiguration": {
-//                "logDriver": "awslogs",
-//                "options": {
-//                    "awslogs-group": "${LOG_GROUP}",
-//                    "awslogs-region": "${AWSREGION}",
-//                    "awslogs-stream-prefix": "${TASK_FAMILY}"
-//                }
-//            },
-//            "environment": [
-//                {
-//                    "name": "FUGUE_ENVIRONMENT_TYPE",
-//                    "value": "${FUGUE_ENVIRONMENT_TYPE}"
-//                },
-//                {
-//                    "name": "FUGUE_ENVIRONMENT",
-//                    "value": "${FUGUE_ENVIRONMENT}"
-//                },
-//                {
-//                    "name": "FUGUE_REALM",
-//                    "value": "${FUGUE_REALM}"
-//                },
-//                {
-//                    "name": "FUGUE_REGION",
-//                    "value": "${FUGUE_REGION}"
-//                },
-//                {
-//                    "name": "FUGUE_SERVICE",
-//                    "value": "${FUGUE_SERVICE}"
-//                },
-//                {
-//                    "name": "FUGUE_ACTION",
-//                    "value": "${FUGUE_ACTION}"
-//                },
-//                {
-//                    "name": "FUGUE_TENANT",
-//                    "value": "${FUGUE_TENANT}"
-//                },
-//                {
-//                    "name": "FUGUE_PRIMARY_ENVIRONMENT",
-//                    "value": "${FUGUE_PRIMARY_ENVIRONMENT}"
-//                },
-//                {
-//                    "name": "FUGUE_PRIMARY_REGION",
-//                    "value": "${FUGUE_PRIMARY_REGION}"
-//                },
-//                
-//                
-//                {
-//                    "name": "CONSUL_URL",
-//                    "value": "https://consul-${FUGUE_ENVIRONMENT_TYPE}.symphony.com:8080"
-//                },
-//                {
-//                    "name": "CONSUL_TOKEN",
-//                    "value": "${CONSUL_TOKEN}"
-//                },
-//                {
-//                    "name": "GITHUB_ORG",
-//                    "value": "${GITHUB_ORG}"
-//                },
-//                {
-//                    "name": "GITHUB_REPO",
-//                    "value": "${GITHUB_REPO}"
-//                },
-//                {
-//                    "name": "GITHUB_BRANCH",
-//                    "value": "${GITHUB_BRANCH}"
-//                },
-//                {
-//                    "name": "GITHUB_TOKEN",
-//                    "value": "${GITHUB_TOKEN}"
-//                },
-//                {
-//                    "name": "AWS_REGION",
-//                    "value": "${AWSREGION}"
-//                }
-//            ]
-//        }
-//    ]
-//}'''
+}''' 
 }
