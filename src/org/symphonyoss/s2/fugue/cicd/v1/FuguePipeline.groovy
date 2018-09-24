@@ -8,6 +8,9 @@ import java.util.Map.Entry
 
 class FuguePipeline implements Serializable
 {
+  private EnvActionImpl environ
+  private DSL           steps
+  
   private Map tenants = [:]
 
   private Map aws_identity = [:]
@@ -19,8 +22,7 @@ class FuguePipeline implements Serializable
   private Set<String> logGroupSet = []
   private String symbase = 'symbase'
 
-  private def environ
-  private def steps
+
   private String servicename
   private String symteam = 'sym'
 
@@ -47,13 +49,13 @@ class FuguePipeline implements Serializable
       this.environ = env
       this.steps = steps
       
+      steps.echo 'HERE'
       //new JenkinsTask(env, steps).execute()
   }
 
-  public static FuguePipeline instance(env, steps) {
-      // TODO: this is a place holder for future polymorphism
-      FuguePipeline ms = new FuguePipeline(env,steps)
-      return ms
+  public static FuguePipeline instance(EnvActionImpl env, DSL steps)
+  {
+    return new FuguePipeline(env, steps)
   }
   
   public String toString() {
