@@ -382,8 +382,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
     {
       def foo = sh(returnStdout: true, script: 'aws sts get-caller-identity')
       
+      echo 'foo=' + foo
+      
       aws_identity[credentialId] = steps.readJSON(text: sh(returnStdout: true, script: 'aws sts get-caller-identity'))
 
+      echo 'credentialId=' + credentialId
+      echo 'aws_identity[credentialId]=' + aws_identity[credentialId]
       throw new IllegalStateException("STOP")
       
       //steps.sh 'aws --region ' + awsRegion + ' ecs list-clusters'
