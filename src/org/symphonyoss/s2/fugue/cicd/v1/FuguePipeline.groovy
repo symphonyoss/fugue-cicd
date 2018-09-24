@@ -253,7 +253,7 @@ class FuguePipeline implements Serializable
   
   public void preflight()
   {
-    new FuguePipelineTask(steps, this).execute()
+    new FuguePipelineTask(environ, steps, this).execute()
     
     throw new IllegalStateException("STOP")
     
