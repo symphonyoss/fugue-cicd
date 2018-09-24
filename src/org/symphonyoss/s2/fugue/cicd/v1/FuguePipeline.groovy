@@ -380,6 +380,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
       credentialsId:      credentialId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
+      def foo = sh(returnStdout: true, script: 'aws sts get-caller-identity')
+      
       aws_identity[credentialId] = steps.readJSON(text: sh(returnStdout: true, script: 'aws sts get-caller-identity'))
 
       throw new IllegalStateException("STOP")
