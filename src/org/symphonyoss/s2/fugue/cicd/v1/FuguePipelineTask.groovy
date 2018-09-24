@@ -17,6 +17,13 @@ abstract class FuguePipelineTask extends JenkinsTask implements Serializable
     pipeLine_ = pipeLine
   }
   
+  public FuguePipelineTask(FuguePipelineTask pipeLine)
+  {
+    super(pipeLine)
+    
+    pipeLine_ = pipeLine.pipeLine_
+  }
+  
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
     pipeLine_.verifyUserAccess(credentialId, environmentType)
