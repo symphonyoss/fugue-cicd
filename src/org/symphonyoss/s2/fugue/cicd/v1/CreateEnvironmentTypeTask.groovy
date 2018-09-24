@@ -23,6 +23,7 @@ class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializabl
   public CreateEnvironmentTypeTask(FuguePipeline pipeLine, String environmentType)
   {
       super(pipeLine)
+    echo 'TA2'
       
       environmentType_ = environmentType
   }

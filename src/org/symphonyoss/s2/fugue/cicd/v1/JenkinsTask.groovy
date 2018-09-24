@@ -23,6 +23,7 @@ class JenkinsTask implements Serializable
   
   public JenkinsTask(JenkinsTask task)
   {
+    echo 'TA4'
     env_    = task.env_
     steps_  = task.steps_
   }

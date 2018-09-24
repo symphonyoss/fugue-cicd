@@ -14,6 +14,7 @@ abstract class FuguePipelineTask extends JenkinsTask implements FuguePipelineOrT
   {
     super(pipeLine.getTask())
     
+    echo 'TA3'
     pipeLine_ = pipeLine.getPipeLine()
   }
   
