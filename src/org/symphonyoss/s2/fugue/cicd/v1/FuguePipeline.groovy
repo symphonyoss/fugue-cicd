@@ -51,7 +51,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       this.environ = env
       this.steps = steps
       
-      steps.echo 'HERE'
+      echo 'HERE I AM!'
       //new JenkinsTask(env, steps).execute()
   }
 
