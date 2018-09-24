@@ -10,13 +10,13 @@ abstract class FuguePipelineTask extends JenkinsTask implements Serializable
 {
   protected FuguePipeline pipeLine_
   
-  public FuguePipelineTask(FuguePipelineTask pipeLine)
-  {
-    super(pipeLine)
-    
-    echo 'TA3a'
-    pipeLine_ = pipeLine.pipeLine_
-  }
+//  public FuguePipelineTask(FuguePipelineTask pipeLine)
+//  {
+//    super(pipeLine)
+//    
+//    echo 'TA3a'
+//    pipeLine_ = pipeLine.pipeLine_
+//  }
   
   public FuguePipelineTask(FuguePipeline pipeLine)
   {
@@ -26,13 +26,13 @@ abstract class FuguePipelineTask extends JenkinsTask implements Serializable
     pipeLine_ = pipeLine
   }
   
-  public FuguePipelineTask(JenkinsTask task, FuguePipeline pipeLine)
-  {
-    super(task)
-    
-    echo 'TA3c'
-    pipeLine_ = pipeLine
-  }
+//  public FuguePipelineTask(JenkinsTask task, FuguePipeline pipeLine)
+//  {
+//    super(task)
+//    
+//    echo 'TA3c'
+//    pipeLine_ = pipeLine
+//  }
 
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
