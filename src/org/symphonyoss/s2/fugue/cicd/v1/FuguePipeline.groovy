@@ -46,7 +46,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private FuguePipeline(EnvActionImpl env, DSL steps)
   {
-   // super(env, steps)
+    super(env, steps)
     
       this.environ = env
       this.steps = steps
