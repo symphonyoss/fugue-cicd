@@ -67,9 +67,9 @@ class JenkinsTask implements Serializable
     return steps_."string"(args)
   }
   
-  public def readFile(Map args)
+  public def readFile(String fileName)
   {
-    return steps_."readFile"(args)
+    return steps_."readFile"(fileName)
   }
   
   public def writeFile(Map args)
