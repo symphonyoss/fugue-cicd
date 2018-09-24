@@ -8,6 +8,7 @@ package org.symphonyoss.s2.fugue.cicd.v1
 
 class FuguePipelineTask extends JenkinsTask
 {
+  private def     env_
   private def     steps_
   private FuguePipeline pipeLine_
   
