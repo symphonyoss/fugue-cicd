@@ -18,10 +18,6 @@ class JenkinsTask implements Serializable
   {
     env_            = env
     steps_          = steps
-    
-    def s = steps_.echo 'env_ = ' + env_.getClass()
-    
-    steps_.echo 's=' + s
   }
   
   public void echo(String message)
@@ -31,14 +27,17 @@ class JenkinsTask implements Serializable
   
   public def sh(String script, boolean returnStdout = false, boolean returnStatus = false)
   {
-    steps_."echo" 'TT2'
     return steps_."sh"(script: script, returnStdout: returnStdout, returnStatus: returnStatus)
   }
   
   public def sh(Map args)
   {
-    steps_."echo" 'TT3'
     return steps_."sh"(args)
+  }
+  
+  public def readJSON(Map args)
+  {
+    return steps_."readJSON"(args)
   }
   
   public void execute()

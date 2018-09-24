@@ -190,30 +190,30 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void deleteUser(String userName, String groupName)
   {
-    def status = steps.sh returnStatus:true, script:'aws iam get-user --user-name ' + userName
+    def status = sh returnStatus:true, script:'aws iam get-user --user-name ' + userName
     
     if(status==0)
     {
-      steps.echo 'User ' + userName + " exists, deleting..."
+      echo 'User ' + userName + " exists, deleting..."
         
-      steps.sh 'aws iam remove-user-from-group --user-name ' + userName +
+      sh 'aws iam remove-user-from-group --user-name ' + userName +
           ' --group-name ' + groupName
       
-      def keys = steps.readJSON(text:
-        steps.sh(returnStdout: true, script: 'aws iam list-access-keys --user-name ' + userName))
+      def keys = readJSON(text:
+        sh(returnStdout: true, script: 'aws iam list-access-keys --user-name ' + userName))
       
       keys."AccessKeyMetadata".each
       {
         keySpec ->
-          steps.sh 'aws iam delete-access-key --access-key-id ' + keySpec."AccessKeyId" +
+          sh 'aws iam delete-access-key --access-key-id ' + keySpec."AccessKeyId" +
            ' --user-name ' + userName
       }
       
-      steps.sh 'aws iam delete-user --user-name ' + userName
+      sh 'aws iam delete-user --user-name ' + userName
     }
     else
     {
-      steps.echo 'User ' + userName + " does not exist."
+      echo 'User ' + userName + " does not exist."
     }
   }
   
@@ -232,12 +232,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    steps.echo 'loadConfig'
+    echo 'loadConfig'
     
-    steps.echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
+    echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
-    String pwd = steps.sh(script: "pwd", returnStdout: true).toString().trim()
+    String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
 
     
     File dir = new File("$pwd/config/environment");
@@ -245,14 +245,14 @@ class FuguePipeline extends JenkinsTask implements Serializable
     dir.listFiles().each
     {
       File environmentType -> 
-        def config = steps.readJSON file: environmentType.absolutePath + '/environmentType.json'
+        def config = readJSON file: environmentType.absolutePath + '/environmentType.json'
         environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(steps, config."amazon")
     }
   }
   
   public void toolsPreFlight()
   {
-    steps.sh 'rm -rf *'
+    sh 'rm -rf *'
     
     if(configGitRepo != null)
     {
@@ -264,8 +264,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void preflight()
   {
-    steps.echo 'T1'
-    this.steps.echo 'T2'
+    echo 'T1'
+    this.echo 'T2'
     
 //      steps_.echo 'T3'
     
@@ -276,22 +276,22 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     //throw new IllegalStateException("STOP")
     
-    steps.sh 'rm -rf *'
+    sh 'rm -rf *'
 
     if(configGitRepo != null)
     {
       loadConfig()
 
-      steps.sh 'ls -l config/service/' + servicename + '/service.json'
+      sh 'ls -l config/service/' + servicename + '/service.json'
 
-      def service = steps.readJSON file:'config/service/' + servicename + '/service.json'
+      def service = readJSON file:'config/service/' + servicename + '/service.json'
 
-      steps.echo 'service is ' + service
-      steps.echo 'service.containers is ' + service.containers
-      steps.echo 'service."containers" is ' + service."containers"
+      echo 'service is ' + service
+      echo 'service.containers is ' + service.containers
+      echo 'service."containers" is ' + service."containers"
 
       service."containers".each { name, containerDef ->
-        steps.echo 'Container ' + name + ' = ' + containerDef
+        echo 'Container ' + name + ' = ' + containerDef
 
 
         Container ms = new Container()
@@ -306,20 +306,20 @@ class FuguePipeline extends JenkinsTask implements Serializable
           ms.withEnv(envName, envValue)
         }
 
-        //steps.echo 'ms=' + ms
+        //echo 'ms=' + ms
 
         this.withContainer(ms)
       }
 
 
-      def track = steps.readJSON file:'config/track/' + releaseTrack + '.json'
+      def track = readJSON file:'config/track/' + releaseTrack + '.json'
 
-      steps.echo 'track is ' + track
-      steps.echo 'track.description is ' + track.description
-      steps.echo 'track."stations" is ' + track."stations"
+      echo 'track is ' + track
+      echo 'track.description is ' + track.description
+      echo 'track."stations" is ' + track."stations"
 
       track."stations".each { stationDef ->
-        steps.echo 'Station ' + stationDef."name" + ' = ' + stationDef
+        echo 'Station ' + stationDef."name" + ' = ' + stationDef
 
 
         Station ts = new Station()
@@ -336,15 +336,15 @@ class FuguePipeline extends JenkinsTask implements Serializable
           ts.withTenants(tenant)
         }
 
-        steps.echo 'ts=' + ts
+        echo 'ts=' + ts
 
         this.withStation(ts)
       }
     }
       
-    steps.echo 'serviceGitOrg is ' + serviceGitOrg
-    steps.echo 'serviceGitRepo is ' + serviceGitRepo
-    steps.echo 'serviceGitBranch is ' + serviceGitBranch
+    echo 'serviceGitOrg is ' + serviceGitOrg
+    echo 'serviceGitRepo is ' + serviceGitRepo
+    echo 'serviceGitBranch is ' + serviceGitBranch
     
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
 
@@ -359,20 +359,20 @@ class FuguePipeline extends JenkinsTask implements Serializable
       }
       catch(Exception e)
       {
-        steps.echo 'Exception ' + e.toString()
-        steps.echo 'No Stage Access -- Cannot promote'
+        echo 'Exception ' + e.toString()
+        echo 'No Stage Access -- Cannot promote'
       }
     }
     catch(Exception e)
     {
-      steps.echo 'Exception ' + e.toString()
-      steps.echo 'No QA  Access -- Cannot promote'
+      echo 'Exception ' + e.toString()
+      echo 'No QA  Access -- Cannot promote'
     }
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
-    steps.echo 'Verifying ' + environmentType + ' access with credential ' + credentialId + '...'
+    echo 'Verifying ' + environmentType + ' access with credential ' + credentialId + '...'
     
     steps.withCredentials([[
       $class:             'AmazonWebServicesCredentialsBinding',
@@ -380,43 +380,36 @@ class FuguePipeline extends JenkinsTask implements Serializable
       credentialsId:      credentialId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
-      def foo = sh(returnStdout: true, script: 'aws sts get-caller-identity')
-      
-      echo 'foo=' + foo
-      
-      aws_identity[credentialId] = steps.readJSON(text: sh(returnStdout: true, script: 'aws sts get-caller-identity'))
+      aws_identity[credentialId] = readJSON(text: sh(returnStdout: true, script: 'aws sts get-caller-identity'))
 
-      echo 'credentialId=' + credentialId
-      echo 'aws_identity[credentialId]=' + aws_identity[credentialId]
+      echo 'aws_identity[' + credentialId + ']=' + aws_identity[credentialId]
+
       
-      sh 'ls -l'
-      throw new IllegalStateException("STOP")
-      
-      //steps.sh 'aws --region ' + awsRegion + ' ecs list-clusters'
+      //sh 'aws --region ' + awsRegion + ' ecs list-clusters'
 
       if(environmentType != null)
       {
-//        steps.echo 'T1'
+//        echo 'T1'
 //        
 //        
-//        steps.echo 'TA1'
-//        steps.echo 'environmentType=' + environmentType
-//        steps.sh 'ls -l'
-//        steps.echo 'TA2'
-//        steps.sh 'ls'
-//        steps.echo 'TA3'
-//        steps.sh 'ls config/environment/' + environmentType
-//        steps.echo 'TA4'
-//        def config = steps.readJSON file:'config/environment/' + environmentType + '/environmentType.json'
+//        echo 'TA1'
+//        echo 'environmentType=' + environmentType
+//        sh 'ls -l'
+//        echo 'TA2'
+//        sh 'ls'
+//        echo 'TA3'
+//        sh 'ls config/environment/' + environmentType
+//        echo 'TA4'
+//        def config = readJSON file:'config/environment/' + environmentType + '/environmentType.json'
 //        
-//        steps.echo 'config=' + config
+//        echo 'config=' + config
 //        
 //        
 //        def conf = new EnvironmentTypeConfig(steps, config."amazon")
-//        steps.echo 'T2'
-//        steps.echo 'conf=' + conf
+//        echo 'T2'
+//        echo 'conf=' + conf
 //        environmentTypeConfig[environmentType] = new EnvironmentTypeConfig(steps, config."amazon")
-//        steps.echo 'T3'
+//        echo 'T3'
         docker_repo[environmentType] = aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/'+symteam+'/'
         
         service_map.values().each
@@ -425,33 +418,33 @@ class FuguePipeline extends JenkinsTask implements Serializable
             
           try
           {
-              steps.sh 'aws --region ' + awsRegion + ' ecr describe-repositories --repository-names '+symteam+'/'+ms.name
+              sh 'aws --region ' + awsRegion + ' ecr describe-repositories --repository-names '+symteam+'/'+ms.name
           }
           catch(Exception e)
           {
-              steps.echo 'Exception ' + e.toString()
-              steps.sh 'aws --region ' + awsRegion + ' ecr create-repository --repository-name '+symteam+'/'+ms.name
+              echo 'Exception ' + e.toString()
+              sh 'aws --region ' + awsRegion + ' ecr create-repository --repository-name '+symteam+'/'+ms.name
           }
         }
         
-        steps.sh "set +x; echo 'Logging into docker repo'; `aws --region " + awsRegion + " ecr get-login --no-include-email`"
+        sh "set +x; echo 'Logging into docker repo'; `aws --region " + awsRegion + " ecr get-login --no-include-email`"
                     
         if(environmentType=='dev')
         {
                         
-          steps.sh 'docker pull 189141687483.dkr.ecr.' + awsRegion + '.amazonaws.com/symphony-es/base-java8:latest'
+          sh 'docker pull 189141687483.dkr.ecr.' + awsRegion + '.amazonaws.com/symphony-es/base-java8:latest'
           
           
           steps.withCredentials([steps.file(credentialsId: 'maven-settings', variable: 'FILE')]) {
-            steps.sh 'cp $FILE /usr/share/maven/conf/settings.xml'
+            sh 'cp $FILE /usr/share/maven/conf/settings.xml'
             
           }
   
-          //steps.sh 'aws s3 cp s3://sym-build-secrets/sbe/settings.xml  /usr/share/maven/conf/settings.xml'
+          //sh 'aws s3 cp s3://sym-build-secrets/sbe/settings.xml  /usr/share/maven/conf/settings.xml'
           
           if(!toolsDeploy)
           {
-            steps.sh 'docker pull ' + aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/' + 'fugue-deploy:latest'
+            sh 'docker pull ' + aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/' + 'fugue-deploy:latest'
           }
         }
       }
@@ -478,7 +471,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     verifyUserAccess(getCredentialName(environmentType), environmentType);
     envTypePush.put(environmentType, true);
-    //steps.echo 'AWS '+environmentType+' docker repo: '+docker_repo[environmentType]
+    //echo 'AWS '+environmentType+' docker repo: '+docker_repo[environmentType]
   }
   
 
@@ -490,21 +483,21 @@ class FuguePipeline extends JenkinsTask implements Serializable
         credentialsId: getCredentialName(environmentType),
         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
       {
-        steps.echo 'R53RecordSetExist environmentType=' + environmentType +
+        echo 'R53RecordSetExist environmentType=' + environmentType +
         ', environment=' + environment + ', tenant ' + tenant
-        steps.echo 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
+        echo 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
         
-        steps.sh 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
-          def resource_record = steps.readJSON file:'r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
+        sh 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
+          def resource_record = readJSON file:'r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
           if(resource_record) {
-              steps.echo """
+              echo """
 R53 record set exists.
 Value: ${resource_record[0].ResourceRecords[0].Value}
 Name:  ${resource_record[0].Name}
 """
               return true
           } else {
-              steps.echo "R53 record set does not exist."
+              echo "R53 record set does not exist."
               return false
           }
       }
@@ -520,9 +513,9 @@ Name:  ${resource_record[0].Name}
           def rs_def = (new StrSubstitutor(rs_template_args)).replace(record_set_template)
           def rs_def_file = 'r53-rs-'+environment+'-'+tenant+'-'+servicename+'.json'
           steps.writeFile file:rs_def_file, text:rs_def
-          //steps.sh 'ls -alh'
+          //sh 'ls -alh'
           steps.withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: getCredentialName(environmentType), secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-              steps.sh 'aws --region ' + awsRegion + ' route53 change-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --change-batch file://'+rs_def_file+' > r53-rs-create-out-'+environment+'-'+tenant+'-'+servicename+'.json'
+              sh 'aws --region ' + awsRegion + ' route53 change-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --change-batch file://'+rs_def_file+' > r53-rs-create-out-'+environment+'-'+tenant+'-'+servicename+'.json'
           }
       }
   }
@@ -531,7 +524,7 @@ Name:  ${resource_record[0].Name}
 
 public void deployInitContainers(Station tenantStage)
 {
-  steps.echo 'Init Containers'
+  echo 'Init Containers'
   
   service_map.values().each {
     Container ms = it
@@ -544,14 +537,14 @@ public void deployInitContainers(Station tenantStage)
             String tenant = it
             
     
-            steps.echo 'Init ' + tenant + ' ' + ms.toString()
+            echo 'Init ' + tenant + ' ' + ms.toString()
             
             ms.deployInit(tenantStage, tenant)
           }
           break
 
         case Tenancy.MultiTenant:
-          steps.echo 'Init MULTI ' + ms.toString()
+          echo 'Init MULTI ' + ms.toString()
           ms.deployInit(tenantStage, null)
           break
       }
@@ -561,7 +554,7 @@ public void deployInitContainers(Station tenantStage)
 
 public void deployServiceContainers(Station tenantStage)
 {
-  steps.echo 'Runtime Containers'
+  echo 'Runtime Containers'
   
   service_map.values().each {
     Container ms = it
@@ -573,13 +566,13 @@ public void deployServiceContainers(Station tenantStage)
           tenantStage.tenants.each {
             String tenant = it
             
-            steps.echo 'Runtime ' + tenant + ' ' + ms.toString()
+            echo 'Runtime ' + tenant + ' ' + ms.toString()
             ms.deployService(tenantStage, tenant)
           }
           break
 
         case Tenancy.MultiTenant:
-          steps.echo 'Runtime MULTI ' + ms.toString()
+          echo 'Runtime MULTI ' + ms.toString()
             ms.deployService(tenantStage, null)
             break
         }
@@ -595,21 +588,21 @@ public void deployServiceContainers(Station tenantStage)
   
   public void deployStation(String tenantStageName)
   {
-    steps.echo 'Deploy for ' + tenantStageName
+    echo 'Deploy for ' + tenantStageName
   
     Station tenantStage = tenant_stage_map.get(tenantStageName)
   
     
     if(envTypePush.get(tenantStage.environmentType))
     {
-      steps.echo 'R53RecordSets and Roles environmentType' + tenantStage.environmentType +
+      echo 'R53RecordSets and Roles environmentType' + tenantStage.environmentType +
         ', environment=' + tenantStage.environment + ', tenants=' + tenantStage.tenants
       
       
       tenantStage.tenants.each {
         String tenant = it
         
-        steps.echo 'for environmentType=' + tenantStage.environmentType +
+        echo 'for environmentType=' + tenantStage.environmentType +
         ', environment=' + tenantStage.environment + ', tenant ' + tenant
         
         deployConfig(tenantStage, tenant, 'DeployConfig')
@@ -626,7 +619,7 @@ public void deployServiceContainers(Station tenantStage)
         tenantStage.tenants.each {
             String tenant = it
             
-            steps.echo 'for environmentType=' + tenantStage.environmentType +
+            echo 'for environmentType=' + tenantStage.environmentType +
             ', environment=' + tenantStage.environment + ', tenant ' + tenant
             
             deployConfig(tenantStage, tenant, 'Deploy')
@@ -636,14 +629,14 @@ public void deployServiceContainers(Station tenantStage)
     }
     else
     {
-      steps.echo 'No access for environmentType ' + tenantStage.environmentType + ', skipped.'
+      echo 'No access for environmentType ' + tenantStage.environmentType + ', skipped.'
     }
   }
 
 
   public void pushDockerImages(String environmentType)
   {
-    steps.echo 'Push Images for ' + environmentType
+    echo 'Push Images for ' + environmentType
     
     if(envTypePush.get(environmentType))
     {
@@ -658,19 +651,19 @@ public void deployServiceContainers(Station tenantStage)
         String localImage = ms.name + ':' + release
         String remoteImage = repo + localImage + '-' + buildNumber
         
-        steps.sh 'docker tag ' + localImage + ' ' + remoteImage
-        steps.sh 'docker push ' + remoteImage
+        sh 'docker tag ' + localImage + ' ' + remoteImage
+        sh 'docker push ' + remoteImage
       }
     }
     else
     {
-      steps.echo 'No access for environmentType ' + environmentType + ', skipped.'
+      echo 'No access for environmentType ' + environmentType + ', skipped.'
     }
   }
   
   public void pushDockerToolCandidate(String environmentType, String name) {
     
-    steps.echo 'Push Tool candidate for ' + name
+    echo 'Push Tool candidate for ' + name
     
     String repo = docker_repo[environmentType]
     
@@ -680,13 +673,13 @@ public void deployServiceContainers(Station tenantStage)
     String localImage = name + ':' + release
     String remoteImage = repo + localImage + '-' + buildNumber
     
-    steps.sh 'docker tag ' + localImage + ' ' + remoteImage
-    steps.sh 'docker push ' + remoteImage
+    sh 'docker tag ' + localImage + ' ' + remoteImage
+    sh 'docker push ' + remoteImage
   }
   
   public void pushDockerToolImage(String environmentType, String name) {
     
-    steps.echo 'Push Tool Image for ' + name
+    echo 'Push Tool Image for ' + name
     
     String repo = docker_repo[environmentType]
     
@@ -696,8 +689,8 @@ public void deployServiceContainers(Station tenantStage)
     String localImage = name + ':' + release
     String remoteImage = repo + name + ':latest'
     
-    steps.sh 'docker tag ' + localImage + ' ' + remoteImage
-    steps.sh 'docker push ' + remoteImage
+    sh 'docker tag ' + localImage + ' ' + remoteImage
+    sh 'docker push ' + remoteImage
   }
 
   public void deployConfig(Station tenantStage, String tenant, String task)
@@ -730,8 +723,8 @@ public void deployServiceContainers(Station tenantStage)
   
   public void pushDockerImage(String env, String localimage) {
       String remoteimage = docker_repo[env]+servicename+':'+dockerlabel
-      steps.sh 'docker tag '+localimage+' '+remoteimage
-      steps.sh 'docker push '+remoteimage
+      sh 'docker tag '+localimage+' '+remoteimage
+      sh 'docker push '+remoteimage
   }
   
   String logGroupName(Station tenantStage, String tenant)
@@ -760,26 +753,26 @@ public void deployServiceContainers(Station tenantStage)
   {
     if(logGroupSet.add(name))
     {
-      steps.echo 'Create log group ' + name + ' if necessary'
+      echo 'Create log group ' + name + ' if necessary'
  
-        def logDesc = steps.readJSON(text: 
-          steps.sh(returnStdout: true, script: 'aws --region ' + awsRegion + ' logs describe-log-groups --log-group-name '+ name)
+        def logDesc = readJSON(text: 
+          sh(returnStdout: true, script: 'aws --region ' + awsRegion + ' logs describe-log-groups --log-group-name '+ name)
       )
       
       if(logDesc.'logGroups'.size() ==0)
       {
-        steps.echo 'Create log group ' + name
-        steps.sh 'aws --region ' + awsRegion + ' logs create-log-group --log-group-name '+ name
-        steps.sh 'aws --region ' + awsRegion + ' logs put-retention-policy --log-group-name '+ name +' --retention-in-days 14'
+        echo 'Create log group ' + name
+        sh 'aws --region ' + awsRegion + ' logs create-log-group --log-group-name '+ name
+        sh 'aws --region ' + awsRegion + ' logs put-retention-policy --log-group-name '+ name +' --retention-in-days 14'
       }
       else
       {
-        steps.echo 'Log group ' + name + ' size=' + logDesc.'logGroups'.size()
+        echo 'Log group ' + name + ' size=' + logDesc.'logGroups'.size()
       }
     }
     else
     {
-      steps.echo 'Log group ' + name + ' already created.'
+      echo 'Log group ' + name + ' already created.'
     }
     
     return name
@@ -809,26 +802,26 @@ public void deployServiceContainers(Station tenantStage)
   {
     String policyArn = 'arn:aws:iam::' + aws_identity[accountId].Account + ':policy/' + policyName
    
-    steps.echo 'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
-    def status = steps.sh returnStatus:true, script:'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
+    echo 'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
+    def status = sh returnStatus:true, script:'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
 
     if(status==0)
     {
-      steps.echo 'Role ' + roleName + " exists."
+      echo 'Role ' + roleName + " exists."
     }
     else
     {
-      steps.echo 'Creating role ' + roleName + "..."
+      echo 'Creating role ' + roleName + "..."
       
-      steps.sh 'aws --region ' + awsRegion + ' iam create-role --role-name ' + roleName +
+      sh 'aws --region ' + awsRegion + ' iam create-role --role-name ' + roleName +
         ' --assume-role-policy-document \'' + trust_relationship_document + '\''
         
-      steps.sh 'aws --region ' + awsRegion + ' iam attach-role-policy --role-name ' + roleName +
+      sh 'aws --region ' + awsRegion + ' iam attach-role-policy --role-name ' + roleName +
         ' --policy-arn ' + policyArn
       
-      steps.echo 'Waiting for 20 seconds for the new role to become active....'
+      echo 'Waiting for 20 seconds for the new role to become active....'
       Thread.sleep(20000)
-      steps.echo 'OK'
+      echo 'OK'
     }
   }
 
