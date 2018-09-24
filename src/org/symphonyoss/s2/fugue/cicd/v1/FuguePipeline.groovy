@@ -217,7 +217,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public CreateEnvironmentTypeTask  createEnvironmentTypeTask(String environmentType)
   {
-    echo 'TA1a'
     return new CreateEnvironmentTypeTask(this, environmentType)
       .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
   }

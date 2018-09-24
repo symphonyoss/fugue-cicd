@@ -22,7 +22,6 @@ abstract class FuguePipelineTask extends JenkinsTask implements Serializable
   {
     super(pipeLine)
     
-    echo 'TA3b'
     pipeLine_ = pipeLine
   }
   
