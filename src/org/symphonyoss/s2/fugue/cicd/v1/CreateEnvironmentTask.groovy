@@ -32,7 +32,8 @@ class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
       environment_     = environment
       realm_           = realm
       region_          = region
-      cluster_         = environmentType_ + '-' + environment_ + '-' + region_
+//      cluster_         = environmentType_ + '-' + environment_ + '-' + region_
+      cluster_         = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
   }
   
   public CreateEnvironmentTask withAwsRegion(String n)
@@ -148,6 +149,8 @@ CreateEnvironmentTask Finished
     if(clusterArn_ == null)
     {
       echo 'Cluster ' + cluster_ + ' does not exist, creating...'
+      
+      throw new IllegalStateException("Can't create EC2 cluster yet...")
       
       def createdCluster = readJSON(text:
         sh(returnStdout: true, script: 'aws ecs create-cluster --region us-east-1 --cluster-name ' + cluster_ ))

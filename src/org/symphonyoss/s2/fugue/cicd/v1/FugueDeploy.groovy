@@ -151,7 +151,10 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   {
     echo """
 ------------------------------------------------------------------------------------------------------------------------
-FugeDeploy execute start
+FugeDeploy V2 execute start
+
+fargateLaunch_  = ${fargateLaunch_}
+launchType_     = ${launchType_}
 ------------------------------------------------------------------------------------------------------------------------
 """
     

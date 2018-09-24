@@ -705,7 +705,7 @@ public void deployServiceContainers(Station tenantStage)
       logGroup = createLogGroup('fugue')
     }
     
-    FugueDeploy deploy = new FugueDeploy(steps, this, task,
+    FugueDeploy deploy = new FugueDeploy(this, task,
       logGroup,
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
