@@ -38,6 +38,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  port_           = '80'
   private String  consulTokenId_
   private String  accountId_
+  private String  launchType_     = 'EC2'   //'FARGATE'
   
   public FugueDeploy(FuguePipelineTask pipeLine, String task, String logGroup, String awsRegion)
   {
@@ -184,7 +185,7 @@ FugeDeploy execute start
     "memory": "''' + memory_ + '''",
     "cpu": "''' + cpu_ + '''", 
     "requiresCompatibilities": [
-        "FARGATE"
+        "''' + launchType_ + '''"
     ], 
     "containerDefinitions": [
         {
@@ -253,7 +254,7 @@ FugeDeploy execute start
       
       def taskRun = readJSON(text:
         sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
-        ' --launch-type FARGATE' +
+        ' --launch-type ' + launchType_ +
         ' --network-configuration "awsvpcConfiguration={subnets=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSubnets_ +
            ',securityGroups=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSecurityGroups_ +
            ',assignPublicIp=ENABLED}"' +
