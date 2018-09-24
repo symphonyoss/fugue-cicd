@@ -292,7 +292,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         echo 'Container ' + name + ' = ' + containerDef
 
 
-        Container ms = new Container()
+        Container ms = new Container(this)
             .withName(name)
             .withRole(containerDef."role")
             .withTenancy(containerDef."tenancy" == "SINGLE" ? Tenancy.SingleTenant : Tenancy.MultiTenant)
@@ -474,49 +474,49 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
 
 
-  private def R53RecordSetExist(String environmentType, String environment, String tenant) {
-      steps.withCredentials([[
-        $class: 'AmazonWebServicesCredentialsBinding',
-        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        credentialsId: getCredentialName(environmentType),
-        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
-      {
-        echo 'R53RecordSetExist environmentType=' + environmentType +
-        ', environment=' + environment + ', tenant ' + tenant
-        echo 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
-        
-        sh 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
-          def resource_record = readJSON file:'r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
-          if(resource_record) {
-              echo """
-R53 record set exists.
-Value: ${resource_record[0].ResourceRecords[0].Value}
-Name:  ${resource_record[0].Name}
-"""
-              return true
-          } else {
-              echo "R53 record set does not exist."
-              return false
-          }
-      }
-  }
-
-  private def createR53RecordSet(String environmentType, String environment, String tenant) {
-      if(!R53RecordSetExist(environmentType, environment, tenant)) {
-          def rs_template_args = ['SERVICE_NAME':servicename,
-                                  'TENANT_ID':tenant,
-                                  'DNS_SUFFIX':ECSClusterMaps.env_cluster[environment]['dns_suffix'],
-                                  'ALB_DNS':ECSClusterMaps.env_cluster[environment]['ialb_dns']
-          ]
-          def rs_def = (new StrSubstitutor(rs_template_args)).replace(record_set_template)
-          def rs_def_file = 'r53-rs-'+environment+'-'+tenant+'-'+servicename+'.json'
-          steps.writeFile file:rs_def_file, text:rs_def
-          //sh 'ls -alh'
-          steps.withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: getCredentialName(environmentType), secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-              sh 'aws --region ' + awsRegion + ' route53 change-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --change-batch file://'+rs_def_file+' > r53-rs-create-out-'+environment+'-'+tenant+'-'+servicename+'.json'
-          }
-      }
-  }
+//  private def R53RecordSetExist(String environmentType, String environment, String tenant) {
+//      steps.withCredentials([[
+//        $class: 'AmazonWebServicesCredentialsBinding',
+//        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//        credentialsId: getCredentialName(environmentType),
+//        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
+//      {
+//        echo 'R53RecordSetExist environmentType=' + environmentType +
+//        ', environment=' + environment + ', tenant ' + tenant
+//        echo 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
+//        
+//        sh 'aws --region ' + awsRegion + ' route53 list-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --query \"ResourceRecordSets[?Name == \''+tenant+'.'+ECSClusterMaps.env_cluster[environment]['dns_suffix']+'.\']\" > r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
+//          def resource_record = readJSON file:'r53-rs-list-'+environment+'-'+tenant+'-'+servicename+'.json'
+//          if(resource_record) {
+//              echo """
+//R53 record set exists.
+//Value: ${resource_record[0].ResourceRecords[0].Value}
+//Name:  ${resource_record[0].Name}
+//"""
+//              return true
+//          } else {
+//              echo "R53 record set does not exist."
+//              return false
+//          }
+//      }
+//  }
+//
+//  private def createR53RecordSet(String environmentType, String environment, String tenant) {
+//      if(!R53RecordSetExist(environmentType, environment, tenant)) {
+//          def rs_template_args = ['SERVICE_NAME':servicename,
+//                                  'TENANT_ID':tenant,
+//                                  'DNS_SUFFIX':ECSClusterMaps.env_cluster[environment]['dns_suffix'],
+//                                  'ALB_DNS':ECSClusterMaps.env_cluster[environment]['ialb_dns']
+//          ]
+//          def rs_def = (new StrSubstitutor(rs_template_args)).replace(record_set_template)
+//          def rs_def_file = 'r53-rs-'+environment+'-'+tenant+'-'+servicename+'.json'
+//          steps.writeFile file:rs_def_file, text:rs_def
+//          //sh 'ls -alh'
+//          steps.withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: getCredentialName(environmentType), secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+//              sh 'aws --region ' + awsRegion + ' route53 change-resource-record-sets --hosted-zone-id '+ECSClusterMaps.env_cluster[environment]['r53_zone']+' --change-batch file://'+rs_def_file+' > r53-rs-create-out-'+environment+'-'+tenant+'-'+servicename+'.json'
+//          }
+//      }
+//  }
   
   
 
