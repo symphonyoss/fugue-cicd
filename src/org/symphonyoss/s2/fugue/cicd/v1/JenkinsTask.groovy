@@ -18,7 +18,7 @@ class JenkinsTask
     env_            = env
     steps_          = steps
     
-   
+    steps_.echo 'env_ = ' + env_.getClass()
   }
   
   public void echo(String message)
