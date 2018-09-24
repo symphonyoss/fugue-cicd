@@ -38,7 +38,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  port_           = '80'
   private String  consulTokenId_
   private String  accountId_
-  private String  launchType_     = 'EC2'   //'FARGATE'
+  private String  fargateLaunch_     = false
   
   public FugueDeploy(FuguePipelineTask pipeLine, String task, String logGroup, String awsRegion)
   {
@@ -181,7 +181,7 @@ FugeDeploy execute start
     "executionRoleArn": "''' + executionRoleArn + '''",
     "taskRoleArn": "''' + taskRoleArn + '''",
     "family": "fugue-deploy",
-    "networkMode": "awsvpc", 
+    "networkMode": "''' + (fargateLaunch_ ? 'awsvpc' : 'bridge') + '''", 
     "memory": "''' + memory_ + '''",
     "cpu": "''' + cpu_ + '''", 
     "requiresCompatibilities": [
@@ -252,13 +252,26 @@ FugeDeploy execute start
 
       sh 'aws sts get-caller-identity'
       
-      def taskRun = readJSON(text:
-        sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + cluster_ +
-        ' --launch-type ' + launchType_ +
-        ' --network-configuration "awsvpcConfiguration={subnets=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSubnets_ +
-           ',securityGroups=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSecurityGroups_ +
-           ',assignPublicIp=ENABLED}"' +
+      String runCommand = 'aws --region us-east-1 ecs run-task --cluster ' + cluster_
+      
+      if(fargateLaunch_)
+      {
+        runCommand = runCommand + ' --launch-type FARGATE' +
+          ' --network-configuration "awsvpcConfiguration={subnets=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSubnets_ +
+             ',securityGroups=' + pipeLine_.environmentTypeConfig[environmentType_].loadBalancerSecurityGroups_ +
+             ',assignPublicIp=ENABLED}"'
+      }
+      else
+      {
+        runCommand = runCommand + ' --launch-type EC2'
+      }
+           
+      runCommand = runCommand +
         ' --task-definition fugue-deploy --count 1'
+        
+        
+      def taskRun = readJSON(text:
+        sh(returnStdout: true, script: runCommand
         )
       )
         
