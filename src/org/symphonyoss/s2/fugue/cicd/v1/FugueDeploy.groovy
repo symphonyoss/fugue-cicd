@@ -43,16 +43,6 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   
   public FugueDeploy(FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
   {
-    this(pipeLine, pipeLine, logGroup, awsRegion)
-  }
-
-  public FugueDeploy(FuguePipelineTask pipeLineTask, String task, String logGroup, String awsRegion)
-  {
-    this(pipeLineTask, pipeLineTask.pipeLine_, logGroup, awsRegion)
-  }
-
-  public FugueDeploy(JenkinsTask jenkinsTask, FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
-  {
     super(pipeLine)
     
     task_           = task

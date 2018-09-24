@@ -85,7 +85,7 @@ region_             ${region_}
       
       logGroup_ = pipeLine_.createLogGroup('fugue')
     
-      FugueDeploy deploy = new FugueDeploy(this, 'CreateEnvironment',
+      FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironment',
         logGroup_,
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)

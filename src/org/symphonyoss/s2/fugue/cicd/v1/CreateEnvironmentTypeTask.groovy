@@ -86,7 +86,7 @@ roleName            ${roleName}
       logGroup_ = pipeLine_.createLogGroup('fugue')
       pipeLine_.createRole(accountId, 'fugue-' + environmentType_ + "-root-policy", roleName)
     
-      FugueDeploy deploy = new FugueDeploy(this, 'CreateEnvironmentType',
+      FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironmentType',
         logGroup_,
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
