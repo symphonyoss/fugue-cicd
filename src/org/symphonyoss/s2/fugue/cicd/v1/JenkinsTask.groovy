@@ -16,14 +16,14 @@ class JenkinsTask implements Serializable
   protected DSL               steps_
   
   public JenkinsTask(EnvActionImpl env, DSL steps)
-  {
+  {echo 'TA4a'
     env_    = env
     steps_  = steps
   }
   
   public JenkinsTask(JenkinsTask task)
   {
-    echo 'TA4'
+    echo 'TA4b'
     env_    = task.env_
     steps_  = task.steps_
   }
