@@ -15,4 +15,11 @@
 		<nature>org.eclipse.jdt.groovy.core.groovyNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>lib</name>
+			<type>2</type>
+			<location>/Users/bruce/eclipse-workspace/S2/File System/Jenkins Libs/lib</location>
+		</link>
+	</linkedResources>
 </projectDescription>
