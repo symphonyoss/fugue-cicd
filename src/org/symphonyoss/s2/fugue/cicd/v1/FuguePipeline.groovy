@@ -535,15 +535,18 @@ class FuguePipeline extends JenkinsTask implements Serializable
         deployServiceContainers(tenantStage)
         
         // this actually deploys service containers
-        tenantStage.tenants.each {
-            String tenant = it
-            
-            echo 'for environmentType=' + tenantStage.environmentType +
-            ', environment=' + tenantStage.environment + ', tenant ' + tenant
-            
-            deployConfig(tenantStage, tenant, 'Deploy')
-    
-          }
+        fugueDeployStation(tenantStage)
+        
+        
+//        tenantStage.tenants.each {
+//            String tenant = it
+//            
+//            echo 'for environmentType=' + tenantStage.environmentType +
+//            ', environment=' + tenantStage.environment + ', tenant ' + tenant
+//            
+//            deployConfig(tenantStage, tenant, 'Deploy')
+//    
+//          }
       }
     }
     else
@@ -638,6 +641,33 @@ class FuguePipeline extends JenkinsTask implements Serializable
       deploy.withDockerLabel(':' + release + '-' + buildNumber)
       
     deploy.execute() 
+  }
+  
+  public void fugueDeployStation(Station tenantStage)
+  {
+    String logGroup
+    String accountId = getCredentialName(tenantStage.environmentType)
+    
+    steps.withCredentials([[
+      $class: 'AmazonWebServicesCredentialsBinding',
+      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+      credentialsId: accountId,
+      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
+    {
+      logGroup = createLogGroup('fugue')
+    }
+    
+    FugueDeploy deploy = new FugueDeploy(this, 'DeployStation',
+      logGroup,
+      awsRegion)
+        .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
+        .withStation(tenantStage)
+        .withServiceName(servicename)
+    
+    if(toolsDeploy)
+      deploy.withDockerLabel(':' + release + '-' + buildNumber)
+      
+    deploy.execute()
   }
   
   public void pushDockerImage(String env, String localimage) {
