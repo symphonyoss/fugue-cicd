@@ -40,6 +40,8 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  accountId_
   private boolean fargateLaunch_
   private String  launchType_
+  private String  releaseTrack_
+  private String  station_
   
   public FugueDeploy(FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
   {
@@ -113,6 +115,14 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     awsAccount_         = pipeLine_.aws_identity[accountId_].'Account';
 //    cluster_            = environmentType_ + '-' + environment_ + '-' + region_
     cluster_            = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
+    station_            = s.name
+    
+    return this
+  }
+  
+  public FugueDeploy withTrack(String releaseTrack)
+  {
+    releaseTrack_       = releaseTrack
     
     return this
   }
@@ -230,6 +240,8 @@ launchType_     = ${launchType_}
     addIfNotNull("FUGUE_TENANT", tenantId_)
     addIfNotNull("FUGUE_PRIMARY_ENVIRONMENT", primaryEnvironment_)
     addIfNotNull("FUGUE_PRIMARY_REGION", primaryRegion_)
+    addIfNotNull("FUGUE_TRACK", releaseTrack_)
+    addIfNotNull("FUGUE_STATION", station_)
     
     if(environmentType_.equals('smoke'))
       addIfNotNull("CONSUL_URL", "https://consul-dev.symphony.com:8080")

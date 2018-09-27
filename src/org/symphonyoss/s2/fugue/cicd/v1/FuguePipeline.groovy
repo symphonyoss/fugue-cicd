@@ -535,7 +535,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         deployServiceContainers(tenantStage)
         
         // this actually deploys service containers
-        fugueDeployStation(tenantStage)
+        fugueDeployStation(releaseTrack, tenantStage)
         
         
 //        tenantStage.tenants.each {
@@ -643,7 +643,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     deploy.execute() 
   }
   
-  public void fugueDeployStation(Station tenantStage)
+  public void fugueDeployStation(String releaseTrack, Station tenantStage)
   {
     String logGroup
     String accountId = getCredentialName(tenantStage.environmentType)
@@ -661,6 +661,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       logGroup,
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
+        .withTrack(releaseTrack)
         .withStation(tenantStage)
         .withServiceName(servicename)
     
