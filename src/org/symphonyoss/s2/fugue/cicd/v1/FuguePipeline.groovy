@@ -52,9 +52,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
     this.environ = env
     this.steps = steps
     
-    buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
-    
-    echo 'buildQualifier=' + buildQualifier
+//    buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
+//    
+//    echo 'buildQualifier=' + buildQualifier
   }
 
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
