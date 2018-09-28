@@ -252,7 +252,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
       name ->
         echo 'name=' + name
         
-        echo 'environmentType=' + environmentType.absolutePath
         def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
         
         echo 'config=' + config
