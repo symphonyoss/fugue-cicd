@@ -235,7 +235,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
-    String buildQualifier = new Date().format('yyyyddMM-HHmmss') + new Random().nextInt(9999)
+    String buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
     
     echo 'buildQualifier=' + buildQualifier
     sh 'pwd'
@@ -256,7 +256,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo "ls -l ${pwd}/config/environment"
     sh "ls -l ${pwd}/config/environment"
     
-    dir.listFiles().each
+    dir.eachDir
     {
       File environmentType -> 
       echo 'environmentType=' + environmentType.absolutePath
