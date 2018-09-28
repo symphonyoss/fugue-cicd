@@ -29,7 +29,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
   private String awsRegion = 'us-east-1'
   private String release
-  private String buildNumber
+  private String buildQualifier
   private String servicePath
   private boolean toolsDeploy = false;
   private boolean useRootCredentials = false;
@@ -49,8 +49,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     super(env, steps)
     
-      this.environ = env
-      this.steps = steps
+    this.environ = env
+    this.steps = steps
+    
+    buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
+    
+    echo 'buildQualifier=' + buildQualifier
   }
 
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
@@ -69,7 +73,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     b.append "{" +
       "\n  symteam              =" + symteam +
       "\n  release              =" + release +
-      "\n  buildNumber          =" + buildNumber +
+      "\n  buildQualifier       =" + buildQualifier +
       "\n  servicePath          =" + servicePath +
       "\n  awsRegion            =" + awsRegion +
       "\n  roles                = [" + role_map + "]" +
@@ -132,8 +136,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
       return this
   }
   
-  public FuguePipeline withBuildNumber(String v) {
-      buildNumber = v
+  public FuguePipeline withBuildQualifier(String v) {
+      buildQualifier = v
       return this
   }
   
@@ -178,8 +182,13 @@ class FuguePipeline extends JenkinsTask implements Serializable
     return this
   }
   
+  public String getBuildQualifier()
+  {
+    return buildQualifier;
+  }
+
   public String getDockerLabel() {
-    ':' + release + '-' + buildNumber
+    ':' + release + '-' + buildQualifier
   }
 
   private String serviceFullName(String env, String tenant) {
@@ -235,76 +244,15 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
-    String buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
-    
-    echo 'buildQualifier=' + buildQualifier
-    sh 'pwd'
-    sh 'ls -lR'
-    
     def files = sh(script: "ls -1 config/environment", returnStdout: true)
-    
-    echo 'files = ' + files.getClass()
-    
-    echo 'files = ' + files
     
     files.eachLine
     {
       name ->
-        echo 'name=' + name
-        
         def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
-        
-        echo 'config=' + config
-        
         environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
     }
     
-//    String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
-//
-//    
-//    File dir = new File("$pwd/config/environment");
-//    
-//    echo 'dir=' + dir.absolutePath
-//    
-//    echo "ls -l $pwd"
-//    sh "ls -l $pwd"
-//    
-//    echo 'ls -l $pwd/config'
-//    echo "ls -l $pwd/config"
-//    sh "ls -l $pwd/config"
-//    
-//    echo 'ls -l ${pwd}/config/environment'
-//    echo "ls -l ${pwd}/config/environment"
-//    sh "ls -l ${pwd}/config/environment"
-//    
-//    File dir2 = new File();
-//    
-//    echo 'dir2=' + dir2.absolutePath
-//    dir2.eachDir
-//    {
-//      File environmentType ->
-//      echo 'dir2 file=' + environmentType.absolutePath
-//        
-//    }
-//    
-//    dir2 = new File("$pwd/config");
-//    
-//    echo 'dir2=' + dir2.absolutePath
-//    dir2.eachDir
-//    {
-//      File environmentType ->
-//      echo 'dir2 file=' + environmentType.absolutePath
-//        
-//    }
-    
-    
-//    dir.eachDir
-//    {
-//      File environmentType -> 
-//      echo 'environmentType=' + environmentType.absolutePath
-//        def config = readJSON file: environmentType.absolutePath + '/environmentType.json'
-//        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
-//    }
     echo 'done environmentTypes'
   }
   
@@ -632,7 +580,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
           throw new IllegalStateException("Unknown environment type ${environmentType}")
         
         String localImage = ms.name + ':' + release
-        String remoteImage = repo + localImage + '-' + buildNumber
+        String remoteImage = repo + localImage + '-' + buildQualifier
         
         sh 'docker tag ' + localImage + ' ' + remoteImage
         sh 'docker push ' + remoteImage
@@ -654,7 +602,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       throw new IllegalStateException("Unknown environment type ${environmentType}")
     
     String localImage = name + ':' + release
-    String remoteImage = repo + localImage + '-' + buildNumber
+    String remoteImage = repo + localImage + '-' + buildQualifier
     
     sh 'docker tag ' + localImage + ' ' + remoteImage
     sh 'docker push ' + remoteImage
@@ -699,7 +647,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         .withServiceName(servicename)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + release + '-' + buildNumber)
+      deploy.withDockerLabel(':' + release + '-' + buildQualifier)
       
     deploy.execute() 
   }
@@ -727,7 +675,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         .withServiceName(servicename)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + release + '-' + buildNumber)
+      deploy.withDockerLabel(':' + release + '-' + buildQualifier)
       
     deploy.execute()
   }
