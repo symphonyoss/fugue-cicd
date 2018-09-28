@@ -229,10 +229,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    echo 'FuguePipeline release 2018-09-27-15:56'
+    echo 'FuguePipeline branch Bruce-2018-09-28'
     
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
+    
+    sh 'ls -lR'
     
     String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
 
