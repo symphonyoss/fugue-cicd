@@ -242,9 +242,10 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
-    def files = sh(script: "ls -1 config/environment", returnStdout: true)
+    def files = sh(script: "ls -1 config/environment", returnStdout: true).denormalize()
     
-    echo 'environmentList=[' + files + ']'
+    echo "files=" + files
+    echo "files=" + files.getClass()
     
     files.eachLine
     {
@@ -262,9 +263,11 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     sh 'rm -rf *'
 
-    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
-    echo "@ buildQualifier = " + buildQualifier_
-    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+    echo """
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ buildQualifier = ${buildQualifier_}
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
     
     if(configGitRepo != null)
     {
@@ -278,9 +281,11 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     sh 'rm -rf *'
 
-    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
-    echo "@ buildQualifier = " + buildQualifier_
-    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+    echo """
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ buildQualifier = ${buildQualifier_}
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
     
     if(configGitRepo != null)
     {
