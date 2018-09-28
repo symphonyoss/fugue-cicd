@@ -256,7 +256,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
         echo 'config=' + config
         
-        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
+        environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
     }
     
 //    String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
