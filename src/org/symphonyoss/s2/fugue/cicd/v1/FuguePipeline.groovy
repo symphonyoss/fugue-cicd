@@ -244,9 +244,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     def files = sh(script: "ls -1 config/environment", returnStdout: true)
     
+    echo 'environmentList=[' + files + ']'
+    
     files.eachLine
     {
       name ->
+        echo "environmentType ${name}" 
         def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
         environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
     }
@@ -257,6 +260,10 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void toolsPreFlight()
   {
     sh 'rm -rf *'
+
+    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+    echo "@ buildQualifier = " + buildQualifier_
+    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
     
     if(configGitRepo != null)
     {
@@ -270,7 +277,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     sh 'rm -rf *'
 
-    echo 'buildQualifier_=' + buildQualifier_
+    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+    echo "@ buildQualifier = " + buildQualifier_
+    echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
     
     if(configGitRepo != null)
     {
