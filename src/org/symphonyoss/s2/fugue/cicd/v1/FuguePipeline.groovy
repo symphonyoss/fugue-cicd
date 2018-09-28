@@ -52,9 +52,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     this.environ = env
     this.steps = steps
     
-//    buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
-//    
-//    echo 'buildQualifier=' + buildQualifier
+    buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
   }
 
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
@@ -272,6 +270,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     sh 'rm -rf *'
 
+    echo 'buildQualifier=' + buildQualifier
+    
     if(configGitRepo != null)
     {
       loadConfig()
