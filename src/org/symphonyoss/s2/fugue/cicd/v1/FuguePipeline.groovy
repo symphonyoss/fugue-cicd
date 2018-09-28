@@ -241,12 +241,16 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     File dir = new File("$pwd/config/environment");
     
+    echo 'dir=' + dir.absolutePath
+    
     dir.listFiles().each
     {
       File environmentType -> 
+      echo 'environmentType=' + environmentType.absolutePath
         def config = readJSON file: environmentType.absolutePath + '/environmentType.json'
         environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
     }
+    echo 'done environmentTypes'
   }
   
   public void toolsPreFlight()
