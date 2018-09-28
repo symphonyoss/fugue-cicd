@@ -245,10 +245,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'dir=' + dir.absolutePath
     
     echo 'ls -l $pwd/config'
-    sh 'ls -l $pwd/config'
+    echo "ls -l $pwd/config"
+    sh "ls -l $pwd/config"
     
     echo 'ls -l ${pwd}/config'
-    sh 'ls -l ${pwd}/config'
+    echo "ls -l ${pwd}/config"
+    sh "ls -l ${pwd}/config"
     
     dir.listFiles().each
     {
