@@ -247,7 +247,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     echo 'files = ' + files
     
-    files.each
+    files.eachLine
     {
       name ->
         echo 'name=' + name
@@ -299,13 +299,13 @@ class FuguePipeline extends JenkinsTask implements Serializable
 //    }
     
     
-    dir.eachDir
-    {
-      File environmentType -> 
-      echo 'environmentType=' + environmentType.absolutePath
-        def config = readJSON file: environmentType.absolutePath + '/environmentType.json'
-        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
-    }
+//    dir.eachDir
+//    {
+//      File environmentType -> 
+//      echo 'environmentType=' + environmentType.absolutePath
+//        def config = readJSON file: environmentType.absolutePath + '/environmentType.json'
+//        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
+//    }
     echo 'done environmentTypes'
   }
   
