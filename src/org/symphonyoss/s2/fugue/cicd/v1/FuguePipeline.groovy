@@ -235,7 +235,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
-    buildQualifier = new Date().format('yyyyddMM-HHmmss') + new Random().nextInt(9999)
+    String buildQualifier = new Date().format('yyyyddMM-HHmmss') + new Random().nextInt(9999)
     
     echo 'buildQualifier=' + buildQualifier
     sh 'pwd'
