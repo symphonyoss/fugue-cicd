@@ -5,6 +5,7 @@ import org.jenkinsci.plugins.workflow.cps.DSL
 import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 import java.util.Map.Entry
+import java.util.Random
 
 class FuguePipeline extends JenkinsTask implements Serializable
 {
@@ -234,6 +235,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
+    buildQualifier = new Date().format('yyyyddMM-HHmmss') + new Random().nextInt(9999)
+    
+    echo 'buildQualifier=' + buildQualifier
     sh 'pwd'
     sh 'ls -lR'
     
@@ -248,9 +252,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo "ls -l $pwd/config"
     sh "ls -l $pwd/config"
     
-    echo 'ls -l ${pwd}/config'
-    echo "ls -l ${pwd}/config"
-    sh "ls -l ${pwd}/config"
+    echo 'ls -l ${pwd}/config/environment'
+    echo "ls -l ${pwd}/config/environment"
+    sh "ls -l ${pwd}/config/environment"
     
     dir.listFiles().each
     {
