@@ -5,6 +5,7 @@ import org.jenkinsci.plugins.workflow.cps.DSL
 import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 import java.util.Map.Entry
+import java.util.Random
 
 class FuguePipeline extends JenkinsTask implements Serializable
 {
@@ -28,7 +29,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
   private String awsRegion = 'us-east-1'
   private String release
-  private String buildNumber
+  private String buildQualifier_
   private String servicePath
   private boolean toolsDeploy = false;
   private boolean useRootCredentials = false;
@@ -48,8 +49,10 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     super(env, steps)
     
-      this.environ = env
-      this.steps = steps
+    this.environ = env
+    this.steps = steps
+    
+    buildQualifier_ = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
   }
 
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
@@ -68,7 +71,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     b.append "{" +
       "\n  symteam              =" + symteam +
       "\n  release              =" + release +
-      "\n  buildNumber          =" + buildNumber +
+      "\n  buildQualifier_       =" + buildQualifier_ +
       "\n  servicePath          =" + servicePath +
       "\n  awsRegion            =" + awsRegion +
       "\n  roles                = [" + role_map + "]" +
@@ -131,8 +134,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
       return this
   }
   
-  public FuguePipeline withBuildNumber(String v) {
-      buildNumber = v
+  public FuguePipeline withBuildQualifier(String v) {
+      buildQualifier_ = v
       return this
   }
   
@@ -177,8 +180,13 @@ class FuguePipeline extends JenkinsTask implements Serializable
     return this
   }
   
+  public String getBuildQualifier()
+  {
+    return buildQualifier_;
+  }
+
   public String getDockerLabel() {
-    ':' + release + '-' + buildNumber
+    ':' + release + '-' + buildQualifier_
   }
 
   private String serviceFullName(String env, String tenant) {
@@ -229,27 +237,37 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    echo 'FuguePipeline release 2018-09-27-15:56'
+    echo 'FuguePipeline branch Bruce-2018-09-28'
     
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
-    String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
-
+    def files = sh(script: "ls -1 config/environment", returnStdout: true)
     
-    File dir = new File("$pwd/config/environment");
+    echo "files=" + files
+    echo "files=" + files.getClass()
     
-    dir.listFiles().each
+    files.split('\n').each
     {
-      File environmentType -> 
-        def config = readJSON file: environmentType.absolutePath + '/environmentType.json'
-        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
+      name ->
+        echo "environmentType ${name}" 
+        def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
+        environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
+        echo "2environmentType ${name}"
     }
+    
+    echo 'done environmentTypes'
   }
   
   public void toolsPreFlight()
   {
     sh 'rm -rf *'
+
+    echo """
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ buildQualifier = ${buildQualifier_}
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
     
     if(configGitRepo != null)
     {
@@ -263,6 +281,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     sh 'rm -rf *'
 
+    echo """
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ buildQualifier = ${buildQualifier_}
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
+    
     if(configGitRepo != null)
     {
       loadConfig()
@@ -571,7 +595,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
           throw new IllegalStateException("Unknown environment type ${environmentType}")
         
         String localImage = ms.name + ':' + release
-        String remoteImage = repo + localImage + '-' + buildNumber
+        String remoteImage = repo + localImage + '-' + buildQualifier_
         
         sh 'docker tag ' + localImage + ' ' + remoteImage
         sh 'docker push ' + remoteImage
@@ -593,7 +617,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       throw new IllegalStateException("Unknown environment type ${environmentType}")
     
     String localImage = name + ':' + release
-    String remoteImage = repo + localImage + '-' + buildNumber
+    String remoteImage = repo + localImage + '-' + buildQualifier_
     
     sh 'docker tag ' + localImage + ' ' + remoteImage
     sh 'docker push ' + remoteImage
@@ -638,7 +662,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         .withServiceName(servicename)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + release + '-' + buildNumber)
+      deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
       
     deploy.execute() 
   }
@@ -666,7 +690,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         .withServiceName(servicename)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + release + '-' + buildNumber)
+      deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
       
     deploy.execute()
   }
