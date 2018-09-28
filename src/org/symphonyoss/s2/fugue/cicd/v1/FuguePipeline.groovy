@@ -241,43 +241,62 @@ class FuguePipeline extends JenkinsTask implements Serializable
     sh 'pwd'
     sh 'ls -lR'
     
-    String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
-
+    def files = sh(script: "ls -1 config/environment", returnStdout: true)
     
-    File dir = new File("$pwd/config/environment");
+    echo 'files = ' + files.getClass()
     
-    echo 'dir=' + dir.absolutePath
+    echo 'files = ' + files
     
-    echo "ls -l $pwd"
-    sh "ls -l $pwd"
-    
-    echo 'ls -l $pwd/config'
-    echo "ls -l $pwd/config"
-    sh "ls -l $pwd/config"
-    
-    echo 'ls -l ${pwd}/config/environment'
-    echo "ls -l ${pwd}/config/environment"
-    sh "ls -l ${pwd}/config/environment"
-    
-    File dir2 = new File();
-    
-    echo 'dir2=' + dir2.absolutePath
-    dir2.eachDir
+    files.each
     {
-      File environmentType ->
-      echo 'dir2 file=' + environmentType.absolutePath
+      name ->
+        echo 'name=' + name
         
+        echo 'environmentType=' + environmentType.absolutePath
+        def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
+        
+        echo 'config=' + config
+        
+        environmentTypeConfig[environmentType.name] = new EnvironmentTypeConfig(config."amazon")
     }
     
-    dir2 = new File("$pwd/config");
-    
-    echo 'dir2=' + dir2.absolutePath
-    dir2.eachDir
-    {
-      File environmentType ->
-      echo 'dir2 file=' + environmentType.absolutePath
-        
-    }
+//    String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
+//
+//    
+//    File dir = new File("$pwd/config/environment");
+//    
+//    echo 'dir=' + dir.absolutePath
+//    
+//    echo "ls -l $pwd"
+//    sh "ls -l $pwd"
+//    
+//    echo 'ls -l $pwd/config'
+//    echo "ls -l $pwd/config"
+//    sh "ls -l $pwd/config"
+//    
+//    echo 'ls -l ${pwd}/config/environment'
+//    echo "ls -l ${pwd}/config/environment"
+//    sh "ls -l ${pwd}/config/environment"
+//    
+//    File dir2 = new File();
+//    
+//    echo 'dir2=' + dir2.absolutePath
+//    dir2.eachDir
+//    {
+//      File environmentType ->
+//      echo 'dir2 file=' + environmentType.absolutePath
+//        
+//    }
+//    
+//    dir2 = new File("$pwd/config");
+//    
+//    echo 'dir2=' + dir2.absolutePath
+//    dir2.eachDir
+//    {
+//      File environmentType ->
+//      echo 'dir2 file=' + environmentType.absolutePath
+//        
+//    }
     
     
     dir.eachDir
