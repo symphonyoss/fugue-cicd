@@ -234,6 +234,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
+    sh 'pwd'
     sh 'ls -lR'
     
     String pwd = sh(script: "pwd", returnStdout: true).toString().trim()
@@ -242,6 +243,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
     File dir = new File("$pwd/config/environment");
     
     echo 'dir=' + dir.absolutePath
+    
+    echo 'ls -l $pwd/config'
+    sh 'ls -l $pwd/config'
+    
+    echo 'ls -l ${pwd}/config'
+    sh 'ls -l ${pwd}/config'
     
     dir.listFiles().each
     {
