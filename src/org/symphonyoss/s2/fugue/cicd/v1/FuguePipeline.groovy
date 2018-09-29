@@ -169,7 +169,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   /** Intended for fugue-tools use only NOT TO BE CALLED BY NORMAL SERVICES */
   public FuguePipeline withToolsDeploy(boolean b) {
-    useRootCredentials = b
+    //useRootCredentials = b
     toolsDeploy = b
     return this
   }
