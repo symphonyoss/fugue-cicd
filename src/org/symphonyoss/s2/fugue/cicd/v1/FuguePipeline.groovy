@@ -236,23 +236,18 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    echo 'FuguePipeline branch Bruce-2018-09-28'
+    echo 'FuguePipeline V2'
     
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
     def files = sh(script: "ls -1 config/environment", returnStdout: true)
     
-    echo "files=" + files
-    echo "files=" + files.getClass()
-    
     files.split('\n').each
     {
       name ->
-        echo "environmentType ${name}" 
         def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
         environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
-        echo "2environmentType ${name}"
     }
     
     echo 'done environmentTypes'

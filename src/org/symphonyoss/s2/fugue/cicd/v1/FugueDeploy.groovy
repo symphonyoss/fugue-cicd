@@ -259,8 +259,6 @@ launchType_     = ${launchType_}
     ]
 }'''
 
-    echo 'configTaskdef_=' + configTaskdef_
-    
     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
       accessKeyVariable: 'AWS_ACCESS_KEY_ID',
       credentialsId: accountId_,
