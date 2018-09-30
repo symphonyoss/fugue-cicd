@@ -8,7 +8,7 @@ package org.symphonyoss.s2.fugue.cicd.v1
 
 class Default
 {
-  public String  value(String var, String defaultValue)
+  public static String  value(String var, String defaultValue)
   {
     if(var==null || "".equals(var.trim()))
       return defaultValue
