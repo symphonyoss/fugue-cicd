@@ -192,6 +192,14 @@ class FuguePipeline extends JenkinsTask implements Serializable
       return env+'-'+tenant+'-'+servicename
   }
   
+  public static String  defaultValue(String var, String defaultValue)
+  {
+    if(var==null || "".equals(var.trim()))
+      return defaultValue
+    else
+      return var
+  }
+  
   public void deleteUser(String userName, String groupName)
   {
     def status = sh returnStatus:true, script:'aws iam get-user --user-name ' + userName
