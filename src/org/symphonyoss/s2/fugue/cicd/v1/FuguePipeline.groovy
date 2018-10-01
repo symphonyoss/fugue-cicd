@@ -666,8 +666,10 @@ deployTo     ${deployTo_}
   
     Station tenantStage = tenant_stage_map.get(tenantStageName)
     
+    echo "ValidPurpose=${getDeployTo(tenantStage.environmentType)} requiredPurpose=${requiredPurpose}"
     if(getDeployTo(tenantStage.environmentType).isValidFor(requiredPurpose))
     {
+      echo "OK, lets do this!"
       tenantStage.tenants.each {
         String tenant = it
         
