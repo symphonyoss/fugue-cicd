@@ -651,7 +651,7 @@ deployTo     ${deployTo_}
     Station tenantStage = tenant_stage_map.get(tenantStageName)
   
     
-    if(envTypePush_.get(tenantStage.environmentType))
+    if(deployTo_[tenantStage.environmentType])
     {
       echo 'R53RecordSets and Roles environmentType' + tenantStage.environmentType +
         ', environment=' + tenantStage.environment + ', tenants=' + tenantStage.tenants
