@@ -743,7 +743,7 @@ deployTo     ${deployTo_}
   
   public void pushDockerToolImage(String environmentType, String name)
   {
-    if(doBuild_)
+    if(doBuild_ && deployTo_[environmentType])
     {
       echo 'Push Tool Image for ' + name
       
