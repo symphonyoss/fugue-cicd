@@ -31,10 +31,12 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private String release
   private String buildQualifier_
   private String servicePath
-  private boolean toolsDeploy = false;
-  private boolean useRootCredentials = false;
+  private boolean toolsDeploy = false
+  private boolean useRootCredentials = false
   
-  private Map<String, Boolean> envTypePush = [:]
+  private boolean               doBuild_
+  private Map<String, Boolean>  pushTo_ = [:]
+  private Map<String, Boolean>  deployTo_ = [:]
   
   private String serviceGitOrg
   private String serviceGitRepo
@@ -148,6 +150,17 @@ class FuguePipeline extends JenkinsTask implements Serializable
       return this
   }
   
+  public FuguePipeline withServiceGitRepo(String repo) {
+    serviceGitRepo = repo
+    return this
+  }
+  
+  public FuguePipeline withConfigGitRepo(String repo) {
+    configGitRepo = repo
+    return this
+  }
+  
+  @Deprecated
   public FuguePipeline withServiceGitRepo(String org, String repo, String branch = 'master') {
     serviceGitOrg = org
     serviceGitRepo = repo
@@ -155,6 +168,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     return this
   }
   
+  @Deprecated
   public FuguePipeline withConfigGitRepo(String org, String repo, String branch = 'master') {
     configGitOrg = org
     configGitRepo = repo
@@ -269,52 +283,100 @@ class FuguePipeline extends JenkinsTask implements Serializable
       loadConfig()
     }
     
-    verifyCreds('dev')
+    if(!verifyCreds('dev'))
+    {
+      abort("No dev credentials")
+    }
+  }
+  
+  private boolean qualifierIsSet()
+  {
+    return !("".equals(env_.buildQualifier.trim()) && "".equals(env_.releaseVersion.trim()))
+  }
+  
+  private void pushTo(String environmentType)
+  {
+    pushTo_[environmentType] = true
+  }
+  
+  private void deployTo(String environmentType)
+  {
+    deployTo_[environmentType] = true
+  }
+  
+  public void abort(String message)
+  {
+    currentBuild.result = 'ABORTED'
+    error('Do not set releaseVersion or buildQualifier and a Build action together.')
   }
   
   public void preflight()
   {
+    abort("Just testing")
     echo """====================================
 Preflight
 Build Action ${env_.buildAction}
-===================================="""
+"""
     
-    boolean doBuild
-    boolean deployToDev
-
     switch(env_.buildAction)
     {
-      case 'Build_To_QA':
-        deployToDev=true
-        
-      case 'Build_To_Smoke_Test':
-        doBuild = true
-        if(! ("".equals(env_.buildQualifier.trim()) && "".equals(env_.releaseVersion.trim())))
-        {
-          currentBuild.result = 'ABORTED'
-          error('Do not set releaseVersion or buildQualifier and a Build action together.')
-        }
+      case 'Build to QA':
+        doBuild_ = true
+        pushTo('dev')
+        deployTo('smoke')
+        deployTo('dev')
+        pushTo('qa')
+        deployTo('qa')
         break;
         
-      case 'Promote_QA_to_Prod':
-        doBuild = false
-        if("".equals(env_.buildQualifier.trim()) && "".equals(env_.releaseVersion.trim()))
-        {
-          currentBuild.result = 'ABORTED'
-          error('releaseVersion and buildQualifier must be defined for a promotion action.')
-        }
-        else
-        {
-          withRelease(env_.releaseVersion.trim())
-          withBuildQualifier(env_.buildQualifier.trim())
-        }
+      case 'Build to Smoke Test':
+        doBuild_ = true
+        pushTo('dev')
+        deployTo('smoke')
         break;
+        
+      case 'Promote Dev to QA':
+        doBuild_ = false
+        deployTo('smoke')
+        deployTo('qa')
+        
+        case 'Promote QA to Prod':
+        doBuild_ = false
+        deployTo('smoke')
+        deployTo('prod')
+        break;
+    }
+    
+    if(doBuild_)
+    {
+      if(qualifierIsSet())
+      {
+        abort('Do not set releaseVersion or buildQualifier and a Build action together.')
+      }
+    }
+    else
+    {
+      if(qualifierIsSet())
+      {
+        withRelease(env_.releaseVersion.trim())
+        withBuildQualifier(env_.buildQualifier.trim())
+      }
+      else
+      {
+        abort('releaseVersion and buildQualifier must be defined for a promotion action.')
+      }
     }
     
     echo """====================================
 doBuild      ${doBuild}
 deployToDev  ${deployToDev}
 ===================================="""
+    
+    serviceGitOrg = env_.serviceRepoOrg
+    serviceGitBranch = env_.serviceRepoBranch
+    configGitOrg = env_.configRepoOrg
+    configGitBranch = env_.configRepoBranch
+    
     throw new RuntimeException("STOP") 
     
     
@@ -490,13 +552,22 @@ deployToDev  ${deployToDev}
     }
   }
   
-  public void verifyCreds(String environmentType)
+  public boolean verifyCreds(String environmentType)
   {
-    
-    
-    verifyUserAccess(getCredentialName(environmentType), environmentType);
-    envTypePush.put(environmentType, true);
-    //echo 'AWS '+environmentType+' docker repo: '+docker_repo[environmentType]
+    try
+    {
+      verifyUserAccess(getCredentialName(environmentType), environmentType);
+      
+      return true
+    }
+    catch(Exception e)
+    {
+      pushTo_[environmentType] = false
+      deployTo_[environmentType] = false
+      echo "No valid credentials for environmentType ${environmentType}"
+      
+      return false
+    }
   }
   
   public void deployInitContainers(Station tenantStage)
@@ -577,7 +648,7 @@ deployToDev  ${deployToDev}
     Station tenantStage = tenant_stage_map.get(tenantStageName)
   
     
-    if(envTypePush.get(tenantStage.environmentType))
+    if(envTypePush_.get(tenantStage.environmentType))
     {
       echo 'R53RecordSets and Roles environmentType' + tenantStage.environmentType +
         ', environment=' + tenantStage.environment + ', tenants=' + tenantStage.tenants
@@ -625,7 +696,7 @@ deployToDev  ${deployToDev}
   {
     echo 'Push Images for ' + environmentType
     
-    if(envTypePush.get(environmentType))
+    if(envTypePush_.get(environmentType))
     {
       service_map.values().each {
         Container ms = it
@@ -817,7 +888,7 @@ deployToDev  ${deployToDev}
   {
     return [
   steps.parameters([
-    steps.choice(choices: ['Build_To_Smoke_Test', 'Build_To_QA', 'Promote_QA_to_Prod'], description: 'Action to perform', name: 'buildAction'),
+    steps.choice(choices: ['Build to Smoke Test', 'Build to QA', 'Promote QA to Prod', 'Promote Dev to QA'], description: 'Action to perform', name: 'buildAction'),
    
     steps.string(       name: 'bruce',     defaultValue: 'test',             description: 'I added this in the pipeline.'),
     
