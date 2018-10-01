@@ -349,7 +349,7 @@ Build Action ${env_.buildAction}
     {
       if(qualifierIsSet())
       {
-        abort('Do not set releaseVersion or buildQualifier and a Build action together.')
+        abort('Do not set releaseVersion or buildQualifier for a build action.')
       }
     }
     else
@@ -366,17 +366,15 @@ Build Action ${env_.buildAction}
     }
     
     echo """====================================
-doBuild      ${doBuild}
-deployToDev  ${deployToDev}
+doBuild      ${doBuild_}
+pushTo       ${pushTo_}
+deployTo     ${deployTo_}
 ===================================="""
     
     serviceGitOrg = env_.serviceRepoOrg
     serviceGitBranch = env_.serviceRepoBranch
     configGitOrg = env_.configRepoOrg
     configGitBranch = env_.configRepoBranch
-    
-    throw new RuntimeException("STOP") 
-    
     
        
     sh 'rm -rf *'
@@ -457,25 +455,22 @@ deployToDev  ${deployToDev}
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
 
     verifyCreds('dev')
+    
+    if(!verifyCreds('dev'))
+    {
+      abort("No dev credentials")
+    }
 
-    try
+    if(verifyCreds('qa'))
     {
-      verifyCreds('qa')
-      try
-      {
-        verifyCreds('stage')
-      }
-      catch(Exception e)
-      {
-        echo 'Exception ' + e.toString()
-        echo 'No Stage Access -- Cannot promote'
-      }
+      verifyCreds('stage')
     }
-    catch(Exception e)
-    {
-      echo 'Exception ' + e.toString()
-      echo 'No QA  Access -- Cannot promote'
-    }
+    
+    echo """====================================
+doBuild      ${doBuild_}
+pushTo       ${pushTo_}
+deployTo     ${deployTo_}
+===================================="""
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
