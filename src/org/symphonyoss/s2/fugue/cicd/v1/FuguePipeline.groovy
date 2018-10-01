@@ -352,8 +352,9 @@ Build Action ${env_.buildAction}
         deployTo('dev')
         pushTo('qa')
         deployTo('qa')
+        break;
         
-        case 'Promote QA to Prod':
+      case 'Promote QA to Prod':
         doBuild_ = false
         pullFrom_ = 'qa'
         pushTo('prod')
