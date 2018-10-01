@@ -900,7 +900,7 @@ deployTo     ${deployTo_}
     steps.choice(choices: ['Build to Smoke Test', 'Build to QA', 'Promote QA to Prod', 'Promote Dev to QA'], description: 'Action to perform', name: 'buildAction'),
    
     steps.string(       name: 'releaseVersion',     defaultValue: '',             description: 'The release version for promotion.'),
-    steps.string(       name: 'buildQualifier',     defaultValue: '',             description: 'The rbuild qualifier for promotion.'),
+    steps.string(       name: 'buildQualifier',     defaultValue: '',             description: 'The build qualifier for promotion.'),
     steps.string(       name: 'serviceRepoOrg',     defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for service source code repo.'),
     steps.string(       name: 'serviceRepoBranch',  defaultValue: Default.value(env, 'serviceRepoBranch', 'master'),       description: 'GitHub branch for service source code repo.'),
     steps.string(       name: 'configRepoOrg',      defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for config repo.'),
