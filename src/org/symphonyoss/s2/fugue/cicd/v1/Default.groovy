@@ -33,7 +33,7 @@ class Default
       c.remove(var)
       c.add(0, var)
       
-      return var
+      return c
     }
   }
 }
