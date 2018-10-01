@@ -810,19 +810,19 @@ deployToDev  ${deployToDev}
 //    ]
 //  }'''
   
-  public def parameters()
+  public static def parameters(env, steps)
   {
     return [
-  parameters([
-    choice(choices: ['Build_To_Smoke_Test', 'Build_To_QA', 'Promote_QA_to_Prod'], description: 'Action to perform', name: 'buildAction'),
+  steps.parameters([
+    steps.choice(choices: ['Build_To_Smoke_Test', 'Build_To_QA', 'Promote_QA_to_Prod'], description: 'Action to perform', name: 'buildAction'),
    
 //    booleanParam( name: 'smokeTestOnly',      defaultValue: true,           description: 'If set then only a smoke test is performed.'),
-    string(       name: 'releaseVersion',     defaultValue: '',             description: 'The release version for promotion.'),
-    string(       name: 'buildQualifier',     defaultValue: '',             description: 'The rbuild qualifier for promotion.'),
-    string(       name: 'serviceRepoOrg',     defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for service source code repo.'),
-    string(       name: 'serviceRepoBranch',  defaultValue: Default.value(env, 'serviceRepoBranch', 'master'),       description: 'GitHub branch for service source code repo.'),
-    string(       name: 'configRepoOrg',      defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for config repo.'),
-    string(       name: 'configRepoBranch',   defaultValue: Default.value(env, 'configRepoBranch', 'master'),       description: 'GitHub branch for config repo.')
+    steps.string(       name: 'releaseVersion',     defaultValue: '',             description: 'The release version for promotion.'),
+    steps.string(       name: 'buildQualifier',     defaultValue: '',             description: 'The rbuild qualifier for promotion.'),
+    steps.string(       name: 'serviceRepoOrg',     defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for service source code repo.'),
+    steps.string(       name: 'serviceRepoBranch',  defaultValue: Default.value(env, 'serviceRepoBranch', 'master'),       description: 'GitHub branch for service source code repo.'),
+    steps.string(       name: 'configRepoOrg',      defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for config repo.'),
+    steps.string(       name: 'configRepoBranch',   defaultValue: Default.value(env, 'configRepoBranch', 'master'),       description: 'GitHub branch for config repo.')
    ])
 ]
   }
