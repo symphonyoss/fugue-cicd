@@ -19,4 +19,21 @@ class Default
     else
       return var
   }
+  
+  public static List<String>  choice(EnvActionImpl env, String paramName, List<String> choices)
+  {
+    String var = env.getProperty(paramName)
+    
+    if(var==null || "".equals(var.trim()))
+      return choices
+    else
+    {
+      List<String> c = new ArrayList<>(choices)
+      
+      c.remove(var)
+      c.add(0, var)
+      
+      return var
+    }
+  }
 }
