@@ -275,7 +275,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void preflight()
   {
     echo """====================================
-Fugue Tools Jenkinsfile 2018-10-01 4
+Preflight
 Build Action ${env_.buildAction}
 ===================================="""
     
@@ -315,7 +315,10 @@ Build Action ${env_.buildAction}
 doBuild      ${doBuild}
 deployToDev  ${deployToDev}
 ===================================="""
-            
+    throw new RuntimeException("STOP") 
+    
+    
+       
     sh 'rm -rf *'
 
     echo """
@@ -816,7 +819,8 @@ deployToDev  ${deployToDev}
   steps.parameters([
     steps.choice(choices: ['Build_To_Smoke_Test', 'Build_To_QA', 'Promote_QA_to_Prod'], description: 'Action to perform', name: 'buildAction'),
    
-//    booleanParam( name: 'smokeTestOnly',      defaultValue: true,           description: 'If set then only a smoke test is performed.'),
+    steps.string(       name: 'bruce',     defaultValue: 'test',             description: 'I added this in the pipeline.'),
+    
     steps.string(       name: 'releaseVersion',     defaultValue: '',             description: 'The release version for promotion.'),
     steps.string(       name: 'buildQualifier',     defaultValue: '',             description: 'The rbuild qualifier for promotion.'),
     steps.string(       name: 'serviceRepoOrg',     defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for service source code repo.'),
