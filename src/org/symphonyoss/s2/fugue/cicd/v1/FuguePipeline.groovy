@@ -657,7 +657,7 @@ deployTo     ${deployTo_}
     deployInitContainers(tenantStage)
   }
   
-  public void deployStation(String tenantStageName)
+  public boolean deployStation(String tenantStageName)
   {
     echo 'Deploy for ' + tenantStageName
   
@@ -666,10 +666,6 @@ deployTo     ${deployTo_}
     
     if(deployTo_[tenantStage.environmentType])
     {
-      echo 'R53RecordSets and Roles environmentType' + tenantStage.environmentType +
-        ', environment=' + tenantStage.environment + ', tenants=' + tenantStage.tenants
-      
-      
       tenantStage.tenants.each {
         String tenant = it
         
@@ -700,10 +696,12 @@ deployTo     ${deployTo_}
 //    
 //          }
       }
+      return true
     }
     else
     {
       echo 'No access for environmentType ' + tenantStage.environmentType + ', skipped.'
+      return false
     }
   }
 
