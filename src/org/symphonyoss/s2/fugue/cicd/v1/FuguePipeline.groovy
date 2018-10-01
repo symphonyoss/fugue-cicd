@@ -306,14 +306,11 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void abort(String message)
   {
-    echo 'ABORT: ' + message
-   // steps_.currentBuild.result = 'ABORTED'
     steps_.error(message)
   }
   
   public void preflight()
   {
-    abort("Just testing")
     echo """====================================
 Preflight
 Build Action ${env_.buildAction}
