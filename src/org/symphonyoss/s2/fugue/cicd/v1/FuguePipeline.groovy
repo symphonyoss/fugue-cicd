@@ -251,7 +251,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    echo 'FuguePipeline V2'
+    echo 'FuguePipeline V3'
+    
+    sh 'aws --version'
     
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
