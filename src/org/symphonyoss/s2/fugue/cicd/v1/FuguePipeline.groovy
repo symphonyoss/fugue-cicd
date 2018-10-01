@@ -304,6 +304,16 @@ class FuguePipeline extends JenkinsTask implements Serializable
     deployTo_[environmentType] = true
   }
   
+  public boolean getDeployTo(String environmentType)
+  {
+    return deployTo_[environmentType]
+  }
+  
+  public boolean getDoBuild()
+  {
+    return doBuild_
+  }
+  
   public void abort(String message)
   {
     steps_.error(message)
@@ -689,7 +699,7 @@ deployTo     ${deployTo_}
   {
     echo 'Push Images for ' + environmentType
     
-    if(envTypePush_.get(environmentType))
+    if(pushTo_[environmentType])
     {
       service_map.values().each {
         Container ms = it
@@ -712,36 +722,42 @@ deployTo     ${deployTo_}
     }
   }
   
-  public void pushDockerToolCandidate(String environmentType, String name) {
-    
-    echo 'Push Tool candidate for ' + name
-    
-    String repo = docker_repo[environmentType]
-    
-    if(repo == null)
-      throw new IllegalStateException("Unknown environment type ${environmentType}")
-    
-    String localImage = name + ':' + release
-    String remoteImage = repo + localImage + '-' + buildQualifier_
-    
-    sh 'docker tag ' + localImage + ' ' + remoteImage
-    sh 'docker push ' + remoteImage
+  public void pushDockerToolCandidate(String environmentType, String name)
+  {
+    if(doBuild_)
+    {
+      echo 'Push Tool candidate for ' + name
+      
+      String repo = docker_repo[environmentType]
+      
+      if(repo == null)
+        throw new IllegalStateException("Unknown environment type ${environmentType}")
+      
+      String localImage = name + ':' + release
+      String remoteImage = repo + localImage + '-' + buildQualifier_
+      
+      sh 'docker tag ' + localImage + ' ' + remoteImage
+      sh 'docker push ' + remoteImage
+    }
   }
   
-  public void pushDockerToolImage(String environmentType, String name) {
-    
-    echo 'Push Tool Image for ' + name
-    
-    String repo = docker_repo[environmentType]
-    
-    if(repo == null)
-      throw new IllegalStateException("Unknown environment type ${environmentType}")
-    
-    String localImage = name + ':' + release
-    String remoteImage = repo + name + ':latest'
-    
-    sh 'docker tag ' + localImage + ' ' + remoteImage
-    sh 'docker push ' + remoteImage
+  public void pushDockerToolImage(String environmentType, String name)
+  {
+    if(doBuild_)
+    {
+      echo 'Push Tool Image for ' + name
+      
+      String repo = docker_repo[environmentType]
+      
+      if(repo == null)
+        throw new IllegalStateException("Unknown environment type ${environmentType}")
+      
+      String localImage = name + ':' + release
+      String remoteImage = repo + name + ':latest'
+      
+      sh 'docker tag ' + localImage + ' ' + remoteImage
+      sh 'docker push ' + remoteImage
+    }
   }
 
   public void deployConfig(Station tenantStage, String tenant, String task)
