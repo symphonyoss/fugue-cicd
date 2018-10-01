@@ -310,7 +310,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     pushTo_[environmentType] = true
   }
   
-  private void deployTo(String environmentType, Purpose purpose)
+  private void deployTo(String environmentType, Purpose purpose = Purpose.Service)
   {
     deployTo_[environmentType] = purpose
   }
@@ -347,7 +347,6 @@ Build Action ${env_.buildAction}
       case 'Build to QA':
         doBuild_ = true
         pushTo('dev')
-        deployTo('smoke')
         deployTo('dev')
         pushTo('qa')
         deployTo('qa')
@@ -356,14 +355,13 @@ Build Action ${env_.buildAction}
       case 'Build to Smoke Test':
         doBuild_ = true
         pushTo('dev')
-        deployTo('smoke')
+        deployTo('dev', Purpose.SmokeTest)
         break;
         
       case 'Promote Dev to QA':
         doBuild_ = false
         pullFrom_ = 'dev'
         pushTo('dev')
-        deployTo('smoke')
         deployTo('dev')
         pushTo('qa')
         deployTo('qa')
