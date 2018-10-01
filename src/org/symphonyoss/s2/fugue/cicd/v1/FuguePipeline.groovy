@@ -323,7 +323,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void preflight()
   {
     echo """====================================
-Preflight
+Preflight V2
 Build Action ${env_.buildAction}
 """
     
@@ -347,13 +347,16 @@ Build Action ${env_.buildAction}
       case 'Promote Dev to QA':
         doBuild_ = false
         pullFrom_ = 'dev'
+        pushTo('dev')
         deployTo('smoke')
+        deployTo('dev')
+        pushTo('qa')
         deployTo('qa')
         
         case 'Promote QA to Prod':
         doBuild_ = false
         pullFrom_ = 'qa'
-        deployTo('smoke')
+        pushTo('prod')
         deployTo('prod')
         break;
     }
@@ -378,7 +381,6 @@ Build Action ${env_.buildAction}
       }
     }
     
-    pullDockerImages()
     
     echo """====================================
 doBuild      ${doBuild_}
@@ -480,6 +482,8 @@ deployTo     ${deployTo_}
     {
       verifyCreds('stage')
     }
+    
+    pullDockerImages()
     
     echo """====================================
 doBuild      ${doBuild_}
@@ -702,6 +706,7 @@ deployTo     ${deployTo_}
 
   public void pullDockerImages()
   {
+    echo 'Pull Images from ' + pullFrom_
     if(pullFrom_ != null)
     {
       echo 'Pull Images from ' + pullFrom_
