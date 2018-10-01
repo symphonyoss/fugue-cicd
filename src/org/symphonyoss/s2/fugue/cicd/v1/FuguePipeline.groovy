@@ -307,8 +307,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void abort(String message)
   {
     echo 'ABORT: ' + message
-    currentBuild.result = 'ABORTED'
-    error('Do not set releaseVersion or buildQualifier and a Build action together.')
+    steps_.currentBuild.result = 'ABORTED'
+    steps_.error('Do not set releaseVersion or buildQualifier and a Build action together.')
   }
   
   public void preflight()
