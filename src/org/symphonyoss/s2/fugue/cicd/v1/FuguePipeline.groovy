@@ -37,6 +37,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private boolean               doBuild_
   private Map<String, Boolean>  pushTo_ = [:]
   private Map<String, Boolean>  deployTo_ = [:]
+  private String                pullFrom_
   
   private String serviceGitOrg
   private String serviceGitRepo
@@ -345,11 +346,13 @@ Build Action ${env_.buildAction}
         
       case 'Promote Dev to QA':
         doBuild_ = false
+        pullFrom_ = 'dev'
         deployTo('smoke')
         deployTo('qa')
         
         case 'Promote QA to Prod':
         doBuild_ = false
+        pullFrom_ = 'qa'
         deployTo('smoke')
         deployTo('prod')
         break;
@@ -374,6 +377,8 @@ Build Action ${env_.buildAction}
         abort('releaseVersion and buildQualifier must be defined for a promotion action.')
       }
     }
+    
+    pullDockerImages()
     
     echo """====================================
 doBuild      ${doBuild_}
@@ -695,6 +700,29 @@ deployTo     ${deployTo_}
   }
 
 
+  public void pullDockerImages()
+  {
+    if(pullFrom_ != null)
+    {
+      echo 'Pull Images from ' + pullFrom_
+      
+      service_map.values().each
+      {
+        Container ms = it
+        
+        String repo = docker_repo[pullFrom_]
+        
+        if(repo == null)
+          throw new IllegalStateException("Unknown environment type ${pullFrom_}")
+        
+        String localImage = ms.name + ':' + release
+        String remoteImage = repo + localImage + '-' + buildQualifier_
+        
+        sh 'docker pull ' + remoteImage
+      }
+    }
+  }
+  
   public void pushDockerImages(String environmentType)
   {
     echo 'Push Images for ' + environmentType
@@ -814,12 +842,6 @@ deployTo     ${deployTo_}
       deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
       
     deploy.execute()
-  }
-  
-  public void pushDockerImage(String env, String localimage) {
-      String remoteimage = docker_repo[env]+servicename+':'+dockerlabel
-      sh 'docker tag '+localimage+' '+remoteimage
-      sh 'docker push '+remoteimage
   }
   
   String logGroupName(Station tenantStage, String tenant)
