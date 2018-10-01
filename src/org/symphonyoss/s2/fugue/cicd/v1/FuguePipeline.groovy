@@ -36,7 +36,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean               doBuild_
   private Map<String, Boolean>  pushTo_ = [:]
-  private Map<String, Boolean>  deployTo_ = [:]
+  private Map<String, Purpose>  deployTo_ = [:]
   private String                pullFrom_
   
   private String serviceGitOrg
@@ -310,14 +310,19 @@ class FuguePipeline extends JenkinsTask implements Serializable
     pushTo_[environmentType] = true
   }
   
-  private void deployTo(String environmentType)
+  private void deployTo(String environmentType, Purpose purpose)
   {
-    deployTo_[environmentType] = true
+    deployTo_[environmentType] = purpose
   }
   
-  public boolean getDeployTo(String environmentType)
+  public Purpose getDeployTo(String environmentType)
   {
-    return deployTo_[environmentType]
+    Purpose p = deployTo_[environmentType]
+    
+    if(p == null)
+      return Purpose.None
+    else
+      return p
   }
   
   public boolean getDoBuild()
@@ -579,7 +584,7 @@ deployTo     ${deployTo_}
     catch(Exception e)
     {
       pushTo_[environmentType] = false
-      deployTo_[environmentType] = false
+      deployTo_[environmentType] = Purpose.None
       echo "No valid credentials for environmentType ${environmentType}"
       
       return false
@@ -657,14 +662,13 @@ deployTo     ${deployTo_}
     deployInitContainers(tenantStage)
   }
   
-  public boolean deployStation(String tenantStageName)
+  public boolean deployStation(String tenantStageName, Purpose requiredPurpose = Purpose.Service)
   {
     echo 'Deploy for ' + tenantStageName
   
     Station tenantStage = tenant_stage_map.get(tenantStageName)
-  
     
-    if(deployTo_[tenantStage.environmentType])
+    if(getDeployTo(tenantStage.environmentType).isValidFor(requiredPurpose))
     {
       tenantStage.tenants.each {
         String tenant = it
