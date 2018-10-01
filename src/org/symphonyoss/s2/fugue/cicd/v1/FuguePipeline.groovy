@@ -268,6 +268,16 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo 'done environmentTypes'
   }
   
+  public void report()
+  {
+    echo """
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ buildQualifier = ${buildQualifier_}
+@ releaseVersion = ${release}
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
+  }
+  
   public void toolsPreFlight()
   {
     sh 'rm -rf *'
@@ -396,13 +406,6 @@ deployTo     ${deployTo_}
     
        
     sh 'rm -rf *'
-
-    echo """
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildQualifier = ${buildQualifier_}
-@ releaseVersion = ${release}
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-"""
     
     if(configGitRepo != null)
     {
