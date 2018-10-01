@@ -260,6 +260,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo """
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ buildQualifier = ${buildQualifier_}
+@ releaseVersion = ${release}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
     
@@ -273,11 +274,54 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void preflight()
   {
+    echo """====================================
+Fugue Tools Jenkinsfile 2018-10-01 4
+Build Action ${env_.buildAction}
+===================================="""
+    
+    boolean doBuild
+    boolean deployToDev
+
+    switch(env_.buildAction)
+    {
+      case 'Build_To_QA':
+        deployToDev=true
+        
+      case 'Build_To_Smoke_Test':
+        doBuild = true
+        if(! ("".equals(env_.buildQualifier.trim()) && "".equals(env_.releaseVersion.trim())))
+        {
+          currentBuild.result = 'ABORTED'
+          error('Do not set releaseVersion or buildQualifier and a Build action together.')
+        }
+        break;
+        
+      case 'Promote_QA_to_Prod':
+        doBuild = false
+        if("".equals(env_.buildQualifier.trim()) && "".equals(env_.releaseVersion.trim()))
+        {
+          currentBuild.result = 'ABORTED'
+          error('releaseVersion and buildQualifier must be defined for a promotion action.')
+        }
+        else
+        {
+          withRelease(env_.releaseVersion.trim())
+          withBuildQualifier(env_.buildQualifier.trim())
+        }
+        break;
+    }
+    
+    echo """====================================
+doBuild      ${doBuild}
+deployToDev  ${deployToDev}
+===================================="""
+            
     sh 'rm -rf *'
 
     echo """
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ buildQualifier = ${buildQualifier_}
+@ releaseVersion = ${release}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
     
@@ -765,7 +809,23 @@ class FuguePipeline extends JenkinsTask implements Serializable
 //      }
 //    ]
 //  }'''
-      
+  
+  public def parameters()
+  {
+    return [
+  parameters([
+    choice(choices: ['Build_To_Smoke_Test', 'Build_To_QA', 'Promote_QA_to_Prod'], description: 'Action to perform', name: 'buildAction'),
+   
+//    booleanParam( name: 'smokeTestOnly',      defaultValue: true,           description: 'If set then only a smoke test is performed.'),
+    string(       name: 'releaseVersion',     defaultValue: '',             description: 'The release version for promotion.'),
+    string(       name: 'buildQualifier',     defaultValue: '',             description: 'The rbuild qualifier for promotion.'),
+    string(       name: 'serviceRepoOrg',     defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for service source code repo.'),
+    string(       name: 'serviceRepoBranch',  defaultValue: Default.value(env, 'serviceRepoBranch', 'master'),       description: 'GitHub branch for service source code repo.'),
+    string(       name: 'configRepoOrg',      defaultValue: 'SymphonyOSF',  description: 'GitHub organization (fork) for config repo.'),
+    string(       name: 'configRepoBranch',   defaultValue: Default.value(env, 'configRepoBranch', 'master'),       description: 'GitHub branch for config repo.')
+   ])
+]
+  }
   public def createRole(String accountId, String policyName, String roleName)
   {
     String policyArn = 'arn:aws:iam::' + aws_identity[accountId].Account + ':policy/' + policyName
