@@ -948,9 +948,17 @@ deployTo     ${deployTo_}
    ])
 ]
   }
+  
   public def createRole(String accountId, String policyName, String roleName)
   {
     String policyArn = 'arn:aws:iam::' + aws_identity[accountId].Account + ':policy/' + policyName
+    
+    return createRoleByArn(accountId, policyArn, roleName)
+  }
+  
+  public def createRoleByArn(String accountId, String policyArn, String roleName)
+  {
+    
    
     echo 'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
     def status = sh returnStatus:true, script:'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
