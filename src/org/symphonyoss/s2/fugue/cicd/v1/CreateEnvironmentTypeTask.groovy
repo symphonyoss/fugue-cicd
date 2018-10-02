@@ -84,7 +84,7 @@ roleName            ${roleName}
       getOrCreateCluster()
       
       logGroup_ = pipeLine_.createLogGroup('fugue')
-      pipeLine_.createRole(accountId, 'AmazonECSTaskExecutionRolePolicy", 'ecsTaskExecutionRole')
+      pipeLine_.createRole(accountId, 'AmazonECSTaskExecutionRolePolicy', 'ecsTaskExecutionRole')
       pipeLine_.createRole(accountId, 'fugue-' + environmentType_ + "-root-policy", roleName)
       
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironmentType',
