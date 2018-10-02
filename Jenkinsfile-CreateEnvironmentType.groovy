@@ -1,4 +1,4 @@
-@Library('fugue-cicd')
+@Library('fugue-cicd@Bruce-2018-09-30')
 
 
 import org.symphonyoss.s2.fugue.cicd.v1.FuguePipeline
