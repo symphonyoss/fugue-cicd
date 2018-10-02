@@ -354,6 +354,12 @@ Build Action ${env_.buildAction}
         deployTo('qa')
         break;
         
+      case 'Deploy to Dev':
+        doBuild_ = false
+        pullFrom_ = 'dev'
+        deployTo('dev')
+        break;
+        
       case 'Build to Smoke Test':
         doBuild_ = true
         pushTo('dev')
@@ -363,8 +369,6 @@ Build Action ${env_.buildAction}
       case 'Promote Dev to QA':
         doBuild_ = false
         pullFrom_ = 'dev'
-        pushTo('dev')
-        deployTo('dev')
         pushTo('qa')
         deployTo('qa')
         break;
@@ -937,7 +941,7 @@ deployTo     ${deployTo_}
   {
     return [
   steps.parameters([
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
    
     steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
     steps.string(name: 'buildQualifier',    defaultValue: Default.value(env,  'buildQualifier',    ''),      description: 'The build qualifier for promotion.'),
