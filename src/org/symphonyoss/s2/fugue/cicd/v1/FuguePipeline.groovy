@@ -599,26 +599,27 @@ deployTo     ${deployTo_}
     {
       Container ms = it
       
-      if(ms.containerType == ContainerType.Init)
+      if(ms.containerType == ContainerType.Init && ms.tenancy == Tenancy.MultiTenant)
       {
-        switch(ms.tenancy)
-        {
-          case Tenancy.SingleTenant:
-            tenantStage.tenants.each {
-              String tenant = it
-              
+          echo 'Init MULTI ' + ms.toString()
+          ms.deployInit(tenantStage, null)
+          echo 'DONE Init MULTI ' + ms.name
+      }
+    }
+    
+    service_map.values().each
+    {
+      Container ms = it
       
-              echo 'Init ' + tenant + ' ' + ms.toString()
-              
-              ms.deployInit(tenantStage, tenant)
-            }
-            break
-  
-          case Tenancy.MultiTenant:
-            echo 'Init MULTI ' + ms.toString()
-            ms.deployInit(tenantStage, null)
-            echo 'DONE Init MULTI ' + ms.name
-            break
+      if(ms.containerType == ContainerType.Init && ms.tenancy == Tenancy.SingleTenant)
+      {
+        tenantStage.tenants.each
+        {
+          String tenant = it
+       
+          echo 'Init ' + tenant + ' ' + ms.toString()
+          
+          ms.deployInit(tenantStage, tenant)
         }
       }
     }
