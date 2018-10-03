@@ -742,8 +742,6 @@ deployTo     ${deployTo_}
   {
     echo 'Push Images for ' + environmentType
     
-    sh 'docker images'
-    
     if(pushTo_[environmentType])
     {
       service_map.values().each
@@ -759,11 +757,13 @@ deployTo     ${deployTo_}
 
         if(pullFrom_ == null)
         {
-          localImage = ms.name + ':' + release
-          remoteImage = pushRepo + localImage + '-' + buildQualifier_
+          String localImage = ms.name + ':' + release
+          String remoteImage = pushRepo + localImage + '-' + buildQualifier_
           
-          sh 'docker tag ' + localImage + ' ' + remoteImage
-          sh 'docker push ' + remoteImage
+          sh """
+docker tag ${localImage} ${remoteImage}
+docker push ${remoteImage}
+"""
         }
         else
         {
@@ -773,8 +773,10 @@ deployTo     ${deployTo_}
           String localImage = pullRepo + baseImage
           String remoteImage = pushRepo + baseImage
           
-          sh 'docker tag ' + localImage + ' ' + remoteImage
-          sh 'docker push ' + remoteImage
+          sh """
+docker tag ${localImage} ${remoteImage}
+docker push ${remoteImage}
+"""
         }
       }
     }
@@ -798,8 +800,10 @@ deployTo     ${deployTo_}
       String localImage = name + ':' + release
       String remoteImage = repo + localImage + '-' + buildQualifier_
       
-      sh 'docker tag ' + localImage + ' ' + remoteImage
-      sh 'docker push ' + remoteImage
+      sh """
+docker tag ${localImage} ${remoteImage}
+docker push ${remoteImage}
+"""
     }
   }
   

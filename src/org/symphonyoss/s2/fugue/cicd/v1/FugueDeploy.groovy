@@ -10,7 +10,7 @@ import java.util.Map.Entry
  */
 class FugueDeploy extends FuguePipelineTask implements Serializable
 {
-  private String  task_
+  private String  action_
   private String  logGroup_
   private String  awsRegion_
   private String  dockerLabel_  = ':latest'
@@ -47,7 +47,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   {
     super(pipeLine)
     
-    task_           = task
+    action_           = task
     logGroup_       = logGroup
     awsRegion_      = awsRegion
     
@@ -168,8 +168,15 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
 ------------------------------------------------------------------------------------------------------------------------
 FugeDeploy V2 execute start
 
-fargateLaunch_  = ${fargateLaunch_}
-launchType_     = ${launchType_}
+fargateLaunch   ${fargateLaunch_}
+launchType      ${launchType_}
+
+action          ${action_}
+environmentType ${environmentType_}
+environment     ${environment_}
+realm           ${realm_}
+region          ${region_}
+tenantId        ${tenantId_}
 ------------------------------------------------------------------------------------------------------------------------
 """
     
@@ -179,6 +186,7 @@ launchType_     = ${launchType_}
     String serviceImage   = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + dockerLabel_
 
     String consulToken
+    String consulToken2
     String gitHubToken
     
     if(consulTokenId_ != null)
@@ -186,8 +194,16 @@ launchType_     = ${launchType_}
       withCredentials([string(credentialsId: consulTokenId_, variable: 'CONSUL_TOKEN')])
       {
         consulToken = sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
+        consulToken2 = CONSUL_TOKEN.trim()
       }
     }
+    
+    echo "consulToken=${consulToken} consulToken2=${consulToken2}"
+    
+    if(consulToken.equals(consulToken2))
+      echo "TOKENS ARE SAME"
+    else
+      echo "TOKENS ARE DIFFERENT!"
     
     withCredentials([string(credentialsId: 'symphonyjenkinsauto-token', variable: 'GITHUB_TOKEN')])
     {
@@ -236,7 +252,7 @@ launchType_     = ${launchType_}
     addIfNotNull("FUGUE_REALM", realm_)
     addIfNotNull("FUGUE_REGION", region_)
     addIfNotNull("FUGUE_SERVICE", servicename_)
-    addIfNotNull("FUGUE_ACTION", task_)
+    addIfNotNull("FUGUE_ACTION", action_)
     addIfNotNull("FUGUE_TENANT", tenantId_)
     addIfNotNull("FUGUE_PRIMARY_ENVIRONMENT", primaryEnvironment_)
     addIfNotNull("FUGUE_PRIMARY_REGION", primaryRegion_)
