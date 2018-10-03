@@ -10,8 +10,7 @@ class Container extends FuguePipelineTask implements Serializable {
   private int                   port
   private String                containerPath
   private Map<String, String>   envOverride = [:]
-  
-  private Map tenants = [:]
+  private Map                   tenants = [:]
   
   public Container(FuguePipeline pipeLine)
   {

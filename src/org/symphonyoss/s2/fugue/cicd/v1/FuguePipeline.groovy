@@ -265,6 +265,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       name ->
         def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
         environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
+        echo 'environmentType ' + name
     }
     
     echo 'done environmentTypes'
@@ -404,6 +405,7 @@ Build Action ${env_.buildAction}
     
     echo """====================================
 doBuild      ${doBuild_}
+pullFrom     ${pullFrom_}
 pushTo       ${pushTo_}
 deployTo     ${deployTo_}
 ===================================="""
@@ -474,15 +476,18 @@ deployTo     ${deployTo_}
         this.withStation(ts)
       }
     }
-      
-    echo """
+    
+    if(doBuild_)
+    {
+      echo """
 serviceGitOrg is ${serviceGitOrg}
 serviceGitRepo is ${serviceGitRepo}
 serviceGitBranch is ${serviceGitBranch}
 """
     
-    steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
-
+      steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
+    }
+    
     if(!verifyCreds('dev'))
     {
       abort("No dev credentials")
@@ -494,12 +499,6 @@ serviceGitBranch is ${serviceGitBranch}
     }
     
     pullDockerImages()
-    
-    echo """====================================
-doBuild      ${doBuild_}
-pushTo       ${pushTo_}
-deployTo     ${deployTo_}
-===================================="""
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
@@ -743,19 +742,40 @@ deployTo     ${deployTo_}
     
     if(pushTo_[environmentType])
     {
-      service_map.values().each {
+      service_map.values().each
+      {
         Container ms = it
         
-        String repo = docker_repo[environmentType]
+        String pushRepo = docker_repo[environmentType]
         
-        if(repo == null)
+        if(pushRepo == null)
           throw new IllegalStateException("Unknown environment type ${environmentType}")
         
-        String localImage = ms.name + ':' + release
-        String remoteImage = repo + localImage + '-' + buildQualifier_
         
-        sh 'docker tag ' + localImage + ' ' + remoteImage
-        sh 'docker push ' + remoteImage
+
+        if(pullFrom_ == null)
+        {
+          String localImage = ms.name + ':' + release
+          String remoteImage = pushRepo + localImage + '-' + buildQualifier_
+          
+          sh """
+docker tag ${localImage} ${remoteImage}
+docker push ${remoteImage}
+"""
+        }
+        else
+        {
+          String pullRepo = docker_repo[pullFrom_]
+          
+          String baseImage = ms.name + ':' + release + '-' + buildQualifier_
+          String localImage = pullRepo + baseImage
+          String remoteImage = pushRepo + baseImage
+          
+          sh """
+docker tag ${localImage} ${remoteImage}
+docker push ${remoteImage}
+"""
+        }
       }
     }
     else
@@ -778,8 +798,10 @@ deployTo     ${deployTo_}
       String localImage = name + ':' + release
       String remoteImage = repo + localImage + '-' + buildQualifier_
       
-      sh 'docker tag ' + localImage + ' ' + remoteImage
-      sh 'docker push ' + remoteImage
+      sh """
+docker tag ${localImage} ${remoteImage}
+docker push ${remoteImage}
+"""
     }
   }
   
@@ -934,10 +956,9 @@ deployTo     ${deployTo_}
 //    ]
 //  }'''
   
-  public static def parameters(env, steps)
+  public static def parameters(env, steps, extras = null)
   {
-    return [
-  steps.parameters([
+    def list = [
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
    
     steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
@@ -946,7 +967,13 @@ deployTo     ${deployTo_}
     steps.string(name: 'serviceRepoBranch', defaultValue: Default.value(env,  'serviceRepoBranch', 'master'),description: 'GitHub branch for service source code repo.'),
     steps.string(name: 'configRepoOrg',     defaultValue: Default.value(env,  'configRepoOrg',     'SymphonyOSF'),  description: 'GitHub organization (fork) for config repo.'),
     steps.string(name: 'configRepoBranch',  defaultValue: Default.value(env,  'configRepoBranch',  'master'), description: 'GitHub branch for config repo.')
-   ])
+   ]
+   
+   if(extras != null)
+     list.addAll(extras)
+     
+    return [
+  steps.parameters(list)
 ]
   }
   
