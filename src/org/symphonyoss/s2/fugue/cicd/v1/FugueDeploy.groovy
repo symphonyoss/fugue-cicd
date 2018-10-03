@@ -186,28 +186,19 @@ tenantId        ${tenantId_}
     String serviceImage   = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + dockerLabel_
 
     String consulToken
-    String consulToken2
     String gitHubToken
     
     if(consulTokenId_ != null)
     {
       withCredentials([string(credentialsId: consulTokenId_, variable: 'CONSUL_TOKEN')])
       {
-        consulToken = sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
-        consulToken2 = pipeLine_.env_.CONSUL_TOKEN.trim()
+        consulToken = pipeLine_.env_.CONSUL_TOKEN.trim()
       }
     }
     
-    echo "consulToken=${consulToken} consulToken2=${consulToken2}"
-    
-    if(consulToken.equals(consulToken2))
-      echo "TOKENS ARE SAME"
-    else
-      echo "TOKENS ARE DIFFERENT!"
-    
     withCredentials([string(credentialsId: 'symphonyjenkinsauto-token', variable: 'GITHUB_TOKEN')])
     {
-      gitHubToken = sh(returnStdout:true, script:'echo -n $GITHUB_TOKEN').trim()
+      gitHubToken = pipeLine_.env_.GITHUB_TOKEN.trim()
     }
     
     configTaskdef_ =

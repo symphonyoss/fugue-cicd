@@ -265,6 +265,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       name ->
         def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
         environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
+        echo 'environmentType ' + name
     }
     
     echo 'done environmentTypes'
@@ -475,15 +476,18 @@ deployTo     ${deployTo_}
         this.withStation(ts)
       }
     }
-      
-    echo """
+    
+    if(doBuild_)
+    {
+      echo """
 serviceGitOrg is ${serviceGitOrg}
 serviceGitRepo is ${serviceGitRepo}
 serviceGitBranch is ${serviceGitBranch}
 """
     
-    steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
-
+      steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
+    }
+    
     if(!verifyCreds('dev'))
     {
       abort("No dev credentials")
@@ -495,12 +499,6 @@ serviceGitBranch is ${serviceGitBranch}
     }
     
     pullDockerImages()
-    
-    echo """====================================
-doBuild      ${doBuild_}
-pushTo       ${pushTo_}
-deployTo     ${deployTo_}
-===================================="""
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
