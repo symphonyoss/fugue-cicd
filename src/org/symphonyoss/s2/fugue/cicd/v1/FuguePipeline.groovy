@@ -734,8 +734,6 @@ deployTo     ${deployTo_}
         String remoteImage = repo + localImage + '-' + buildQualifier_
         
         sh 'docker pull ' + remoteImage
-        
-        ms.withRemoteImage(remoteImage)
       }
     }
   }
