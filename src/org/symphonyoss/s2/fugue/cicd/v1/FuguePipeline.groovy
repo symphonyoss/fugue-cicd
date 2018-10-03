@@ -111,7 +111,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   }
   
   public FuguePipeline withServiceName(String n) {
-    echo 'withServiceName' + n
       this.servicename = n
       return this
   }
