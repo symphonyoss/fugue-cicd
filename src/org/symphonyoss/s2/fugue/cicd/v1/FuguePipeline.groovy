@@ -404,6 +404,7 @@ Build Action ${env_.buildAction}
     
     echo """====================================
 doBuild      ${doBuild_}
+pullFrom     ${pullFrom_}
 pushTo       ${pushTo_}
 deployTo     ${deployTo_}
 ===================================="""
@@ -740,6 +741,8 @@ deployTo     ${deployTo_}
   public void pushDockerImages(String environmentType)
   {
     echo 'Push Images for ' + environmentType
+    
+    sh 'docker images'
     
     if(pushTo_[environmentType])
     {
