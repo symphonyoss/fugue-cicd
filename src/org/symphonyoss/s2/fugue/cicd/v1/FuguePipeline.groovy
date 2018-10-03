@@ -31,10 +31,13 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private String release
   private String buildQualifier_
   private String servicePath
-  private boolean toolsDeploy = false;
-  private boolean useRootCredentials = false;
+  private boolean toolsDeploy = false
+  private boolean useRootCredentials = false
   
-  private Map<String, Boolean> envTypePush = [:]
+  private boolean               doBuild_
+  private Map<String, Boolean>  pushTo_ = [:]
+  private Map<String, Purpose>  deployTo_ = [:]
+  private String                pullFrom_
   
   private String serviceGitOrg
   private String serviceGitRepo
@@ -148,6 +151,17 @@ class FuguePipeline extends JenkinsTask implements Serializable
       return this
   }
   
+  public FuguePipeline withServiceGitRepo(String repo) {
+    serviceGitRepo = repo
+    return this
+  }
+  
+  public FuguePipeline withConfigGitRepo(String repo) {
+    configGitRepo = repo
+    return this
+  }
+  
+  @Deprecated
   public FuguePipeline withServiceGitRepo(String org, String repo, String branch = 'master') {
     serviceGitOrg = org
     serviceGitRepo = repo
@@ -155,6 +169,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     return this
   }
   
+  @Deprecated
   public FuguePipeline withConfigGitRepo(String org, String repo, String branch = 'master') {
     configGitOrg = org
     configGitRepo = repo
@@ -236,26 +251,33 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    echo 'FuguePipeline branch Bruce-2018-09-28'
+    echo 'FuguePipeline V3'
+    
+    sh 'aws --version'
     
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + configGitOrg + '/' + configGitRepo + '.git', branch: configGitBranch
     
     def files = sh(script: "ls -1 config/environment", returnStdout: true)
     
-    echo "files=" + files
-    echo "files=" + files.getClass()
-    
     files.split('\n').each
     {
       name ->
-        echo "environmentType ${name}" 
         def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
         environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
-        echo "2environmentType ${name}"
     }
     
     echo 'done environmentTypes'
+  }
+  
+  public void report()
+  {
+    echo """
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ buildQualifier = ${buildQualifier_}
+@ releaseVersion = ${release}
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
   }
   
   public void toolsPreFlight()
@@ -265,6 +287,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     echo """
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ buildQualifier = ${buildQualifier_}
+@ releaseVersion = ${release}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
     
@@ -273,18 +296,125 @@ class FuguePipeline extends JenkinsTask implements Serializable
       loadConfig()
     }
     
-    verifyCreds('dev')
+    if(!verifyCreds('dev'))
+    {
+      abort("No dev credentials")
+    }
+  }
+  
+  private boolean qualifierIsSet()
+  {
+    return !("".equals(env_.buildQualifier.trim()) && "".equals(env_.releaseVersion.trim()))
+  }
+  
+  private void pushTo(String environmentType)
+  {
+    pushTo_[environmentType] = true
+  }
+  
+  private void deployTo(String environmentType, Purpose purpose = Purpose.Service)
+  {
+    deployTo_[environmentType] = purpose
+  }
+  
+  public Purpose getDeployTo(String environmentType)
+  {
+    Purpose p = deployTo_[environmentType]
+    
+    if(p == null)
+      return Purpose.None
+    else
+      return p
+  }
+  
+  public boolean getDoBuild()
+  {
+    return doBuild_
+  }
+  
+  public void abort(String message)
+  {
+    steps_.error(message)
   }
   
   public void preflight()
   {
-    sh 'rm -rf *'
-
-    echo """
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildQualifier = ${buildQualifier_}
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    echo """====================================
+Preflight V2
+Build Action ${env_.buildAction}
 """
+    
+    switch(env_.buildAction)
+    {
+      case 'Build to QA':
+        doBuild_ = true
+        pushTo('dev')
+        deployTo('dev')
+        pushTo('qa')
+        deployTo('qa')
+        break;
+        
+      case 'Deploy to Dev':
+        doBuild_ = false
+        pullFrom_ = 'dev'
+        deployTo('dev')
+        break;
+        
+      case 'Build to Smoke Test':
+        doBuild_ = true
+        pushTo('dev')
+        deployTo('dev', Purpose.SmokeTest)
+        break;
+        
+      case 'Promote Dev to QA':
+        doBuild_ = false
+        pullFrom_ = 'dev'
+        pushTo('qa')
+        deployTo('qa')
+        break;
+        
+      case 'Promote QA to Prod':
+        doBuild_ = false
+        pullFrom_ = 'qa'
+        pushTo('prod')
+        deployTo('prod')
+        break;
+    }
+    
+    if(doBuild_)
+    {
+      if(qualifierIsSet())
+      {
+        abort('Do not set releaseVersion or buildQualifier for a build action.')
+      }
+    }
+    else
+    {
+      if(qualifierIsSet())
+      {
+        withRelease(env_.releaseVersion.trim())
+        withBuildQualifier(env_.buildQualifier.trim())
+      }
+      else
+      {
+        abort('releaseVersion and buildQualifier must be defined for a promotion action.')
+      }
+    }
+    
+    
+    echo """====================================
+doBuild      ${doBuild_}
+pushTo       ${pushTo_}
+deployTo     ${deployTo_}
+===================================="""
+    
+    serviceGitOrg = env_.serviceRepoOrg
+    serviceGitBranch = env_.serviceRepoBranch
+    configGitOrg = env_.configRepoOrg
+    configGitBranch = env_.configRepoBranch
+    
+       
+    sh 'rm -rf *'
     
     if(configGitRepo != null)
     {
@@ -321,12 +451,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
       def track = readJSON file:'config/track/' + releaseTrack + '.json'
 
       echo 'track is ' + track
-      echo 'track.description is ' + track.description
-      echo 'track."stations" is ' + track."stations"
+      
 
       track."stations".each { stationDef ->
-        echo 'Station ' + stationDef."name" + ' = ' + stationDef
-
 
         Station ts = new Station()
             .withName(stationDef."name")
@@ -348,32 +475,31 @@ class FuguePipeline extends JenkinsTask implements Serializable
       }
     }
       
-    echo 'serviceGitOrg is ' + serviceGitOrg
-    echo 'serviceGitRepo is ' + serviceGitRepo
-    echo 'serviceGitBranch is ' + serviceGitBranch
+    echo """
+serviceGitOrg is ${serviceGitOrg}
+serviceGitRepo is ${serviceGitRepo}
+serviceGitBranch is ${serviceGitBranch}
+"""
     
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
 
-    verifyCreds('dev')
+    if(!verifyCreds('dev'))
+    {
+      abort("No dev credentials")
+    }
 
-    try
+    if(verifyCreds('qa'))
     {
-      verifyCreds('qa')
-      try
-      {
-        verifyCreds('stage')
-      }
-      catch(Exception e)
-      {
-        echo 'Exception ' + e.toString()
-        echo 'No Stage Access -- Cannot promote'
-      }
+      verifyCreds('stage')
     }
-    catch(Exception e)
-    {
-      echo 'Exception ' + e.toString()
-      echo 'No QA  Access -- Cannot promote'
-    }
+    
+    pullDockerImages()
+    
+    echo """====================================
+doBuild      ${doBuild_}
+pushTo       ${pushTo_}
+deployTo     ${deployTo_}
+===================================="""
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
@@ -414,7 +540,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
         sh "set +x; echo 'Logging into docker repo'; `aws --region " + awsRegion + " ecr get-login --no-include-email`"
                     
-        if(environmentType=='dev')
+        if(doBuild_ && environmentType=='dev')
         {
                         
           sh 'docker pull 189141687483.dkr.ecr.' + awsRegion + '.amazonaws.com/symphony-es/base-java8:latest'
@@ -448,13 +574,22 @@ class FuguePipeline extends JenkinsTask implements Serializable
     }
   }
   
-  public void verifyCreds(String environmentType)
+  public boolean verifyCreds(String environmentType)
   {
-    
-    
-    verifyUserAccess(getCredentialName(environmentType), environmentType);
-    envTypePush.put(environmentType, true);
-    //echo 'AWS '+environmentType+' docker repo: '+docker_repo[environmentType]
+    try
+    {
+      verifyUserAccess(getCredentialName(environmentType), environmentType);
+      
+      return true
+    }
+    catch(Exception e)
+    {
+      pushTo_[environmentType] = false
+      deployTo_[environmentType] = Purpose.None
+      echo "No valid credentials for environmentType ${environmentType}"
+      
+      return false
+    }
   }
   
   public void deployInitContainers(Station tenantStage)
@@ -465,26 +600,27 @@ class FuguePipeline extends JenkinsTask implements Serializable
     {
       Container ms = it
       
-      if(ms.containerType == ContainerType.Init)
+      if(ms.containerType == ContainerType.Init && ms.tenancy == Tenancy.MultiTenant)
       {
-        switch(ms.tenancy)
-        {
-          case Tenancy.SingleTenant:
-            tenantStage.tenants.each {
-              String tenant = it
-              
+          echo 'Init MULTI ' + ms.toString()
+          ms.deployInit(tenantStage, null)
+          echo 'DONE Init MULTI ' + ms.name
+      }
+    }
+    
+    service_map.values().each
+    {
+      Container ms = it
       
-              echo 'Init ' + tenant + ' ' + ms.toString()
-              
-              ms.deployInit(tenantStage, tenant)
-            }
-            break
-  
-          case Tenancy.MultiTenant:
-            echo 'Init MULTI ' + ms.toString()
-            ms.deployInit(tenantStage, null)
-            echo 'DONE Init MULTI ' + ms.name
-            break
+      if(ms.containerType == ContainerType.Init && ms.tenancy == Tenancy.SingleTenant)
+      {
+        tenantStage.tenants.each
+        {
+          String tenant = it
+       
+          echo 'Init ' + tenant + ' ' + ms.toString()
+          
+          ms.deployInit(tenantStage, tenant)
         }
       }
     }
@@ -528,19 +664,16 @@ class FuguePipeline extends JenkinsTask implements Serializable
     deployInitContainers(tenantStage)
   }
   
-  public void deployStation(String tenantStageName)
+  public boolean deployStation(String tenantStageName, Purpose requiredPurpose = Purpose.Service)
   {
     echo 'Deploy for ' + tenantStageName
   
     Station tenantStage = tenant_stage_map.get(tenantStageName)
-  
     
-    if(envTypePush.get(tenantStage.environmentType))
+    echo "ValidPurpose=${getDeployTo(tenantStage.environmentType)} requiredPurpose=${requiredPurpose}"
+    if(getDeployTo(tenantStage.environmentType).isValidFor(requiredPurpose))
     {
-      echo 'R53RecordSets and Roles environmentType' + tenantStage.environmentType +
-        ', environment=' + tenantStage.environment + ', tenants=' + tenantStage.tenants
-      
-      
+      echo "OK, lets do this!"
       tenantStage.tenants.each {
         String tenant = it
         
@@ -571,19 +704,44 @@ class FuguePipeline extends JenkinsTask implements Serializable
 //    
 //          }
       }
+      return true
     }
     else
     {
       echo 'No access for environmentType ' + tenantStage.environmentType + ', skipped.'
+      return false
     }
   }
 
 
+  public void pullDockerImages()
+  {
+    if(pullFrom_ != null)
+    {
+      echo 'Pull Images from ' + pullFrom_
+      
+      service_map.values().each
+      {
+        Container ms = it
+        
+        String repo = docker_repo[pullFrom_]
+        
+        if(repo == null)
+          throw new IllegalStateException("Unknown environment type ${pullFrom_}")
+        
+        String localImage = ms.name + ':' + release
+        String remoteImage = repo + localImage + '-' + buildQualifier_
+        
+        sh 'docker pull ' + remoteImage
+      }
+    }
+  }
+  
   public void pushDockerImages(String environmentType)
   {
     echo 'Push Images for ' + environmentType
     
-    if(envTypePush.get(environmentType))
+    if(pushTo_[environmentType])
     {
       service_map.values().each {
         Container ms = it
@@ -606,36 +764,47 @@ class FuguePipeline extends JenkinsTask implements Serializable
     }
   }
   
-  public void pushDockerToolCandidate(String environmentType, String name) {
-    
-    echo 'Push Tool candidate for ' + name
-    
-    String repo = docker_repo[environmentType]
-    
-    if(repo == null)
-      throw new IllegalStateException("Unknown environment type ${environmentType}")
-    
-    String localImage = name + ':' + release
-    String remoteImage = repo + localImage + '-' + buildQualifier_
-    
-    sh 'docker tag ' + localImage + ' ' + remoteImage
-    sh 'docker push ' + remoteImage
+  public void pushDockerToolCandidate(String environmentType, String name)
+  {
+    if(doBuild_)
+    {
+      echo 'Push Tool candidate for ' + name
+      
+      String repo = docker_repo[environmentType]
+      
+      if(repo == null)
+        throw new IllegalStateException("Unknown environment type ${environmentType}")
+      
+      String localImage = name + ':' + release
+      String remoteImage = repo + localImage + '-' + buildQualifier_
+      
+      sh 'docker tag ' + localImage + ' ' + remoteImage
+      sh 'docker push ' + remoteImage
+    }
   }
   
-  public void pushDockerToolImage(String environmentType, String name) {
-    
-    echo 'Push Tool Image for ' + name
-    
-    String repo = docker_repo[environmentType]
-    
-    if(repo == null)
-      throw new IllegalStateException("Unknown environment type ${environmentType}")
-    
-    String localImage = name + ':' + release
-    String remoteImage = repo + name + ':latest'
-    
-    sh 'docker tag ' + localImage + ' ' + remoteImage
-    sh 'docker push ' + remoteImage
+  public void pushDockerToolImage(String environmentType, String name)
+  {
+    if(doBuild_ && deployTo_[environmentType])
+    {
+      echo 'Push Tool Image for ' + name
+      
+      String repo = docker_repo[environmentType]
+      
+      if(repo == null)
+        throw new IllegalStateException("Unknown environment type ${environmentType}")
+      
+      String localImage = name + ':' + release
+      String remoteImage = repo + name + ':latest'
+      
+      sh 'docker tag ' + localImage + ' ' + remoteImage
+      sh 'docker push ' + remoteImage
+    }
+  }
+  
+  public void sleep(long time)
+  {
+    Thread.sleep(time)
   }
 
   public void deployConfig(Station tenantStage, String tenant, String task)
@@ -692,12 +861,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
       deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
       
     deploy.execute()
-  }
-  
-  public void pushDockerImage(String env, String localimage) {
-      String remoteimage = docker_repo[env]+servicename+':'+dockerlabel
-      sh 'docker tag '+localimage+' '+remoteimage
-      sh 'docker push '+remoteimage
   }
   
   String logGroupName(Station tenantStage, String tenant)
@@ -770,10 +933,33 @@ class FuguePipeline extends JenkinsTask implements Serializable
 //      }
 //    ]
 //  }'''
-      
+  
+  public static def parameters(env, steps)
+  {
+    return [
+  steps.parameters([
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
+   
+    steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
+    steps.string(name: 'buildQualifier',    defaultValue: Default.value(env,  'buildQualifier',    ''),      description: 'The build qualifier for promotion.'),
+    steps.string(name: 'serviceRepoOrg',    defaultValue: Default.value(env,  'serviceRepoOrg',    'SymphonyOSF'),  description: 'GitHub organization (fork) for service source code repo.'),
+    steps.string(name: 'serviceRepoBranch', defaultValue: Default.value(env,  'serviceRepoBranch', 'master'),description: 'GitHub branch for service source code repo.'),
+    steps.string(name: 'configRepoOrg',     defaultValue: Default.value(env,  'configRepoOrg',     'SymphonyOSF'),  description: 'GitHub organization (fork) for config repo.'),
+    steps.string(name: 'configRepoBranch',  defaultValue: Default.value(env,  'configRepoBranch',  'master'), description: 'GitHub branch for config repo.')
+   ])
+]
+  }
+  
   public def createRole(String accountId, String policyName, String roleName)
   {
     String policyArn = 'arn:aws:iam::' + aws_identity[accountId].Account + ':policy/' + policyName
+    
+    return createRoleByArn(accountId, policyArn, roleName)
+  }
+  
+  public def createRoleByArn(String accountId, String policyArn, String roleName)
+  {
+    
    
     echo 'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
     def status = sh returnStatus:true, script:'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
