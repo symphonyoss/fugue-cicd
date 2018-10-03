@@ -194,7 +194,7 @@ tenantId        ${tenantId_}
       withCredentials([string(credentialsId: consulTokenId_, variable: 'CONSUL_TOKEN')])
       {
         consulToken = sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
-        consulToken2 = CONSUL_TOKEN.trim()
+        consulToken2 = pipeLine.env.CONSUL_TOKEN.trim()
       }
     }
     
