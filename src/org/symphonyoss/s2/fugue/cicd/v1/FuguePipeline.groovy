@@ -960,8 +960,7 @@ docker push ${remoteImage}
   {
     steps.echo 'extras=' + extras.getClass().toString()
     
-    return [
-  steps.parameters([
+    def list = [
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
    
     steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
@@ -970,7 +969,13 @@ docker push ${remoteImage}
     steps.string(name: 'serviceRepoBranch', defaultValue: Default.value(env,  'serviceRepoBranch', 'master'),description: 'GitHub branch for service source code repo.'),
     steps.string(name: 'configRepoOrg',     defaultValue: Default.value(env,  'configRepoOrg',     'SymphonyOSF'),  description: 'GitHub organization (fork) for config repo.'),
     steps.string(name: 'configRepoBranch',  defaultValue: Default.value(env,  'configRepoBranch',  'master'), description: 'GitHub branch for config repo.')
-   ])
+   ]
+   
+   if(extras != null)
+     list.addAll(extras)
+     
+    return [
+  steps.parameters(list)
 ]
   }
   
