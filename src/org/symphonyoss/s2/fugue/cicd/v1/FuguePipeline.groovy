@@ -956,8 +956,10 @@ docker push ${remoteImage}
 //    ]
 //  }'''
   
-  public static def parameters(env, steps)
+  public static def parameters(env, steps, extras = null)
   {
+    steps.echo 'extras=' + extras.getClass().toString()
+    
     return [
   steps.parameters([
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
