@@ -734,6 +734,8 @@ deployTo     ${deployTo_}
         String remoteImage = repo + localImage + '-' + buildQualifier_
         
         sh 'docker pull ' + remoteImage
+        
+        ms.withRemoteImage(remoteImage)
       }
     }
   }
@@ -746,19 +748,36 @@ deployTo     ${deployTo_}
     
     if(pushTo_[environmentType])
     {
-      service_map.values().each {
+      service_map.values().each
+      {
         Container ms = it
         
-        String repo = docker_repo[environmentType]
+        String pushRepo = docker_repo[environmentType]
         
-        if(repo == null)
+        if(pushRepo == null)
           throw new IllegalStateException("Unknown environment type ${environmentType}")
         
-        String localImage = ms.name + ':' + release
-        String remoteImage = repo + localImage + '-' + buildQualifier_
         
-        sh 'docker tag ' + localImage + ' ' + remoteImage
-        sh 'docker push ' + remoteImage
+
+        if(pullFrom_ == null)
+        {
+          localImage = ms.name + ':' + release
+          remoteImage = pushRepo + localImage + '-' + buildQualifier_
+          
+          sh 'docker tag ' + localImage + ' ' + remoteImage
+          sh 'docker push ' + remoteImage
+        }
+        else
+        {
+          String pullRepo = docker_repo[pullFrom_]
+          
+          String baseImage = ms.name + ':' + release + '-' + buildQualifier_
+          String localImage = pullRepo + baseImage
+          String remoteImage = pushRepo + baseImage
+          
+          sh 'docker tag ' + localImage + ' ' + remoteImage
+          sh 'docker push ' + remoteImage
+        }
       }
     }
     else
