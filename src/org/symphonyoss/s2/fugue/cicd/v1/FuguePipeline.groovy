@@ -451,12 +451,9 @@ deployTo     ${deployTo_}
       def track = readJSON file:'config/track/' + releaseTrack + '.json'
 
       echo 'track is ' + track
-      echo 'track.description is ' + track.description
-      echo 'track."stations" is ' + track."stations"
+      
 
       track."stations".each { stationDef ->
-        echo 'Station ' + stationDef."name" + ' = ' + stationDef
-
 
         Station ts = new Station()
             .withName(stationDef."name")
@@ -478,14 +475,14 @@ deployTo     ${deployTo_}
       }
     }
       
-    echo 'serviceGitOrg is ' + serviceGitOrg
-    echo 'serviceGitRepo is ' + serviceGitRepo
-    echo 'serviceGitBranch is ' + serviceGitBranch
+    echo """
+serviceGitOrg is ${serviceGitOrg}
+serviceGitRepo is ${serviceGitRepo}
+serviceGitBranch is ${serviceGitBranch}
+"""
     
     steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
 
-    verifyCreds('dev')
-    
     if(!verifyCreds('dev'))
     {
       abort("No dev credentials")
@@ -543,7 +540,7 @@ deployTo     ${deployTo_}
         
         sh "set +x; echo 'Logging into docker repo'; `aws --region " + awsRegion + " ecr get-login --no-include-email`"
                     
-        if(environmentType=='dev')
+        if(doBuild_ && environmentType=='dev')
         {
                         
           sh 'docker pull 189141687483.dkr.ecr.' + awsRegion + '.amazonaws.com/symphony-es/base-java8:latest'
