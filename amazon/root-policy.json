@@ -69,7 +69,8 @@
                 "ecs:RunTask",
                 "iam:ListAccessKeys",
                 "secretsmanager:GetSecretValue",
-                "secretsmanager:PutSecretValue"
+                "secretsmanager:PutSecretValue",
+                "iam:UpdateAssumeRolePolicy"
             ],
             "Resource": [
                 "arn:aws:ecs:*:*:task-definition/fugue-*",
