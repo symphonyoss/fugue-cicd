@@ -325,7 +325,7 @@ stoppedReason: ${taskDescription.tasks[0].stoppedReason}
 exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 """
       //TODO: only print log if failed...
-      sh 'aws --region us-east-1 logs get-log-events --log-group-name fugue' +
+      sh 'aws --region us-east-1 logs get-log-events --log-group-name sym-s2-fugue' +
       ' --log-stream-name ' + taskDefFamily + '/' + taskDefFamily + '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/"$//\' | sed -e \'s/\\\\t/      /\''
       if(taskDescription.tasks[0].containers[0].exitCode != 0) {
         
