@@ -503,6 +503,7 @@ serviceGitBranch is ${serviceGitBranch}
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
+    echo 'fugue-cicd version @Bruce-2018-10-11'
     echo 'Verifying ' + environmentType + ' access with credential ' + credentialId + '...'
     
     steps.withCredentials([[
