@@ -60,7 +60,7 @@ class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializabl
 
   public void execute()
   {
-    String  accountId = 'fugue-' + environmentType_ + '-root'
+    String  accountId = 'sym-s2-fugue-' + environmentType_ + '-root'
     String  roleName  = accountId + '-role'
 
     echo """
@@ -85,7 +85,7 @@ roleName            ${roleName}
       
       logGroup_ = pipeLine_.createLogGroup('fugue')
       pipeLine_.createRoleByArn(accountId, 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy', 'ecsTaskExecutionRole')
-      pipeLine_.createRole(accountId, 'fugue-' + environmentType_ + "-root-policy", roleName)
+      pipeLine_.createRole(accountId, 'sym-s2-fugue-' + environmentType_ + "-root-policy", roleName)
       
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironmentType',
         logGroup_,
@@ -100,7 +100,7 @@ roleName            ${roleName}
       deploy.execute()
       
       def creds = readJSON(text:
-        sh(returnStdout: true, script: 'aws secretsmanager get-secret-value --region us-east-1 --secret-id fugue-' + environmentType_ + '-root-cred'))
+        sh(returnStdout: true, script: 'aws secretsmanager get-secret-value --region us-east-1 --secret-id sym-s2-fugue-' + environmentType_ + '-root-cred'))
     
       def secrets = readJSON(text: creds."SecretString")
       

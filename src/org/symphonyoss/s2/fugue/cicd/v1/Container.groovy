@@ -349,9 +349,9 @@ tenantStage.environment =${tenantStage.environment}
 tenantStage.realm = ${tenantStage.realm}
 tenantStage.region =${tenantStage.region}
 """
-    String prefix = 'https://s3.' + pipeLine_.awsRegion + '.amazonaws.com/fugue-' +
+    String prefix = 'https://s3.' + pipeLine_.awsRegion + '.amazonaws.com/sym-s2-fugue-' +
       tenantStage.environmentType + '-' + pipeLine_.awsRegion +
-      '-config/config/' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenantStage.realm + '-' + tenantStage.region;
+      '-config/config/sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment;
     
     if(tenant != null)
       prefix = prefix  + '-' + tenant;
@@ -375,8 +375,8 @@ tenantStage.region =${tenantStage.region}
     
     // dev-s2dev3-sym-ac8-s2fwd-init-role
     String baseRoleName = tenant == null ? 
-      tenantStage.environmentType + '-' + tenantStage.environment + '-' + pipeLine_.servicename + '-' + containerRole :
-      tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenant + '-' + pipeLine_.servicename + '-' + containerRole
+      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + pipeLine_.servicename + '-' + containerRole :
+      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenant + '-' + pipeLine_.servicename + '-' + containerRole
     
     String roleArn = 'arn:aws:iam::' + pipeLine_.aws_identity[pipeLine_.getCredentialName(tenantStage.environmentType)].Account + ':role/' + baseRoleName + '-role'
     
@@ -471,7 +471,7 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
   
   private String serviceFullName(Station tenantStage, String tenant)
   {
-    return tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenantStage.realm + '-' + tenantStage.region + '-' +
+    return 'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' +
       (tenant == null ? name : tenant + '-' + name)
   }
 

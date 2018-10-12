@@ -70,8 +70,8 @@ realm_              ${realm_}
 region_             ${region_}
 ------------------------------------------------------------------------------------------------------------------------
 """
-    String  accountId = 'fugue-' + environmentType_ + '-cicd'
-    String  roleName  = 'fugue-' + environmentType_ + '-admin-role'
+    String  accountId = 'sym-s2-fugue-' + environmentType_ + '-cicd'
+    String  roleName  = 'sym-s2-fugue-' + environmentType_ + '-admin-role'
     
     pipeLine_.verifyUserAccess(accountId)
     
@@ -83,7 +83,7 @@ region_             ${region_}
     {
       getOrCreateCluster()
       
-      logGroup_ = pipeLine_.createLogGroup('fugue')
+      logGroup_ = pipeLine_.createLogGroup('sym-s2-fugue')
     
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironment',
         logGroup_,
@@ -102,7 +102,7 @@ region_             ${region_}
  
 // No environment credentials actually needed.     
 //      def creds = readJSON(text:
-//        sh(returnStdout: true, script: 'aws secretsmanager get-secret-value --region us-east-1 --secret-id fugue-' + environmentType_ + '-' + environment_ + '-root-cred'))
+//        sh(returnStdout: true, script: 'aws secretsmanager get-secret-value --region us-east-1 --secret-id sym-s2-fugue-' + environmentType_ + '-' + environment_ + '-root-cred'))
 //    
 //      def secrets = readJSON(text: creds."SecretString")
 //      
@@ -134,7 +134,7 @@ CreateEnvironmentTask Finished
     if(cluster_ == null)
       {
         cluster_ = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
-        //      cluster_         = environmentType_ + '-' + environment_ + '-' + region_
+        //      cluster_         = 'sym-s2-' + environmentType_ + '-' + environment_ + '-' + region_
       }
       
     def clusters = readJSON(text:

@@ -565,11 +565,11 @@ serviceGitBranch is ${serviceGitBranch}
     {
       // the dev-cicd user may not have been created yet, run this build as root.
       
-      return 'fugue-' + environmentType + '-root'
+      return 'sym-s2-fugue-' + environmentType + '-root'
     }
     else
     {
-      return 'fugue-' + environmentType + '-cicd'
+      return 'sym-s2-fugue-' + environmentType + '-cicd'
     }
   }
   
@@ -893,7 +893,7 @@ docker push ${remoteImage}
   String logGroupName(Station tenantStage, String tenant, String team)
   {
     if(tenantStage.logGroupName == null) {
-      String name = tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenantStage.realm + '-';
+      String name = 'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-';
       
       return tenant == null ? name + team : name + tenant + '-' + team;
     }

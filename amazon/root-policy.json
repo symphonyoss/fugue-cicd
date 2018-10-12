@@ -26,6 +26,17 @@
             ]
         },
         {
+            "Sid": "EcsRole",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole"
+            ],
+            "Resource": [
+              "arn:aws:iam::*:role/ecsTaskExecutionRole"
+            ]
+        },
+        {
             "Sid": "RootAdmin",
             "Effect": "Allow",
             "Action": [
@@ -35,9 +46,10 @@
                 "iam:AttachRolePolicy"
             ],
             "Resource": [
+              "arn:aws:iam::*:role/sym-s2-*-root-role",
+              "arn:aws:iam::*:role/sym-s2-*-admin-role",
               "arn:aws:iam::*:role/*-root-role",
-              "arn:aws:iam::*:role/*-admin-role",
-              "arn:aws:iam::*:role/ecsTaskExecutionRole"
+              "arn:aws:iam::*:role/*-admin-role"
             ]
         },
         {
@@ -73,6 +85,14 @@
                 "iam:UpdateAssumeRolePolicy"
             ],
             "Resource": [
+                "arn:aws:ecs:*:*:task-definition/sym-s2-fugue-*",
+                "arn:aws:iam::*:policy/sym-s2-fugue-*",
+                "arn:aws:iam::*:role/sym-s2-fugue-*",
+                "arn:aws:iam::*:user/sym-s2-fugue-*",
+                "arn:aws:iam::*:group/sym-s2-fugue-*",
+                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*",
+                
+                
                 "arn:aws:ecs:*:*:task-definition/fugue-*",
                 "arn:aws:iam::*:policy/fugue-*",
                 "arn:aws:iam::*:role/fugue-*",
@@ -90,6 +110,9 @@
                 "s3:GetBucketLocation"
             ],
             "Resource": [
+                "arn:aws:s3:::sym-s2-fugue-*",
+                
+                
                 "arn:aws:s3:::fugue-*"
             ]
         }
