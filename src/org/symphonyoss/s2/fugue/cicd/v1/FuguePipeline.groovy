@@ -352,6 +352,7 @@ Build Action ${env_.buildAction}
       case 'Build to QA':
         doBuild_ = true
         pushTo('dev')
+        deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev')
         pushTo('qa')
         deployTo('qa')
@@ -360,12 +361,14 @@ Build Action ${env_.buildAction}
       case 'Deploy to Dev':
         doBuild_ = false
         pullFrom_ = 'dev'
+        deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev')
         break;
         
       case 'Build to Smoke Test':
         doBuild_ = true
         pushTo('dev')
+        deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev', Purpose.SmokeTest)
         break;
         
@@ -814,7 +817,7 @@ docker push ${remoteImage}
     echo 'deployTo_[' + environmentType + '] = ' + deployTo_[environmentType]
     echo 'pushTo_[' + environmentType + '] = ' + pushTo_[environmentType]
     
-    if(doBuild_ && pushTo_[environmentType])
+    if(doBuild_ && deployTo_[environmentType] == Purpose.Service)
     {
       echo 'Push Tool Image for ' + name
       
