@@ -23,7 +23,12 @@ node
     {
       steps.sh 'aws --version'
       
-      pipeLine.toolsPreFlight()
+      sh 'rm -rf *'
+    
+      if(configGitRepo != null)
+      {
+        loadConfig()
+      }
     }
     stage('Create EnvironmentType')
     { 
