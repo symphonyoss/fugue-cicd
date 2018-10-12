@@ -23,9 +23,7 @@ node
     {
       steps.sh 'aws --version'
       
-      sh 'rm -rf *'
-    
-      pipeLine.loadConfig()
+      pipeLine.toolsPreFlight()
     }
     stage('Create EnvironmentType')
     { 
