@@ -25,10 +25,7 @@ node
       
       sh 'rm -rf *'
     
-      if(configGitRepo != null)
-      {
-        loadConfig()
-      }
+      pipeLine.loadConfig()
     }
     stage('Create EnvironmentType')
     { 
