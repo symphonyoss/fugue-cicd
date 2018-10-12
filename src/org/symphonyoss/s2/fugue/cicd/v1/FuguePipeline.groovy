@@ -9,6 +9,8 @@ import java.util.Random
 
 class FuguePipeline extends JenkinsTask implements Serializable
 {
+  private static final String FUGUE_VERSION = 'fugue0.2'
+  
   private EnvActionImpl environ
   private DSL           steps
   
@@ -553,7 +555,7 @@ serviceGitBranch is ${serviceGitBranch}
           
           if(!toolsDeploy)
           {
-            sh 'docker pull ' + aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/' + 'fugue-deploy:latest'
+            sh 'docker pull ' + aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/' + 'fugue-deploy:' + FUGUE_VERSION
           }
         }
       }
@@ -808,7 +810,11 @@ docker push ${remoteImage}
   
   public void pushDockerToolImage(String environmentType, String name)
   {
-    if(doBuild_ && deployTo_[environmentType])
+    echo 'pushDockerToolImage(environmentType=' + environmentType + ', name=' + name + ')'
+    echo 'deployTo_[' + environmentType + '] = ' + deployTo_[environmentType]
+    echo 'pushTo_[' + environmentType + '] = ' + pushTo_[environmentType]
+    
+    if(doBuild_ && pushTo_[environmentType])
     {
       echo 'Push Tool Image for ' + name
       
@@ -818,7 +824,7 @@ docker push ${remoteImage}
         throw new IllegalStateException("Unknown environment type ${environmentType}")
       
       String localImage = name + ':' + release
-      String remoteImage = repo + name + ':latest'
+      String remoteImage = repo + name + ':' + FUGUE_VERSION
       
       sh 'docker tag ' + localImage + ' ' + remoteImage
       sh 'docker push ' + remoteImage
