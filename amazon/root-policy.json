@@ -21,8 +21,8 @@
             "Effect": "Allow",
             "Action": "logs:*",
             "Resource": [
-                "arn:aws:logs:*:*:log-group:fugue:*:*",
-                "arn:aws:logs:*:*:log-group:fugue"
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue:*:*",
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue"
             ]
         },
         {

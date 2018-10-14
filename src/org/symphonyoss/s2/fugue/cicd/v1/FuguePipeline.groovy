@@ -850,7 +850,7 @@ docker push ${remoteImage}
       credentialsId: accountId,
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
-      logGroup = createLogGroup('fugue')
+      logGroup = createLogGroup('sym-s2-fugue')
     }
     
     FugueDeploy deploy = new FugueDeploy(this, task,
@@ -878,7 +878,7 @@ docker push ${remoteImage}
       credentialsId: accountId,
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
-      logGroup = createLogGroup('fugue')
+      logGroup = createLogGroup('sym-s2-fugue')
     }
     
     FugueDeploy deploy = new FugueDeploy(this, 'DeployStation',

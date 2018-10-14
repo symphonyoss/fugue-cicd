@@ -177,6 +177,7 @@ environment     ${environment_}
 realm           ${realm_}
 region          ${region_}
 tenantId        ${tenantId_}
+logGroup        ${logGroup_}
 ------------------------------------------------------------------------------------------------------------------------
 """
     
