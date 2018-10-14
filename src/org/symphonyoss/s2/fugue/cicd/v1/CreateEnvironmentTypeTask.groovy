@@ -10,9 +10,8 @@ import java.util.Map.Entry
  */
 class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializable
 {
-  private String  logGroup_
   private String  environmentType_
-  private String  dockerLabel_      = ':latest'
+  private String  dockerLabel_      = ':' + FuguePipeline.FUGUE_VERSION
   private String  awsRegion_        = 'us-east-1'
   private String  cluster_
   private String  clusterArn_
@@ -83,12 +82,10 @@ roleName            ${roleName}
     {
       getOrCreateCluster()
       
-      logGroup_ = pipeLine_.createLogGroup('fugue')
       pipeLine_.createRoleByArn(accountId, 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy', 'ecsTaskExecutionRole')
       pipeLine_.createRole(accountId, 'sym-s2-fugue-' + environmentType_ + "-root-policy", roleName)
       
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironmentType',
-        logGroup_,
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
           .withEnvironmentType(environmentType_)
@@ -132,7 +129,7 @@ CreateEnvironmentTypeTask Finished
     if(cluster_ == null)
     {
       cluster_ = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
-      //cluster_         = 'fugue-' + environmentType_
+      //cluster_         = 'sym-s2-fugue-' + environmentType_
     }
     
     def clusters = readJSON(text:

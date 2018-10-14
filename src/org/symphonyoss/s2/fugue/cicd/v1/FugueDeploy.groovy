@@ -11,7 +11,6 @@ import java.util.Map.Entry
 class FugueDeploy extends FuguePipelineTask implements Serializable
 {
   private String  action_
-  private String  logGroup_
   private String  awsRegion_
   private String  dockerLabel_  = ':latest'
 
@@ -43,12 +42,11 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  releaseTrack_
   private String  station_
   
-  public FugueDeploy(FuguePipeline pipeLine, String task, String logGroup, String awsRegion)
+  public FugueDeploy(FuguePipeline pipeLine, String task, String awsRegion)
   {
     super(pipeLine)
     
     action_           = task
-    logGroup_       = logGroup
     awsRegion_      = awsRegion
     
     
@@ -177,15 +175,18 @@ environment     ${environment_}
 realm           ${realm_}
 region          ${region_}
 tenantId        ${tenantId_}
-logGroup        ${logGroup_}
 ------------------------------------------------------------------------------------------------------------------------
 """
     
-    String taskRoleArn    = 'arn:aws:iam::' + awsAccount_ + ':role/' + role_
-    String executionRoleArn    = 'arn:aws:iam::' + awsAccount_ + ':role/' + executionRole_
-    String taskDefFamily  = 'sym-s2-fugue-deploy-' + environmentType_ + '-' + environment_
-    String serviceImage   = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + dockerLabel_
-
+    String taskRoleArn      = 'arn:aws:iam::' + awsAccount_ + ':role/' + role_
+    String executionRoleArn = 'arn:aws:iam::' + awsAccount_ + ':role/' + executionRole_
+    String serviceImage     = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + dockerLabel_
+    String taskDefFamily    = 'sym-s2-fugue-deploy-' + environmentType_
+    
+    if(environment_ != null)
+      taskDefFamily = taskDefFamily + '-' + environment_
+      
+    String logGroup         = 'sym-s2-fugue'
     String consulToken
     String gitHubToken
     
@@ -228,7 +229,7 @@ logGroup        ${logGroup_}
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "''' + logGroup_ + '''",
+                    "awslogs-group": "''' + logGroup + '''",
                     "awslogs-region": "''' + awsRegion_ + '''",
                     "awslogs-stream-prefix": "''' + taskDefFamily + '''"
                 }
@@ -267,11 +268,14 @@ logGroup        ${logGroup_}
     ]
 }'''
 
+
     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
       accessKeyVariable: 'AWS_ACCESS_KEY_ID',
       credentialsId: accountId_,
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
+      pipeLine_.createLogGroup(logGroup)
+      
       def taskdef_file = 'ecs-' + environment_ + '-' + tenantId_ + '.json'
       writeFile file:taskdef_file, text:configTaskdef_
       
@@ -326,7 +330,7 @@ stoppedReason: ${taskDescription.tasks[0].stoppedReason}
 exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 """
       //TODO: only print log if failed...
-      sh 'aws --region us-east-1 logs get-log-events --log-group-name sym-s2-fugue' +
+      sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup +
       ' --log-stream-name ' + taskDefFamily + '/' + taskDefFamily + '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/"$//\' | sed -e \'s/\\\\t/      /\''
       if(taskDescription.tasks[0].containers[0].exitCode != 0) {
         

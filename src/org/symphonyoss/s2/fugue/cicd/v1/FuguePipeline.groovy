@@ -844,17 +844,7 @@ docker push ${remoteImage}
     String logGroup
     String accountId = getCredentialName(tenantStage.environmentType)
     
-    steps.withCredentials([[
-      $class: 'AmazonWebServicesCredentialsBinding',
-      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-      credentialsId: accountId,
-      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
-    {
-      logGroup = createLogGroup('sym-s2-fugue')
-    }
-    
     FugueDeploy deploy = new FugueDeploy(this, task,
-      logGroup,
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
         .withStation(tenantStage)

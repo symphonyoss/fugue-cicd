@@ -10,12 +10,11 @@ import java.util.Map.Entry
  */
 class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
 {
-  private String  logGroup_
   private String  environmentType_
   private String  environment_
   private String  realm_
   private String  region_
-  private String  dockerLabel_      = ':latest'
+  private String  dockerLabel_      = ':' + FuguePipeline.FUGUE_VERSION
   private String  awsRegion_        = 'us-east-1'
   private String  cluster_
   private String  clusterArn_
@@ -83,10 +82,7 @@ region_             ${region_}
     {
       getOrCreateCluster()
       
-      logGroup_ = pipeLine_.createLogGroup('sym-s2-fugue')
-    
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironment',
-        logGroup_,
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
           .withEnvironmentType(environmentType_)
