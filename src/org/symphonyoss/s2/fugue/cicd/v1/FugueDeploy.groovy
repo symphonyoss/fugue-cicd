@@ -201,47 +201,49 @@ realm           ${realm_}
 region          ${region_}
 tenantId        ${tenantId_}
 
+serviceImage    ${serviceImage}
 taskDefFamily   ${taskDefFamily}
 logGroup        ${logGroup}
 ------------------------------------------------------------------------------------------------------------------------
 """   
+    String networkMode = fargateLaunch_ ? 'awsvpc' : 'bridge'
     
     configTaskdef_ =
-    '''{
+    """{
 
-    "executionRoleArn": "''' + executionRoleArn + '''",
-    "taskRoleArn": "''' + taskRoleArn + '''",
-    "family": "sym-s2-fugue-deploy",
-    "networkMode": "''' + (fargateLaunch_ ? 'awsvpc' : 'bridge') + '''", 
-    "memory": "''' + memory_ + '''",
-    "cpu": "''' + cpu_ + '''", 
+    "executionRoleArn": "${executionRoleArn}",
+    "taskRoleArn": "${taskRoleArn}",
+    "family": "${taskDefFamily}",
+    "networkMode": "${networkMode}", 
+    "memory": "${memory_}",
+    "cpu": "${cpu_}", 
     "requiresCompatibilities": [
-        "''' + launchType_ + '''"
+        "${launchType_}"
     ], 
     "containerDefinitions": [
         {
-            "name": "''' + taskDefFamily + '''",
-            "image": "''' + serviceImage + '''",
+            "name": "${taskDefFamily}",
+            "image": "${serviceImage}",
             "essential": true,
             "portMappings": [
                 {
-                    "containerPort": ''' + port_ + ''',
+                    "containerPort": ${port_},
                     "protocol": "tcp"
                 }
             ],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "''' + logGroup + '''",
-                    "awslogs-region": "''' + awsRegion_ + '''",
-                    "awslogs-stream-prefix": "''' + taskDefFamily + '''"
+                    "awslogs-group": "${logGroup}",
+                    "awslogs-region": "${awsRegion_}",
+                    "awslogs-stream-prefix": "${taskDefFamily}"
                 }
             },
             "environment": [
                 {
                     "name": "AWS_REGION",
-                    "value": "''' + awsRegion_ + '''"
-                }'''
+                    "value": "${awsRegion_}"
+                }"""
                     
     addIfNotNull("FUGUE_ENVIRONMENT_TYPE", environmentType_)
     addIfNotNull("FUGUE_ENVIRONMENT", environment_)
@@ -297,8 +299,7 @@ logGroup        ${logGroup}
              ',assignPublicIp=ENABLED}"'
       }
            
-      runCommand = runCommand +
-        ' --task-definition fugue-deploy --count 1'
+      runCommand = "${runCommand} --task-definition ${taskDefFamily} --count 1"
         
         
       def taskRun = readJSON(text:
