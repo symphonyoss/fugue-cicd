@@ -162,22 +162,6 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
 
   public void execute()
   {
-    echo """
-------------------------------------------------------------------------------------------------------------------------
-FugeDeploy V2 execute start
-
-fargateLaunch   ${fargateLaunch_}
-launchType      ${launchType_}
-
-action          ${action_}
-environmentType ${environmentType_}
-environment     ${environment_}
-realm           ${realm_}
-region          ${region_}
-tenantId        ${tenantId_}
-------------------------------------------------------------------------------------------------------------------------
-"""
-    
     String taskRoleArn      = 'arn:aws:iam::' + awsAccount_ + ':role/' + role_
     String executionRoleArn = 'arn:aws:iam::' + awsAccount_ + ':role/' + executionRole_
     String serviceImage     = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + dockerLabel_
@@ -202,6 +186,25 @@ tenantId        ${tenantId_}
     {
       gitHubToken = pipeLine_.env_.GITHUB_TOKEN.trim()
     }
+    
+    echo """
+------------------------------------------------------------------------------------------------------------------------
+FugeDeploy V3 execute start
+
+fargateLaunch   ${fargateLaunch_}
+launchType      ${launchType_}
+
+action          ${action_}
+environmentType ${environmentType_}
+environment     ${environment_}
+realm           ${realm_}
+region          ${region_}
+tenantId        ${tenantId_}
+
+taskDefFamily   ${taskDefFamily}
+logGroup        ${logGroup}
+------------------------------------------------------------------------------------------------------------------------
+"""   
     
     configTaskdef_ =
     '''{

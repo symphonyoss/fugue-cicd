@@ -16,7 +16,7 @@ node
     FuguePipeline pipeLine = FuguePipeline.instance(env, steps)
       .withUseRootCredentials(true)  // We need to force use of root credentials
       .withTeam('fugue')
-      .withConfigGitRepo('SymphonyOSF', 'S2-fugue-config', 'master')
+      .withConfigGitRepo('S2-fugue-config')
       .withToolsDeploy(true)
     
     stage('Preflight')

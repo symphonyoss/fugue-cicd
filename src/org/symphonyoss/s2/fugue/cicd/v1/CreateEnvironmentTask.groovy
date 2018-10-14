@@ -60,7 +60,7 @@ class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
   {
     echo """
 ------------------------------------------------------------------------------------------------------------------------
-CreateEnvironmentTask V2
+CreateEnvironmentTask V3
 
 awsRegion_          ${awsRegion_}
 environmentType_    ${environmentType_}
