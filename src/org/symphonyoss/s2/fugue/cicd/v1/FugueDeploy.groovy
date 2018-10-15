@@ -355,7 +355,7 @@ FugeDeploy execute finish
   private void deleteOldTaskDefs(String taskDefFamily)
   {
     def versions = readJSON(text:
-      sh(returnStdout: true, script: "aws ecs list-task-definitions --region us-east-1 --family-prefix ${taskDefFamily} --sort DESC" ))
+      sh(returnStdout: true, script: "aws ecs list-task-definitions --region us-east-1 --family-prefix ${taskDefFamily} --sort DESC --status ACTIVE" ))
 
     int cnt=3
     
