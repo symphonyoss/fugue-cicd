@@ -30,7 +30,8 @@
             "Effect": "Allow",
             "Action": [
                 "iam:GetRole",
-                "iam:PassRole"
+                "iam:PassRole",
+                "iam:ListAttachedRolePolicies"
             ],
             "Resource": [
               "arn:aws:iam::*:role/ecsTaskExecutionRole"
@@ -43,7 +44,8 @@
                 "iam:GetRole",
                 "iam:PassRole",
                 "iam:CreateRole",
-                "iam:AttachRolePolicy"
+                "iam:AttachRolePolicy",
+                "iam:ListAttachedRolePolicies"
             ],
             "Resource": [
               "arn:aws:iam::*:role/sym-s2-*-root-role",
