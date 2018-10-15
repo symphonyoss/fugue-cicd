@@ -12,6 +12,8 @@
                 "ecs:CreateCluster",
                 "ecs:RegisterTaskDefinition",
                 "ecs:DescribeTasks",
+                "ecs:DescribeTaskDefinition",
+                "ecs:ListTaskDefinitions",
                 "secretsmanager:CreateSecret"
             ],
             "Resource": "*"
