@@ -11,6 +11,7 @@
                 "ecs:DescribeClusters",
                 "ecs:CreateCluster",
                 "ecs:RegisterTaskDefinition",
+                "ecs:DeregisterTaskDefinition",
                 "ecs:DescribeTasks",
                 "ecs:DescribeTaskDefinition",
                 "ecs:ListTaskDefinitions",

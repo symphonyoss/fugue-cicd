@@ -391,7 +391,7 @@ FugeDeploy execute finish
         cnt--
         if(cnt<=0)
         {
-          sh "aws ecs deregister-task-definition --region us-east-1 --task-definition ${v}"
+          sh "aws ecs deregister-task-definition --region us-east-1 --task-definition ${v} > /dev/null"
         }
         else
         {
