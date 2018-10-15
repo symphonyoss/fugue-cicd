@@ -12,7 +12,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
 {
   private String  action_
   private String  awsRegion_
-  private String  dockerLabel_  = ':latest'
+  private String  dockerLabel_  = ':' + FuguePipeline.FUGUE_VERSION
 
 
   private String  awsAccount_
