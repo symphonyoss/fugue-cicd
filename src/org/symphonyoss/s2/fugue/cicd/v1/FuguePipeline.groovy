@@ -987,7 +987,8 @@ docker push ${remoteImage}
   public def createRoleByArn(String accountId, String policyArn, String roleName)
   {
     def status = sh returnStatus:true, script:"aws --region ${awsRegion} iam get-role --role-name ${roleName}"
-
+    boolean attachPolicy = true
+    
     if(status==0)
     {
       echo 'Role ' + roleName + " exists."
@@ -1002,7 +1003,7 @@ docker push ${remoteImage}
           {
             echo "Existing role ${roleName} already has policy ${policyArn} attached, nothing more to do."
             
-            return
+            attachPolicy = false
           }
       }
     }
@@ -1013,12 +1014,14 @@ docker push ${remoteImage}
       sh "aws --region ${awsRegion} iam create-role --role-name ${roleName} --assume-role-policy-document '${trust_relationship_document}'"
     }    
     
-    sh "aws --region ${awsRegion} iam attach-role-policy --role-name ${roleName} --policy-arn ${policyArn}"
-    
-    echo 'Waiting for 20 seconds for the new role to become active....'
-    Thread.sleep(20000)
-    echo 'OK'
-
+    if(attachPolicy)
+    {
+      sh "aws --region ${awsRegion} iam attach-role-policy --role-name ${roleName} --policy-arn ${policyArn}"
+      
+      echo 'Waiting for 20 seconds for the new role to become active....'
+      Thread.sleep(20000)
+      echo 'OK'
+    }
   }
 
       
