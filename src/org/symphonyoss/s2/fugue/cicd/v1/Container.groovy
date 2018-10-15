@@ -471,8 +471,10 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
   
   private String serviceFullName(Station tenantStage, String tenant)
   {
-    return 'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' +
-      (tenant == null ? name : tenant + '-' + name)
+    String tenantIdStr = (tenant == null) ? "" : "-${tenant}"
+    
+    return "sym-s2-${tenantStage.environmentType}-${tenantStage.environment}${tenantIdStr}-${pipeLine_.servicename}-${name}"
+//      (tenant == null ? pipeLine_.servicename + '-' + name : tenant + '-' + pipeLine_.servicename + '-' + name)
   }
 
   

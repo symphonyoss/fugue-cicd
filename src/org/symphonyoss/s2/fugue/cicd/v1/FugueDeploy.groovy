@@ -281,6 +281,8 @@ logGroup        ${logGroup}
     {
       pipeLine_.createLogGroup(logGroup)
       
+      deleteOldTaskDefs(taskDefFamily)
+      
       def taskdef_file = 'ecs-' + environment_ + '-' + tenantId_ + '.json'
       writeFile file:taskdef_file, text:configTaskdef_
       
@@ -348,6 +350,28 @@ exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 FugeDeploy execute finish
 ------------------------------------------------------------------------------------------------------------------------
 """
+  }
+  
+  private void deleteOldTaskDefs(String taskDefFamily)
+  {
+    def versions = readJSON(text:
+      sh(returnStdout: true, script: "aws ecs list-task-definitions --region us-east-1 --family-prefix ${taskDefFamily} --sort DESC" ))
+
+    int cnt=3
+    
+    versions."taskDefinitionArns".each
+    {
+      v ->
+        cnt--
+        if(cnt<=0)
+        {
+          echo "aws ecs deregister-task-definition --region us-east-1 --task-definition ${v}"
+        }
+        else
+        {
+          echo "Retaining tashDef ${v}"
+        }
+    }
   }
   
   private void addIfNotNull(String name, Object value)
