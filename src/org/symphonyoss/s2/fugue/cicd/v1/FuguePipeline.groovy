@@ -986,29 +986,39 @@ docker push ${remoteImage}
   
   public def createRoleByArn(String accountId, String policyArn, String roleName)
   {
-    
-   
-    echo 'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
-    def status = sh returnStatus:true, script:'aws --region ' + awsRegion + ' iam get-role --role-name ' + roleName
+    def status = sh returnStatus:true, script:"aws --region ${awsRegion} iam get-role --role-name ${roleName}"
 
     if(status==0)
     {
       echo 'Role ' + roleName + " exists."
+      
+      def attachedPolicies = readJSON(text:
+        sh(returnStdout: true, script: "aws --region ${awsRegion} iam list-attached-role-policies --role-name ${roleName}"))
+      
+      attachedPolicies."AttachedPolicies".each
+      {
+        policySpec ->
+          if(policyArn.equals(policySpec."PolicyArn"))
+          {
+            echo "Existing role ${roleName} already has policy ${policyArn} attached, nothing more to do."
+            
+            return
+          }
+      }
     }
     else
     {
-      echo 'Creating role ' + roleName + "..."
+      echo "Creating role ${roleName}..."
       
-      sh 'aws --region ' + awsRegion + ' iam create-role --role-name ' + roleName +
-        ' --assume-role-policy-document \'' + trust_relationship_document + '\''
-        
-      sh 'aws --region ' + awsRegion + ' iam attach-role-policy --role-name ' + roleName +
-        ' --policy-arn ' + policyArn
-      
-      echo 'Waiting for 20 seconds for the new role to become active....'
-      Thread.sleep(20000)
-      echo 'OK'
-    }
+      sh "aws --region ${awsRegion} iam create-role --role-name ${roleName} --assume-role-policy-document '${trust_relationship_document}'"
+    }    
+    
+    sh "aws --region ${awsRegion} iam attach-role-policy --role-name ${roleName} --policy-arn ${policyArn}"
+    
+    echo 'Waiting for 20 seconds for the new role to become active....'
+    Thread.sleep(20000)
+    echo 'OK'
+
   }
 
       
