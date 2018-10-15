@@ -162,12 +162,15 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   
   public void pullImageFrom(String env)
   {
-    String pullRepo = pipeLine_.docker_repo[env]
     String accountId          = 'sym-s2-fugue-' + env + '-cicd'
+    
+    pipeLine_.verifyUserAccess(accountId, env)
+    
+    String pullRepo           = pipeLine_.docker_repo[env]
     String awsAccount         = pipeLine_.aws_identity[accountId].'Account';
     
-    String srcServiceImage     = awsAccount + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + FuguePipeline.FUGUE_VERSION
-    String tgtServiceImage     = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + FuguePipeline.FUGUE_VERSION
+    String srcServiceImage    = awsAccount + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + FuguePipeline.FUGUE_VERSION
+    String tgtServiceImage    = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + FuguePipeline.FUGUE_VERSION
     
     sh """
 docker pull ${srcServiceImage}
