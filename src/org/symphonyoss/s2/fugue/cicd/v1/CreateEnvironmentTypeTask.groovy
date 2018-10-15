@@ -93,7 +93,9 @@ roleName            ${roleName}
           .withRole(roleName)
           .withAccountId(accountId)
           .withCluster(cluster_)
-        
+      
+      deploy.pullImageFrom('dev')
+      
       deploy.execute()
       
       def creds = readJSON(text:
