@@ -9,7 +9,7 @@ import java.util.Random
 
 class FuguePipeline extends JenkinsTask implements Serializable
 {
-  private static final String FUGUE_VERSION = 'fugue0.2'
+  private static final String FUGUE_VERSION = 'v2'
   
   private EnvActionImpl environ
   private DSL           steps
