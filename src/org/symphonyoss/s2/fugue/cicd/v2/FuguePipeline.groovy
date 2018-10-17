@@ -540,8 +540,9 @@ serviceGitBranch is ${serviceGitBranch}
   {
     echo 'fugue-cicd version @Bruce-2018-10-11'
     echo """Verifying ${environmentType} access with credential ${credentialId}...
-doBuild_      ${doBuild_}
-toolsDeploy   ${toolsDeploy}
+doBuild_        ${doBuild_}
+toolsDeploy     ${toolsDeploy}
+environmentType ${environmentType}
 """
     
     steps.withCredentials([[
@@ -589,7 +590,7 @@ toolsDeploy   ${toolsDeploy}
             
           }
           
-          echo "NOW toolsDeploy = ${toolsDeploy}"
+          echo "NOW toolsDeploy to ${toolsDeploy}"
           
           if(toolsDeploy)
           {
@@ -629,9 +630,13 @@ toolsDeploy   ${toolsDeploy}
             
             echo 'trace 2'
           }
+          echo 'trace 3'
         }
+        echo 'trace 4'
       }
+      echo 'trace 5'
     }
+    echo 'trace 6'
   }
   
   private String getCredentialName(String environmentType)

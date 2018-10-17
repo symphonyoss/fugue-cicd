@@ -64,7 +64,7 @@ class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializabl
 
     echo """
 ------------------------------------------------------------------------------------------------------------------------
-CreateEnvironmentTypeTask V2
+CreateEnvironmentTypeTask org.symphonyoss.s2.fugue.cicd.v2
 
 awsRegion_          ${awsRegion_}
 environmentType_    ${environmentType_}
@@ -74,13 +74,19 @@ roleName            ${roleName}
 """
     verifyUserAccess(accountId, environmentType_)
     
+    echo 'trace a'
+    
     withCredentials([[
       $class:             'AmazonWebServicesCredentialsBinding',
       accessKeyVariable:  'AWS_ACCESS_KEY_ID',
       credentialsId:      accountId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
+      echo 'trace b'
+      
       getOrCreateCluster()
+      
+      echo 'trace c'
       
       pipeLine_.createRoleByArn(accountId, 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy', 'ecsTaskExecutionRole')
       pipeLine_.createRole(accountId, 'sym-s2-fugue-' + environmentType_ + "-root-policy", roleName)
@@ -94,7 +100,10 @@ roleName            ${roleName}
           .withAccountId(accountId)
           .withCluster(cluster_)
       
-      deploy.pullImageFrom('dev')
+      if(!pipeLine_.toolsDeploy)
+      {
+        deploy.pullImageFrom('dev')
+      }
       
       deploy.execute()
       
@@ -128,6 +137,8 @@ CreateEnvironmentTypeTask Finished
   
   public void getOrCreateCluster()
   {
+    echo 'trace b1'
+    
     if(cluster_ == null)
     {
       cluster_ = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
