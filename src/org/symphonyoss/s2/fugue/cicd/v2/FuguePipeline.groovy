@@ -187,6 +187,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   /** Intended for fugue-tools use only NOT TO BE CALLED BY NORMAL SERVICES */
   public FuguePipeline withToolsDeploy(boolean b) {
     toolsDeploy = b
+    echo "set toolsDeploy to ${toolsDeploy}"
     return this
   }
   
@@ -509,7 +510,10 @@ serviceGitBranch is ${serviceGitBranch}
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
     echo 'fugue-cicd version @Bruce-2018-10-11'
-    echo 'Verifying ' + environmentType + ' access with credential ' + credentialId + '...'
+    echo """Verifying ${environmentType} access with credential ${credentialId}...
+doBuild_      ${doBuild_}
+toolsDeploy   ${toolsDeploy}
+"""
     
     steps.withCredentials([[
       $class:             'AmazonWebServicesCredentialsBinding',
