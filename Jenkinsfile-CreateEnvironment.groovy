@@ -1,9 +1,9 @@
 @Library('fugue-cicd')
 
 
-import org.symphonyoss.s2.fugue.cicd.v1.FuguePipeline
-import org.symphonyoss.s2.fugue.cicd.v1.FugueDeploy
-import org.symphonyoss.s2.fugue.cicd.v1.CreateEnvironmentTask
+import org.symphonyoss.s2.fugue.cicd.v2.FuguePipeline
+import org.symphonyoss.s2.fugue.cicd.v2.FugueDeploy
+import org.symphonyoss.s2.fugue.cicd.v2.CreateEnvironmentTask
 
 properties([
   parameters([

@@ -11,7 +11,10 @@
                 "ecs:DescribeClusters",
                 "ecs:CreateCluster",
                 "ecs:RegisterTaskDefinition",
+                "ecs:DeregisterTaskDefinition",
                 "ecs:DescribeTasks",
+                "ecs:DescribeTaskDefinition",
+                "ecs:ListTaskDefinitions",
                 "secretsmanager:CreateSecret"
             ],
             "Resource": "*"
@@ -21,8 +24,20 @@
             "Effect": "Allow",
             "Action": "logs:*",
             "Resource": [
-                "arn:aws:logs:*:*:log-group:fugue:*:*",
-                "arn:aws:logs:*:*:log-group:fugue"
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue:*:*",
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue"
+            ]
+        },
+        {
+            "Sid": "EcsRole",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole",
+                "iam:ListAttachedRolePolicies"
+            ],
+            "Resource": [
+              "arn:aws:iam::*:role/ecsTaskExecutionRole"
             ]
         },
         {
@@ -32,12 +47,14 @@
                 "iam:GetRole",
                 "iam:PassRole",
                 "iam:CreateRole",
-                "iam:AttachRolePolicy"
+                "iam:AttachRolePolicy",
+                "iam:ListAttachedRolePolicies"
             ],
             "Resource": [
+              "arn:aws:iam::*:role/sym-s2-*-root-role",
+              "arn:aws:iam::*:role/sym-s2-*-admin-role",
               "arn:aws:iam::*:role/*-root-role",
-              "arn:aws:iam::*:role/*-admin-role",
-              "arn:aws:iam::*:role/ecsTaskExecutionRole"
+              "arn:aws:iam::*:role/*-admin-role"
             ]
         },
         {
@@ -73,6 +90,14 @@
                 "iam:UpdateAssumeRolePolicy"
             ],
             "Resource": [
+                "arn:aws:ecs:*:*:task-definition/sym-s2-fugue-*",
+                "arn:aws:iam::*:policy/sym-s2-fugue-*",
+                "arn:aws:iam::*:role/sym-s2-fugue-*",
+                "arn:aws:iam::*:user/sym-s2-fugue-*",
+                "arn:aws:iam::*:group/sym-s2-fugue-*",
+                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*",
+                
+                
                 "arn:aws:ecs:*:*:task-definition/fugue-*",
                 "arn:aws:iam::*:policy/fugue-*",
                 "arn:aws:iam::*:role/fugue-*",
@@ -90,6 +115,9 @@
                 "s3:GetBucketLocation"
             ],
             "Resource": [
+                "arn:aws:s3:::sym-s2-fugue-*",
+                
+                
                 "arn:aws:s3:::fugue-*"
             ]
         }

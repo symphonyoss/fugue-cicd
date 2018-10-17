@@ -3,6 +3,10 @@ Fugue Jenkins pipeline library
 
 ## Change Log
 
+## 2018-10-17
+A v2 pipeline is now included with a renaming of almost all entities. The v1 pipeline is now deprecated and users of it
+should move to the v2 pipeline.
+
 ## 2018-09-28
 The Jenkins BUILD_NUMBER is only unique within a single job so to deal with situations in which there are multiple jobs
 on the same server or multiple Jenkins servers with build jobs for the same projects, the pipeline now uses a 
