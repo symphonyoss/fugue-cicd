@@ -216,7 +216,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
       echo "if(toolsDeploy==false) == false"
     }
 
-    throw new Exception("STOP")
     
     return this
   }
@@ -590,9 +589,45 @@ toolsDeploy   ${toolsDeploy}
             
           }
           
+          echo "NOW toolsDeploy = ${toolsDeploy}"
+          
+          if(toolsDeploy)
+          {
+            echo "if(toolsDeploy) == true"
+          }
+          else
+          {
+            echo "if(toolsDeploy) == false"
+          }
+          
           if(!toolsDeploy)
           {
+            echo "if(!toolsDeploy) == true"
+          }
+          else
+          {
+            echo "if(!toolsDeploy) == false"
+          }
+          
+          if(toolsDeploy==false)
+          {
+            echo "if(toolsDeploy==false) == true"
+          }
+          else
+          {
+            echo "if(toolsDeploy==false) == false"
+          }
+            
+            
+          if(!toolsDeploy)
+          {
+            echo 'trace 1'
             sh 'docker pull ' + aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/' + 'fugue-deploy:' + FUGUE_VERSION
+          }
+          else
+          {
+            
+            echo 'trace 2'
           }
         }
       }
