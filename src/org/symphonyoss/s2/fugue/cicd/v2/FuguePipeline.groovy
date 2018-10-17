@@ -531,7 +531,7 @@ environmentType ${environmentType}
 
       if(environmentType != null)
       {
-        docker_repo[environmentType] = "${aws_identity[credentialId].Account}.dkr.ecr.us-east-1.amazonaws.com/${globalNamePrefix_}${serviceId_}/'"
+        docker_repo[environmentType] = "${aws_identity[credentialId].Account}.dkr.ecr.us-east-1.amazonaws.com/${globalNamePrefix_}${serviceId_}/"
         
         service_map.values().each
         {
@@ -821,8 +821,6 @@ docker push ${remoteImage}
       echo 'localImage=' + localImage
       echo 'remoteImage=' + remoteImage
       
-      sh 'docker tag ' + localImage + ' ' + remoteImage
-    
       sh "docker tag ${localImage} ${remoteImage}"
       sh "docker push ${remoteImage}"
     }
