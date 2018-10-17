@@ -25,8 +25,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private Set<String> logGroupSet = []
   private String symbase = 'symbase'
 
-
-  private String servicename
+  private globalNamePrefix_ = 'sym-s2-'
+  private String serviceId_
   private String symteam = 'sym'
 
   private String awsRegion = 'us-east-1'
@@ -113,7 +113,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   }
   
   public FuguePipeline withServiceName(String n) {
-      this.servicename = n
+      this.serviceId_ = n
       return this
   }
   
@@ -207,7 +207,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   }
 
   private String serviceFullName(String env, String tenant) {
-      return env+'-'+tenant+'-'+servicename
+      return env+'-'+tenant+'-'+serviceId_
   }
   
   public void deleteUser(String userName, String groupName)
@@ -428,9 +428,9 @@ deployTo     ${deployTo_}
     {
       loadConfig()
 
-      sh 'ls -l config/service/' + servicename + '/service.json'
+      sh 'ls -l config/service/' + serviceId_ + '/service.json'
 
-      def service = readJSON file:'config/service/' + servicename + '/service.json'
+      def service = readJSON file:'config/service/' + serviceId_ + '/service.json'
 
       echo 'service is ' + service
 
@@ -531,7 +531,7 @@ environmentType ${environmentType}
 
       if(environmentType != null)
       {
-        docker_repo[environmentType] = aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/'+symteam+'/'
+        docker_repo[environmentType] = "${aws_identity[credentialId].Account}.dkr.ecr.us-east-1.amazonaws.com/${globalNamePrefix_}${serviceId_}/'"
         
         service_map.values().each
         {
@@ -539,21 +539,21 @@ environmentType ${environmentType}
             
           try
           {
-              sh 'aws --region ' + awsRegion + ' ecr describe-repositories --repository-names '+symteam+'/'+ms.name
+              sh "aws --region ${awsRegion} ecr describe-repositories --repository-names ${globalNamePrefix_}${serviceId_}/${ms.name}"
           }
           catch(Exception e)
           {
               echo 'Exception ' + e.toString()
-              sh 'aws --region ' + awsRegion + ' ecr create-repository --repository-name '+symteam+'/'+ms.name
+              sh "aws --region ${awsRegion} ecr create-repository --repository-name ${globalNamePrefix_}${serviceId_}/${ms.name}"
           }
         }
         
-        sh "set +x; echo 'Logging into docker repo'; `aws --region " + awsRegion + " ecr get-login --no-include-email`"
+        sh "set +x; echo 'Logging into docker repo'; `aws --region ${awsRegion} ecr get-login --no-include-email`"
                     
         if(doBuild_ && environmentType=='dev')
         {
                         
-          sh 'docker pull 189141687483.dkr.ecr.' + awsRegion + '.amazonaws.com/symphony-es/base-java8:latest'
+          sh "docker pull 189141687483.dkr.ecr.${awsRegion}.amazonaws.com/symphony-es/base-java8:latest"
           
           
           steps.withCredentials([steps.file(credentialsId: 'maven-settings', variable: 'FILE')]) {
@@ -563,7 +563,7 @@ environmentType ${environmentType}
             
           if(!toolsDeploy)
           {
-            sh 'docker pull ' + aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/' + 'fugue-deploy:' + FUGUE_VERSION
+            sh "docker pull ${aws_identity[credentialId].Account}.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy:${FUGUE_VERSION}"
           }
         }
       }
@@ -576,11 +576,11 @@ environmentType ${environmentType}
     {
       // the dev-cicd user may not have been created yet, run this build as root.
       
-      return 'sym-s2-fugue-' + environmentType + '-root'
+      return "${globalNamePrefix_}fugue-${environmentType}-root"
     }
     else
     {
-      return 'sym-s2-fugue-' + environmentType + '-cicd'
+      return "${globalNamePrefix_}fugue-${environmentType}-cicd"
     }
   }
   
@@ -863,7 +863,7 @@ docker push ${remoteImage}
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
         .withStation(tenantStage)
         .withTenantId(tenant)
-        .withServiceName(servicename)
+        .withServiceName(serviceId_)
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
@@ -880,7 +880,7 @@ docker push ${remoteImage}
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
         .withTrack(releaseTrack)
         .withStation(tenantStage)
-        .withServiceName(servicename)
+        .withServiceName(serviceId_)
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
@@ -896,7 +896,7 @@ docker push ${remoteImage}
   String logGroupName(Station tenantStage, String tenant, String team)
   {
     if(tenantStage.logGroupName == null) {
-      String name = 'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-';
+      String name = globalNamePrefix_ + tenantStage.environmentType + '-' + tenantStage.environment + '-';
       
       return tenant == null ? name + team : name + tenant + '-' + team;
     }
