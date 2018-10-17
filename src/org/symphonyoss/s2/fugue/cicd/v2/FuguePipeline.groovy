@@ -1,4 +1,4 @@
-package org.symphonyoss.s2.fugue.cicd.v1
+package org.symphonyoss.s2.fugue.cicd.v2
 
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.jenkinsci.plugins.workflow.cps.DSL
@@ -679,6 +679,9 @@ serviceGitBranch is ${serviceGitBranch}
     if(getDeployTo(tenantStage.environmentType).isValidFor(requiredPurpose))
     {
       echo "OK, lets do this!"
+      
+      boolean doMultiTenantConfig = true
+      
       tenantStage.tenants.each {
         String tenant = it
         
@@ -686,7 +689,13 @@ serviceGitBranch is ${serviceGitBranch}
         ', environment=' + tenantStage.environment + ', tenant ' + tenant
         
         deployConfig(tenantStage, tenant, 'DeployConfig')
+        doMultiTenantConfig = false
 
+      }
+      
+      if(doMultiTenantConfig)
+      {
+        deployConfig(tenantStage, null, 'DeployConfig')
       }
         
       if(!toolsDeploy) {

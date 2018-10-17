@@ -1,4 +1,4 @@
-package org.symphonyoss.s2.fugue.cicd.v1
+package org.symphonyoss.s2.fugue.cicd.v2
 
 class Station implements Serializable {
   String                name
