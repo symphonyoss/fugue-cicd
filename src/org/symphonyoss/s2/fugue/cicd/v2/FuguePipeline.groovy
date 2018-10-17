@@ -187,35 +187,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   /** Intended for fugue-tools use only NOT TO BE CALLED BY NORMAL SERVICES */
   public FuguePipeline withToolsDeploy(boolean b) {
     toolsDeploy = b
-    echo "set toolsDeploy to ${toolsDeploy}"
-    
-    if(toolsDeploy)
-    {
-      echo "if(toolsDeploy) == true"
-    }
-    else
-    {
-      echo "if(toolsDeploy) == false"
-    }
-    
-    if(!toolsDeploy)
-    {
-      echo "if(!toolsDeploy) == true"
-    }
-    else
-    {
-      echo "if(!toolsDeploy) == false"
-    }
-    
-    if(toolsDeploy==false)
-    {
-      echo "if(toolsDeploy==false) == true"
-    }
-    else
-    {
-      echo "if(toolsDeploy==false) == false"
-    }
-
     
     return this
   }
@@ -588,55 +559,15 @@ environmentType ${environmentType}
           steps.withCredentials([steps.file(credentialsId: 'maven-settings', variable: 'FILE')]) {
             sh 'cp $FILE /usr/share/maven/conf/settings.xml'
             
-          }
-          
-          echo "NOW toolsDeploy to ${toolsDeploy}"
-          
-          if(toolsDeploy)
-          {
-            echo "if(toolsDeploy) == true"
-          }
-          else
-          {
-            echo "if(toolsDeploy) == false"
-          }
-          
-          if(!toolsDeploy)
-          {
-            echo "if(!toolsDeploy) == true"
-          }
-          else
-          {
-            echo "if(!toolsDeploy) == false"
-          }
-          
-          if(toolsDeploy==false)
-          {
-            echo "if(toolsDeploy==false) == true"
-          }
-          else
-          {
-            echo "if(toolsDeploy==false) == false"
-          }
-            
+          } 
             
           if(!toolsDeploy)
           {
-            echo 'trace 1'
             sh 'docker pull ' + aws_identity[credentialId].Account+'.dkr.ecr.us-east-1.amazonaws.com/fugue/' + 'fugue-deploy:' + FUGUE_VERSION
           }
-          else
-          {
-            
-            echo 'trace 2'
-          }
-          echo 'trace 3'
         }
-        echo 'trace 4'
       }
-      echo 'trace 5'
     }
-    echo 'trace 6'
   }
   
   private String getCredentialName(String environmentType)

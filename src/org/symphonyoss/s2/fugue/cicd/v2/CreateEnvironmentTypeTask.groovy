@@ -74,19 +74,13 @@ roleName            ${roleName}
 """
     verifyUserAccess(accountId, environmentType_)
     
-    echo 'trace a'
-    
     withCredentials([[
       $class:             'AmazonWebServicesCredentialsBinding',
       accessKeyVariable:  'AWS_ACCESS_KEY_ID',
       credentialsId:      accountId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
-      echo 'trace b'
-      
       getOrCreateCluster()
-      
-      echo 'trace c'
       
       pipeLine_.createRoleByArn(accountId, 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy', 'ecsTaskExecutionRole')
       pipeLine_.createRole(accountId, 'sym-s2-fugue-' + environmentType_ + "-root-policy", roleName)
@@ -137,8 +131,6 @@ CreateEnvironmentTypeTask Finished
   
   public void getOrCreateCluster()
   {
-    echo 'trace b1'
-    
     if(cluster_ == null)
     {
       cluster_ = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
