@@ -188,6 +188,36 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public FuguePipeline withToolsDeploy(boolean b) {
     toolsDeploy = b
     echo "set toolsDeploy to ${toolsDeploy}"
+    
+    if(toolsDeploy)
+    {
+      echo "if(toolsDeploy) == true"
+    }
+    else
+    {
+      echo "if(toolsDeploy) == false"
+    }
+    
+    if(!toolsDeploy)
+    {
+      echo "if(!toolsDeploy) == true"
+    }
+    else
+    {
+      echo "if(!toolsDeploy) == false"
+    }
+    
+    if(toolsDeploy==false)
+    {
+      echo "if(toolsDeploy==false) == true"
+    }
+    else
+    {
+      echo "if(toolsDeploy==false) == false"
+    }
+
+    throw new Exception("STOP")
+    
     return this
   }
   
