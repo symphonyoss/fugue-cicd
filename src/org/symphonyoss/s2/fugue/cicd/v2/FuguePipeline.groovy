@@ -818,6 +818,11 @@ docker push ${remoteImage}
       String localImage = name + ':' + release
       String remoteImage = repo + localImage + '-' + buildQualifier_
       
+      echo 'localImage=' + localImage
+      echo 'remoteImage=' + remoteImage
+      
+      sh 'docker tag ' + localImage + ' ' + remoteImage
+    
       sh "docker tag ${localImage} ${remoteImage}"
       sh "docker push ${remoteImage}"
     }
