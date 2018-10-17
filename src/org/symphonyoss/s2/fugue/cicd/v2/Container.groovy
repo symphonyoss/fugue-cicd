@@ -37,7 +37,7 @@ class Container extends FuguePipelineTask implements Serializable {
   }
   
   String getRole() {
-    containerRole == null ? pipeLine_.servicename : containerRole
+    containerRole == null ? pipeLine_.serviceId_ : containerRole
   }
 
   public Container withName(String n) {
@@ -356,7 +356,7 @@ tenantStage.region =${tenantStage.region}
     if(tenant != null)
       prefix = prefix  + '-' + tenant;
       
-    return prefix + '-' + pipeLine_.servicename + ".json"
+    return prefix + '-' + pipeLine_.serviceId_ + ".json"
   }
   
   private void registerTaskDef(Station tenantStage, String tenant)
@@ -375,8 +375,8 @@ tenantStage.region =${tenantStage.region}
     
     // dev-s2dev3-sym-ac8-s2fwd-init-role
     String baseRoleName = tenant == null ? 
-      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + pipeLine_.servicename + '-' + containerRole :
-      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenant + '-' + pipeLine_.servicename + '-' + containerRole
+      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + pipeLine_.serviceId_ + '-' + containerRole :
+      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenant + '-' + pipeLine_.serviceId_ + '-' + containerRole
     
     String roleArn = 'arn:aws:iam::' + pipeLine_.aws_identity[pipeLine_.getCredentialName(tenantStage.environmentType)].Account + ':role/' + baseRoleName + '-role'
     
@@ -390,7 +390,7 @@ tenantStage.region =${tenantStage.region}
       'FUGUE_REALM':tenantStage.realm,
       'FUGUE_REGION':tenantStage.region,
       'FUGUE_CONFIG':fugueConfig(tenantStage, tenant),
-      'FUGUE_SERVICE':pipeLine_.servicename,
+      'FUGUE_SERVICE':pipeLine_.serviceId_,
       'FUGUE_PRIMARY_ENVIRONMENT':tenantStage.primaryEnvironment,
       'FUGUE_PRIMARY_REGION':tenantStage.primaryRegion,
       'TASK_ROLE_ARN':roleArn,
@@ -473,8 +473,8 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
   {
     String tenantIdStr = (tenant == null) ? "" : "-${tenant}"
     
-    return "sym-s2-${tenantStage.environmentType}-${tenantStage.environment}${tenantIdStr}-${pipeLine_.servicename}-${name}"
-//      (tenant == null ? pipeLine_.servicename + '-' + name : tenant + '-' + pipeLine_.servicename + '-' + name)
+    return "sym-s2-${tenantStage.environmentType}-${tenantStage.environment}${tenantIdStr}-${pipeLine_.serviceId_}-${name}"
+//      (tenant == null ? pipeLine_.serviceId_ + '-' + name : tenant + '-' + pipeLine_.serviceId_ + '-' + name)
   }
 
   
