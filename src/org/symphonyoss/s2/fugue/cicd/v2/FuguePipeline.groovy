@@ -563,7 +563,7 @@ environmentType ${environmentType}
             
           if(!toolsDeploy)
           {
-            sh "docker pull ${aws_identity[credentialId].Account}.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy:${FUGUE_VERSION}"
+            sh "docker pull ${aws_identity[credentialId].Account}.dkr.ecr.us-east-1.amazonaws.com/${globalNamePrefix_}fugue/fugue-deploy:${FUGUE_VERSION}"
           }
         }
       }
