@@ -109,7 +109,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     primaryRegion_      = s.primaryRegion
     role_               = 'sym-s2-' + environmentType_ + '-' + environment_ + '-admin-role'
     consulTokenId_      = 'sym-consul-' + environmentType_
-    accountId_          = 'sym-s2-fugue-' + environmentType_ + '-cicd'
+    accountId_          = pipeLine_.globalNamePrefix_ + 'fugue-' + environmentType_ + '-cicd'
     awsAccount_         = pipeLine_.aws_identity[accountId_].'Account';
 //    cluster_            = environmentType_ + '-' + environment_ + '-' + region_
     cluster_            = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
@@ -162,14 +162,14 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   
   public void pullImageFrom(String env)
   {
-    String accountId          = 'sym-s2-fugue-' + env + '-cicd'
+    String accountId          = pipeLine_.globalNamePrefix_ + 'fugue-' + env + '-cicd'
     
     pipeLine_.verifyUserAccess(accountId, env)
     
     String pullRepo           = pipeLine_.docker_repo[env]
     String awsAccount         = pipeLine_.aws_identity[accountId].'Account';
     
-    String imageName          = '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy:' + FuguePipeline.FUGUE_VERSION
+    String imageName          = '.dkr.ecr.us-east-1.amazonaws.com/' + pipeLine_.globalNamePrefix_ + 'fugue/fugue-deploy:' + FuguePipeline.FUGUE_VERSION
     String srcServiceImage    = awsAccount + imageName
     String tgtServiceImage    = awsAccount_ + imageName
     
@@ -184,13 +184,13 @@ docker push ${tgtServiceImage}
   {
     String taskRoleArn      = 'arn:aws:iam::' + awsAccount_ + ':role/' + role_
     String executionRoleArn = 'arn:aws:iam::' + awsAccount_ + ':role/' + executionRole_
-    String serviceImage     = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/fugue/fugue-deploy' + dockerLabel_
-    String taskDefFamily    = 'sym-s2-fugue-deploy-' + environmentType_
+    String serviceImage     = awsAccount_ + '.dkr.ecr.us-east-1.amazonaws.com/' + pipeLine_.globalNamePrefix_ + 'fugue/fugue-deploy' + dockerLabel_
+    String taskDefFamily    = pipeLine_.globalNamePrefix_ + 'fugue-deploy-' + environmentType_
     
     if(environment_ != null)
       taskDefFamily = taskDefFamily + '-' + environment_
       
-    String logGroup         = 'sym-s2-fugue'
+    String logGroup         = pipeLine_.globalNamePrefix_ + 'fugue'
     String consulToken
     String gitHubToken
     
