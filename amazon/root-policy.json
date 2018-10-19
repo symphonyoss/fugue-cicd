@@ -6,7 +6,6 @@
             "Effect": "Allow",
             "Action": [
                 "logs:DescribeLogGroups",
-                "ecr:*",
                 "ecs:ListClusters",
                 "ecs:DescribeClusters",
                 "ecs:CreateCluster",
@@ -27,6 +26,56 @@
                 "arn:aws:logs:*:*:log-group:sym-s2-fugue:*:*",
                 "arn:aws:logs:*:*:log-group:sym-s2-fugue"
             ]
+        },
+        {
+            "Sid": "ContainerRegistryS2",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchDeleteImage",
+                "ecr:UploadLayerPart",
+                "ecr:ListImages",
+                "ecr:DeleteRepository",
+                "ecr:PutImage",
+                "ecr:SetRepositoryPolicy",
+                "ecr:BatchGetImage",
+                "ecr:CompleteLayerUpload",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:DeleteRepositoryPolicy",
+                "ecr:InitiateLayerUpload",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": "arn:aws:ecr:*:*:repository/sym-s2-*"
+        },
+        {
+            "Sid": "ContainerRegistryES",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:ListImages",
+                "ecr:BatchGetImage",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": [
+              "arn:aws:ecr:*:*:repository/symphony-es",
+              "arn:aws:ecr:*:*:repository/symphony-es/*",
+              "arn:aws:ecr:*:*:repository/symbase",
+              "arn:aws:ecr:*:*:repository/symbase/*"
+              ]
+        },
+        {
+            "Sid": "ContainerRegistryAll",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:CreateRepository",
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
         },
         {
             "Sid": "EcsRole",

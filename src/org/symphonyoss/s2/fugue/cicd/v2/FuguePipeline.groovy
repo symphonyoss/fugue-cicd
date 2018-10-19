@@ -344,7 +344,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void preflight()
   {
     echo """====================================
-Preflight V2
+Preflight V2.1
 Build Action ${env_.buildAction}
 """
     
@@ -380,9 +380,16 @@ Build Action ${env_.buildAction}
         deployTo('qa')
         break;
         
-      case 'Promote QA to Prod':
+      case 'Promote QA to Stage':
         doBuild_ = false
         pullFrom_ = 'qa'
+        pushTo('stage')
+        deployTo('stage')
+        break;
+        
+      case 'Promote Stage to Prod':
+        doBuild_ = false
+        pullFrom_ = 'stage'
         pushTo('prod')
         deployTo('prod')
         break;
@@ -501,7 +508,10 @@ serviceGitBranch is ${serviceGitBranch}
 
     if(verifyCreds('qa'))
     {
-      verifyCreds('stage')
+      if(verifyCreds('stage'))
+      {
+        verifyCreds('prod')
+      }
     }
     
     pullDockerImages()
@@ -509,7 +519,6 @@ serviceGitBranch is ${serviceGitBranch}
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
-    echo 'fugue-cicd version @Bruce-2018-10-11'
     echo """Verifying ${environmentType} access with credential ${credentialId}...
 doBuild_        ${doBuild_}
 toolsDeploy     ${toolsDeploy}
@@ -963,7 +972,7 @@ docker push ${remoteImage}
   public static def parameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
    
     steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
     steps.string(name: 'buildQualifier',    defaultValue: Default.value(env,  'buildQualifier',    ''),      description: 'The build qualifier for promotion.'),
