@@ -101,9 +101,7 @@
             ],
             "Resource": [
               "arn:aws:iam::*:role/sym-s2-*-root-role",
-              "arn:aws:iam::*:role/sym-s2-*-admin-role",
-              "arn:aws:iam::*:role/*-root-role",
-              "arn:aws:iam::*:role/*-admin-role"
+              "arn:aws:iam::*:role/sym-s2-*-admin-role"
             ]
         },
         {
@@ -144,15 +142,7 @@
                 "arn:aws:iam::*:role/sym-s2-fugue-*",
                 "arn:aws:iam::*:user/sym-s2-fugue-*",
                 "arn:aws:iam::*:group/sym-s2-fugue-*",
-                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*",
-                
-                
-                "arn:aws:ecs:*:*:task-definition/fugue-*",
-                "arn:aws:iam::*:policy/fugue-*",
-                "arn:aws:iam::*:role/fugue-*",
-                "arn:aws:iam::*:user/fugue-*",
-                "arn:aws:iam::*:group/fugue-*",
-                "arn:aws:secretsmanager:*:*:secret:fugue-*"
+                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*"
             ]
         },
         {
@@ -164,10 +154,7 @@
                 "s3:GetBucketLocation"
             ],
             "Resource": [
-                "arn:aws:s3:::sym-s2-fugue-*",
-                
-                
-                "arn:aws:s3:::fugue-*"
+                "arn:aws:s3:::sym-s2-fugue-*"
             ]
         }
     ]
