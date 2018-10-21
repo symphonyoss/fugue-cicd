@@ -1074,7 +1074,7 @@ docker push ${remoteImage}
           {
             echo 'OK we will delete ' + latestVersion
             
-            throw new RuntimeException("STOP")
+            sh "aws --region ${awsRegion} iam delete-policy-version --policy-arn  ${policyArn} --version-id ${latestVersion.'VersionId'}"
           }
           else
           {
