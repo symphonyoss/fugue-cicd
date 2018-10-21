@@ -80,7 +80,7 @@ roleName            ${roleName}
       credentialsId:      accountId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
-      pipeLine_.validateRootPolicy(environmentType_)
+      pipeLine_.validateRootPolicy(accountId, environmentType_)
       
       getOrCreateCluster()
       

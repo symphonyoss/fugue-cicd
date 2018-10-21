@@ -999,7 +999,7 @@ docker push ${remoteImage}
 ]
   }
   
-  public void validateRootPolicy(String environmentType)
+  public void validateRootPolicy(String accountId, String environmentType)
   {
     boolean ok = false
     String policyArn = "arn:aws:iam::${aws_identity[accountId].Account}:policy/sym-s2-fugue-${environmentType}-root-policy"
