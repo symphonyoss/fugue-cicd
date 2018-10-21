@@ -40,6 +40,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private Map<String, Boolean>  pushTo_ = [:]
   private Map<String, Purpose>  deployTo_ = [:]
   private String                pullFrom_
+  private String                targetEnvironmentType_
   
   private String serviceGitOrg
   private String serviceGitRepo
@@ -364,11 +365,13 @@ Build Action ${env_.buildAction}
         pullFrom_ = 'dev'
         deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev')
+        targetEnvironmentType_ = 'dev'
         break;
         
       case 'Build to Smoke Test':
         doBuild_ = true
         pushTo('dev')
+        targetEnvironmentType_ = 'dev'
         deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev', Purpose.SmokeTest)
         break;
@@ -378,6 +381,7 @@ Build Action ${env_.buildAction}
         pullFrom_ = 'dev'
         pushTo('qa')
         deployTo('qa')
+        targetEnvironmentType_ = 'qa'
         break;
         
       case 'Promote QA to Stage':
@@ -385,6 +389,7 @@ Build Action ${env_.buildAction}
         pullFrom_ = 'qa'
         pushTo('stage')
         deployTo('stage')
+        targetEnvironmentType_ = 'stage'
         break;
         
       case 'Promote Stage to Prod':
@@ -392,6 +397,7 @@ Build Action ${env_.buildAction}
         pullFrom_ = 'stage'
         pushTo('prod')
         deployTo('prod')
+        targetEnvironmentType_ = 'prod'
         break;
     }
     
@@ -809,6 +815,9 @@ docker push ${remoteImage}
     }
     else
     {
+      if(environmentType.equals(targetEnvironmentType_))
+        throw new RuntimeException('Cannot push to target environment type ' + targetEnvironmentType_)
+        
       echo 'No access for environmentType ' + environmentType + ', skipped.'
     }
   }
