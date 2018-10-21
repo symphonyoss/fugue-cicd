@@ -1036,8 +1036,218 @@ docker push ${remoteImage}
     else
     {
       echo "Updating root policy..."
+      
+      def policyVersionList = readJSON(text:
+        sh(returnStdout: true, script: "aws --region ${awsRegion} iam list-policy-versions --policy-arn  ${policyArn}"))
+      
+      int cnt = 0
+      def latestVersion
+      
+      policyVersionList."Versions".each
+      {
+        version ->
+          echo 'Got version ' + version
+          if(version."IsDefaultVersion")
+          {
+            echo 'Default version'
+          }
+          else
+          {
+            cnt++
+            
+            if(latestVersion == null || latestVersion."CreateDate" < version."CreateDate")
+            {
+              echo 'this is later'
+              latestVersion = version
+            }
+            else
+            {
+              echo 'latestDate is stiil the latest'
+            }
+          }
+          
+          if(cnt > 3)
+          {
+            echo 'OK we will delete ' + latestVersion
+          }
+          else
+          {
+            echo 'Only ' + cnt + ' old versions, no need to delete one'
+          }
+      }
+      
+      def newPolicyVersion = readJSON(text:
+        sh(returnStdout: true, script: "aws --region ${awsRegion} iam create-policy-version --policy-arn  ${policyArn} --policy-document \"${rootPolicyDocument}\""))
+  
+  
+      throw new RuntimeException("STOP")
     }
   }
+  
+  private static final String rootPolicyDocument='''
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllResources",
+            "Effect": "Allow",
+            "Action": [
+                "logs:DescribeLogGroups",
+                "ecs:ListClusters",
+                "ecs:DescribeClusters",
+                "ecs:CreateCluster",
+                "ecs:RegisterTaskDefinition",
+                "ecs:DeregisterTaskDefinition",
+                "ecs:DescribeTasks",
+                "ecs:DescribeTaskDefinition",
+                "ecs:ListTaskDefinitions",
+                "secretsmanager:CreateSecret"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "LogsAll",
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": [
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue:*:*",
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue"
+            ]
+        },
+        {
+            "Sid": "ContainerRegistryS2",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchDeleteImage",
+                "ecr:UploadLayerPart",
+                "ecr:ListImages",
+                "ecr:DeleteRepository",
+                "ecr:PutImage",
+                "ecr:SetRepositoryPolicy",
+                "ecr:BatchGetImage",
+                "ecr:CompleteLayerUpload",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:DeleteRepositoryPolicy",
+                "ecr:InitiateLayerUpload",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": "arn:aws:ecr:*:*:repository/sym-s2-*"
+        },
+        {
+            "Sid": "ContainerRegistryES",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:ListImages",
+                "ecr:BatchGetImage",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": [
+              "arn:aws:ecr:*:*:repository/symphony-es",
+              "arn:aws:ecr:*:*:repository/symphony-es/*",
+              "arn:aws:ecr:*:*:repository/symbase",
+              "arn:aws:ecr:*:*:repository/symbase/*"
+              ]
+        },
+        {
+            "Sid": "ContainerRegistryAll",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:CreateRepository",
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EcsRole",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole",
+                "iam:ListAttachedRolePolicies"
+            ],
+            "Resource": [
+              "arn:aws:iam::*:role/ecsTaskExecutionRole"
+            ]
+        },
+        {
+            "Sid": "RootAdmin",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole",
+                "iam:CreateRole",
+                "iam:AttachRolePolicy",
+                "iam:ListAttachedRolePolicies"
+            ],
+            "Resource": [
+              "arn:aws:iam::*:role/sym-s2-*-root-role",
+              "arn:aws:iam::*:role/sym-s2-*-admin-role"
+            ]
+        },
+        {
+            "Sid": "FugueAdmin",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:GetPolicyVersion",
+                "iam:ListPolicyVersions",
+                "iam:CreatePolicyVersion",
+                "iam:DeletePolicyVersion",
+                "iam:GetPolicy",
+                "iam:CreatePolicy",
+                "iam:CreateAccessKey",
+                "iam:DeleteAccessKey",
+                "iam:CreateRole",
+                "iam:PassRole",
+                "iam:ListAttachedRolePolicies",
+                "iam:AttachRolePolicy",
+                "iam:GetUser",
+                "iam:CreateUser",
+                "iam:DeleteUser",
+                "iam:ListGroupsForUser",
+                "iam:CreateGroup",
+                "iam:AttachGroupPolicy",
+                "iam:ListAttachedGroupPolicies",
+                "iam:GetGroup",
+                "iam:AddUserToGroup",
+                "iam:RemoveUserFromGroup",
+                "ecs:RunTask",
+                "iam:ListAccessKeys",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:PutSecretValue",
+                "iam:UpdateAssumeRolePolicy"
+            ],
+            "Resource": [
+                "arn:aws:ecs:*:*:task-definition/sym-s2-fugue-*",
+                "arn:aws:iam::*:policy/sym-s2-fugue-*",
+                "arn:aws:iam::*:role/sym-s2-fugue-*",
+                "arn:aws:iam::*:user/sym-s2-fugue-*",
+                "arn:aws:iam::*:group/sym-s2-fugue-*",
+                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*"
+            ]
+        },
+        {
+            "Sid": "S3",
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:PutEncryptionConfiguration",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": [
+                "arn:aws:s3:::sym-s2-fugue-*"
+            ]
+        }
+    ]
+}
+'''
   
   public def createRole(String accountId, String policyName, String roleName)
   {
