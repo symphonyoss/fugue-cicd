@@ -118,6 +118,7 @@
                 "iam:CreateAccessKey",
                 "iam:DeleteAccessKey",
                 "iam:CreateRole",
+                "iam:PassRole",
                 "iam:ListAttachedRolePolicies",
                 "iam:AttachRolePolicy",
                 "iam:GetUser",

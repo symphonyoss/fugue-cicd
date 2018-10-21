@@ -80,6 +80,8 @@ roleName            ${roleName}
       credentialsId:      accountId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
+      pipeLine_.validateRootPolicy(environmentType_)
+      
       getOrCreateCluster()
       
       pipeLine_.createRoleByArn(accountId, 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy',
