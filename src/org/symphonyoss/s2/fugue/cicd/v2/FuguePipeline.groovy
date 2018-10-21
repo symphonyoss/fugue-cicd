@@ -1011,17 +1011,21 @@ docker push ${remoteImage}
       sh(returnStdout: true, script: "aws --region ${awsRegion} iam get-policy-version --policy-arn  ${policyArn} --version-id ${policy.'Policy'.'DefaultVersionId'}"))
     
     
+    echo 'policyVersion ' + policyVersion
     policyVersion."PolicyVersion"."Document"."Statement".each
     {
       statement ->
         if('FugueAdmin'.equals(statement."Sid"))
         {
+          echo 'statement ' + statement
           statement."Action".each
           {
             action ->
+            echo 'action ' + action
+            
             if('iam:PassRole'.equals(action))
             {
-              
+              echo 'thats it!'
               
               ok = true
             }
@@ -1077,7 +1081,7 @@ docker push ${remoteImage}
       }
       
       def newPolicyVersion = readJSON(text:
-        sh(returnStdout: true, script: "aws --region ${awsRegion} iam create-policy-version --policy-arn  ${policyArn} --policy-document \"${rootPolicyDocument}\""))
+        sh(returnStdout: true, script: "aws --region ${awsRegion} iam create-policy-version --policy-arn  ${policyArn} --policy-document \'${rootPolicyDocument}\'"))
   
   
       throw new RuntimeException("STOP")
