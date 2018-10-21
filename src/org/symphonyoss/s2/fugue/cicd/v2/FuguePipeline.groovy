@@ -1011,17 +1011,14 @@ docker push ${remoteImage}
       sh(returnStdout: true, script: "aws --region ${awsRegion} iam get-policy-version --policy-arn  ${policyArn} --version-id ${policy.'Policy'.'DefaultVersionId'}"))
     
     
-    echo 'policyVersion ' + policyVersion
     policyVersion."PolicyVersion"."Document"."Statement".each
     {
       statement ->
         if('FugueAdmin'.equals(statement."Sid"))
         {
-          echo 'statement ' + statement
           statement."Action".each
           {
             action ->
-            echo 'action ' + action
             
             if('iam:PassRole'.equals(action))
             {
@@ -1050,7 +1047,6 @@ docker push ${remoteImage}
       policyVersionList."Versions".each
       {
         version ->
-          echo 'Got version ' + version
           if(version."IsDefaultVersion")
           {
             echo 'Default version'
@@ -1061,12 +1057,7 @@ docker push ${remoteImage}
             
             if(latestVersion == null || latestVersion."CreateDate" > version."CreateDate")
             {
-              echo 'this is later'
               latestVersion = version
-            }
-            else
-            {
-              echo 'latestDate is stiil the latest'
             }
           }
       }
@@ -1084,9 +1075,6 @@ docker push ${remoteImage}
       
       def newPolicyVersion = readJSON(text:
         sh(returnStdout: true, script: "aws --region ${awsRegion} iam create-policy-version --set-as-default --policy-arn  ${policyArn} --policy-document \'${rootPolicyDocument}\'"))
-  
-  
-      throw new RuntimeException("STOP")
     }
   }
   
