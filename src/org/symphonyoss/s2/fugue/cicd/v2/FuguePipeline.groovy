@@ -1059,7 +1059,10 @@ docker push ${remoteImage}
           {
             cnt++
             
-            if(latestVersion == null || latestVersion."CreateDate" < version."CreateDate")
+            echo 'latestVersion."CreateDate" = ' + latestVersion."CreateDate"
+            echo 'version."CreateDate" = ' + version."CreateDate"
+            
+            if(latestVersion == null || latestVersion."CreateDate" > version."CreateDate")
             {
               echo 'this is later'
               latestVersion = version
