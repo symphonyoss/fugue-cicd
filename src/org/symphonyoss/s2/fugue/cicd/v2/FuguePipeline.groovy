@@ -1005,10 +1005,10 @@ docker push ${remoteImage}
     String policyArn = "arn:aws:iam::${aws_identity[accountId].Account}:policy/sym-s2-fugue-${environmentType}-root-policy"
     
     def policy = readJSON(text:
-      sh(returnStdout: true, script: "aws --region ${awsRegion} get-policy --policy-arn  ${policyArn}"))
+      sh(returnStdout: true, script: "aws --region ${awsRegion} iam get-policy --policy-arn  ${policyArn}"))
     
     def policyVersion = readJSON(text:
-      sh(returnStdout: true, script: "aws --region ${awsRegion} get-policy-version --policy-arn  ${policyArn} --version-id ${policy.'Policy'.'DefaultVersionId'}"))
+      sh(returnStdout: true, script: "aws --region ${awsRegion} iam get-policy-version --policy-arn  ${policyArn} --version-id ${policy.'Policy'.'DefaultVersionId'}"))
     
     
     policyVersion."PolicyVersion"."Document"."Statement".each
