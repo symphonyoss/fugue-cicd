@@ -1069,17 +1069,17 @@ docker push ${remoteImage}
               echo 'latestDate is stiil the latest'
             }
           }
-          
-          if(cnt > 3)
-          {
-            echo 'OK we will delete ' + latestVersion
-            
-            sh "aws --region ${awsRegion} iam delete-policy-version --policy-arn  ${policyArn} --version-id ${latestVersion.'VersionId'}"
-          }
-          else
-          {
-            echo 'Only ' + cnt + ' old versions, no need to delete one'
-          }
+      }
+      
+      if(cnt > 3)
+      {
+        echo 'OK we will delete ' + latestVersion
+        
+        sh "aws --region ${awsRegion} iam delete-policy-version --policy-arn  ${policyArn} --version-id ${latestVersion.'VersionId'}"
+      }
+      else
+      {
+        echo 'Only ' + cnt + ' old versions, no need to delete one'
       }
       
       def newPolicyVersion = readJSON(text:
