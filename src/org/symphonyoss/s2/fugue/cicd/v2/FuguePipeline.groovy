@@ -1073,6 +1073,8 @@ docker push ${remoteImage}
           if(cnt > 3)
           {
             echo 'OK we will delete ' + latestVersion
+            
+            throw new RuntimeException("STOP")
           }
           else
           {
@@ -1081,7 +1083,7 @@ docker push ${remoteImage}
       }
       
       def newPolicyVersion = readJSON(text:
-        sh(returnStdout: true, script: "aws --region ${awsRegion} iam create-policy-version --policy-arn  ${policyArn} --policy-document \'${rootPolicyDocument}\'"))
+        sh(returnStdout: true, script: "aws --region ${awsRegion} iam create-policy-version --set-as-default --policy-arn  ${policyArn} --policy-document \'${rootPolicyDocument}\'"))
   
   
       throw new RuntimeException("STOP")
