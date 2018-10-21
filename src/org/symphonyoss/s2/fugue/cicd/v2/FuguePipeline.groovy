@@ -1088,8 +1088,7 @@ docker push ${remoteImage}
     }
   }
   
-  private static final String rootPolicyDocument='''
-{
+  private static final String rootPolicyDocument='''{
     "Version": "2012-10-17",
     "Statement": [
         {
@@ -1250,8 +1249,7 @@ docker push ${remoteImage}
             ]
         }
     ]
-}
-'''
+}'''
   
   public def createRole(String accountId, String policyName, String roleName)
   {
