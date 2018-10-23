@@ -277,12 +277,10 @@ logGroup        ${logGroup}
     addIfNotNull("FUGUE_TRACK", releaseTrack_)
     addIfNotNull("FUGUE_STATION", station_)
     
-//    if(environmentType_.equals('smoke'))
-//      addIfNotNull("CONSUL_URL", "https://consul-dev.symphony.com:8080")
-//    else
-//      addIfNotNull("CONSUL_URL", "https://consul-" + environmentType_ + ".symphony.com:8080")
-      
-    addIfNotNull("CONSUL_URL", "https://127.0.0.1:8080")
+    if(environmentType_.equals('smoke'))
+      addIfNotNull("CONSUL_URL", "https://consul-dev.symphony.com:8080")
+    else
+      addIfNotNull("CONSUL_URL", "https://consul-" + environmentType_ + ".symphony.com:8080")
       
     addIfNotNull("CONSUL_TOKEN", consulToken)
     addIfNotNull("GITHUB_TOKEN", gitHubToken)
