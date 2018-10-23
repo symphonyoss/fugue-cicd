@@ -80,9 +80,13 @@ roleName            ${roleName}
       credentialsId:      accountId,
       secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
     {
+      pipeLine_.validateRootPolicy(accountId, environmentType_)
+      
       getOrCreateCluster()
       
-      pipeLine_.createRoleByArn(accountId, 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy', 'ecsTaskExecutionRole')
+      pipeLine_.createRoleByArn(accountId, 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy',
+        'sym-s2-fugue-ecs-execution-role')
+//         'ecsTaskExecutionRole')
       pipeLine_.createRole(accountId, 'sym-s2-fugue-' + environmentType_ + "-root-policy", roleName)
       
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironmentType',

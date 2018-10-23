@@ -31,7 +31,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private boolean primaryRegion_
   private String  configTaskdef_
   private String  role_
-  private String  executionRole_  = 'ecsTaskExecutionRole'
+  private String  executionRole_  = 'sym-s2-fugue-ecs-execution-role' //'ecsTaskExecutionRole'
   private String  memory_         = '1024'
   private String  cpu_            = '256'
   private String  port_           = '80'
@@ -281,6 +281,7 @@ logGroup        ${logGroup}
       addIfNotNull("CONSUL_URL", "https://consul-dev.symphony.com:8080")
     else
       addIfNotNull("CONSUL_URL", "https://consul-" + environmentType_ + ".symphony.com:8080")
+      
     addIfNotNull("CONSUL_TOKEN", consulToken)
     addIfNotNull("GITHUB_TOKEN", gitHubToken)
     addIfNotNull("GITHUB_ORG", configGitOrg_)

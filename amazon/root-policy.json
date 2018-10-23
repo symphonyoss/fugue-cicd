@@ -6,7 +6,6 @@
             "Effect": "Allow",
             "Action": [
                 "logs:DescribeLogGroups",
-                "ecr:*",
                 "ecs:ListClusters",
                 "ecs:DescribeClusters",
                 "ecs:CreateCluster",
@@ -27,6 +26,56 @@
                 "arn:aws:logs:*:*:log-group:sym-s2-fugue:*:*",
                 "arn:aws:logs:*:*:log-group:sym-s2-fugue"
             ]
+        },
+        {
+            "Sid": "ContainerRegistryS2",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchDeleteImage",
+                "ecr:UploadLayerPart",
+                "ecr:ListImages",
+                "ecr:DeleteRepository",
+                "ecr:PutImage",
+                "ecr:SetRepositoryPolicy",
+                "ecr:BatchGetImage",
+                "ecr:CompleteLayerUpload",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:DeleteRepositoryPolicy",
+                "ecr:InitiateLayerUpload",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": "arn:aws:ecr:*:*:repository/sym-s2-*"
+        },
+        {
+            "Sid": "ContainerRegistryES",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:ListImages",
+                "ecr:BatchGetImage",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": [
+              "arn:aws:ecr:*:*:repository/symphony-es",
+              "arn:aws:ecr:*:*:repository/symphony-es/*",
+              "arn:aws:ecr:*:*:repository/symbase",
+              "arn:aws:ecr:*:*:repository/symbase/*"
+              ]
+        },
+        {
+            "Sid": "ContainerRegistryAll",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:CreateRepository",
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
         },
         {
             "Sid": "EcsRole",
@@ -52,9 +101,7 @@
             ],
             "Resource": [
               "arn:aws:iam::*:role/sym-s2-*-root-role",
-              "arn:aws:iam::*:role/sym-s2-*-admin-role",
-              "arn:aws:iam::*:role/*-root-role",
-              "arn:aws:iam::*:role/*-admin-role"
+              "arn:aws:iam::*:role/sym-s2-*-admin-role"
             ]
         },
         {
@@ -71,6 +118,7 @@
                 "iam:CreateAccessKey",
                 "iam:DeleteAccessKey",
                 "iam:CreateRole",
+                "iam:PassRole",
                 "iam:ListAttachedRolePolicies",
                 "iam:AttachRolePolicy",
                 "iam:GetUser",
@@ -95,15 +143,7 @@
                 "arn:aws:iam::*:role/sym-s2-fugue-*",
                 "arn:aws:iam::*:user/sym-s2-fugue-*",
                 "arn:aws:iam::*:group/sym-s2-fugue-*",
-                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*",
-                
-                
-                "arn:aws:ecs:*:*:task-definition/fugue-*",
-                "arn:aws:iam::*:policy/fugue-*",
-                "arn:aws:iam::*:role/fugue-*",
-                "arn:aws:iam::*:user/fugue-*",
-                "arn:aws:iam::*:group/fugue-*",
-                "arn:aws:secretsmanager:*:*:secret:fugue-*"
+                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*"
             ]
         },
         {
@@ -115,10 +155,7 @@
                 "s3:GetBucketLocation"
             ],
             "Resource": [
-                "arn:aws:s3:::sym-s2-fugue-*",
-                
-                
-                "arn:aws:s3:::fugue-*"
+                "arn:aws:s3:::sym-s2-fugue-*"
             ]
         }
     ]

@@ -40,6 +40,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private Map<String, Boolean>  pushTo_ = [:]
   private Map<String, Purpose>  deployTo_ = [:]
   private String                pullFrom_
+  private String                targetEnvironmentType_
   
   private String serviceGitOrg
   private String serviceGitRepo
@@ -344,7 +345,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void preflight()
   {
     echo """====================================
-Preflight V2
+Preflight V2.1
 Build Action ${env_.buildAction}
 """
     
@@ -364,11 +365,13 @@ Build Action ${env_.buildAction}
         pullFrom_ = 'dev'
         deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev')
+        targetEnvironmentType_ = 'dev'
         break;
         
       case 'Build to Smoke Test':
         doBuild_ = true
         pushTo('dev')
+        targetEnvironmentType_ = 'dev'
         deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev', Purpose.SmokeTest)
         break;
@@ -378,13 +381,23 @@ Build Action ${env_.buildAction}
         pullFrom_ = 'dev'
         pushTo('qa')
         deployTo('qa')
+        targetEnvironmentType_ = 'qa'
         break;
         
-      case 'Promote QA to Prod':
+      case 'Promote QA to Stage':
         doBuild_ = false
         pullFrom_ = 'qa'
+        pushTo('stage')
+        deployTo('stage')
+        targetEnvironmentType_ = 'stage'
+        break;
+        
+      case 'Promote Stage to Prod':
+        doBuild_ = false
+        pullFrom_ = 'stage'
         pushTo('prod')
         deployTo('prod')
+        targetEnvironmentType_ = 'prod'
         break;
     }
     
@@ -501,7 +514,10 @@ serviceGitBranch is ${serviceGitBranch}
 
     if(verifyCreds('qa'))
     {
-      verifyCreds('stage')
+      if(verifyCreds('stage'))
+      {
+        verifyCreds('prod')
+      }
     }
     
     pullDockerImages()
@@ -509,7 +525,6 @@ serviceGitBranch is ${serviceGitBranch}
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
   {
-    echo 'fugue-cicd version @Bruce-2018-10-11'
     echo """Verifying ${environmentType} access with credential ${credentialId}...
 doBuild_        ${doBuild_}
 toolsDeploy     ${toolsDeploy}
@@ -800,6 +815,9 @@ docker push ${remoteImage}
     }
     else
     {
+      if(environmentType.equals(targetEnvironmentType_))
+        throw new RuntimeException('Cannot push to target environment type ' + targetEnvironmentType_)
+        
       echo 'No access for environmentType ' + environmentType + ', skipped.'
     }
   }
@@ -963,7 +981,7 @@ docker push ${remoteImage}
   public static def parameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote QA to Prod', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
    
     steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
     steps.string(name: 'buildQualifier',    defaultValue: Default.value(env,  'buildQualifier',    ''),      description: 'The build qualifier for promotion.'),
@@ -980,6 +998,248 @@ docker push ${remoteImage}
   steps.parameters(list)
 ]
   }
+  
+  public void validateRootPolicy(String accountId, String environmentType)
+  {
+    boolean ok = false
+    String policyArn = "arn:aws:iam::${aws_identity[accountId].Account}:policy/sym-s2-fugue-${environmentType}-root-policy"
+    
+    def policy = readJSON(text:
+      sh(returnStdout: true, script: "aws --region ${awsRegion} iam get-policy --policy-arn  ${policyArn}"))
+    
+    def policyVersion = readJSON(text:
+      sh(returnStdout: true, script: "aws --region ${awsRegion} iam get-policy-version --policy-arn  ${policyArn} --version-id ${policy.'Policy'.'DefaultVersionId'}"))
+    
+    
+    policyVersion."PolicyVersion"."Document"."Statement".each
+    {
+      statement ->
+        if('FugueAdmin'.equals(statement."Sid"))
+        {
+          statement."Action".each
+          {
+            action ->
+            
+            if('iam:PassRole'.equals(action))
+            {
+              echo 'thats it!'
+              
+              ok = true
+            }
+          }
+        }
+    }
+    
+    if(ok)
+    {
+      echo "Root policy is good, nothing more to do."
+    }
+    else
+    {
+      echo "Updating root policy..."
+      
+      def policyVersionList = readJSON(text:
+        sh(returnStdout: true, script: "aws --region ${awsRegion} iam list-policy-versions --policy-arn  ${policyArn}"))
+      
+      int cnt = 0
+      def latestVersion
+      
+      policyVersionList."Versions".each
+      {
+        version ->
+          if(version."IsDefaultVersion")
+          {
+            echo 'Default version'
+          }
+          else
+          {
+            cnt++
+            
+            if(latestVersion == null || latestVersion."CreateDate" > version."CreateDate")
+            {
+              latestVersion = version
+            }
+          }
+      }
+      
+      if(cnt > 3)
+      {
+        echo 'OK we will delete ' + latestVersion
+        
+        sh "aws --region ${awsRegion} iam delete-policy-version --policy-arn  ${policyArn} --version-id ${latestVersion.'VersionId'}"
+      }
+      else
+      {
+        echo 'Only ' + cnt + ' old versions, no need to delete one'
+      }
+      
+      def newPolicyVersion = readJSON(text:
+        sh(returnStdout: true, script: "aws --region ${awsRegion} iam create-policy-version --set-as-default --policy-arn  ${policyArn} --policy-document \'${rootPolicyDocument}\'"))
+    }
+  }
+  
+  private static final String rootPolicyDocument='''{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllResources",
+            "Effect": "Allow",
+            "Action": [
+                "logs:DescribeLogGroups",
+                "ecs:ListClusters",
+                "ecs:DescribeClusters",
+                "ecs:CreateCluster",
+                "ecs:RegisterTaskDefinition",
+                "ecs:DeregisterTaskDefinition",
+                "ecs:DescribeTasks",
+                "ecs:DescribeTaskDefinition",
+                "ecs:ListTaskDefinitions",
+                "secretsmanager:CreateSecret"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "LogsAll",
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": [
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue:*:*",
+                "arn:aws:logs:*:*:log-group:sym-s2-fugue"
+            ]
+        },
+        {
+            "Sid": "ContainerRegistryS2",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchDeleteImage",
+                "ecr:UploadLayerPart",
+                "ecr:ListImages",
+                "ecr:DeleteRepository",
+                "ecr:PutImage",
+                "ecr:SetRepositoryPolicy",
+                "ecr:BatchGetImage",
+                "ecr:CompleteLayerUpload",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:DeleteRepositoryPolicy",
+                "ecr:InitiateLayerUpload",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": "arn:aws:ecr:*:*:repository/sym-s2-*"
+        },
+        {
+            "Sid": "ContainerRegistryES",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:ListImages",
+                "ecr:BatchGetImage",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": [
+              "arn:aws:ecr:*:*:repository/symphony-es",
+              "arn:aws:ecr:*:*:repository/symphony-es/*",
+              "arn:aws:ecr:*:*:repository/symbase",
+              "arn:aws:ecr:*:*:repository/symbase/*"
+              ]
+        },
+        {
+            "Sid": "ContainerRegistryAll",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:CreateRepository",
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EcsRole",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole",
+                "iam:ListAttachedRolePolicies"
+            ],
+            "Resource": [
+              "arn:aws:iam::*:role/ecsTaskExecutionRole"
+            ]
+        },
+        {
+            "Sid": "RootAdmin",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole",
+                "iam:CreateRole",
+                "iam:AttachRolePolicy",
+                "iam:ListAttachedRolePolicies"
+            ],
+            "Resource": [
+              "arn:aws:iam::*:role/sym-s2-*-root-role",
+              "arn:aws:iam::*:role/sym-s2-*-admin-role"
+            ]
+        },
+        {
+            "Sid": "FugueAdmin",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:GetPolicyVersion",
+                "iam:ListPolicyVersions",
+                "iam:CreatePolicyVersion",
+                "iam:DeletePolicyVersion",
+                "iam:GetPolicy",
+                "iam:CreatePolicy",
+                "iam:CreateAccessKey",
+                "iam:DeleteAccessKey",
+                "iam:CreateRole",
+                "iam:PassRole",
+                "iam:ListAttachedRolePolicies",
+                "iam:AttachRolePolicy",
+                "iam:GetUser",
+                "iam:CreateUser",
+                "iam:DeleteUser",
+                "iam:ListGroupsForUser",
+                "iam:CreateGroup",
+                "iam:AttachGroupPolicy",
+                "iam:ListAttachedGroupPolicies",
+                "iam:GetGroup",
+                "iam:AddUserToGroup",
+                "iam:RemoveUserFromGroup",
+                "ecs:RunTask",
+                "iam:ListAccessKeys",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:PutSecretValue",
+                "iam:UpdateAssumeRolePolicy"
+            ],
+            "Resource": [
+                "arn:aws:ecs:*:*:task-definition/sym-s2-fugue-*",
+                "arn:aws:iam::*:policy/sym-s2-fugue-*",
+                "arn:aws:iam::*:role/sym-s2-fugue-*",
+                "arn:aws:iam::*:user/sym-s2-fugue-*",
+                "arn:aws:iam::*:group/sym-s2-fugue-*",
+                "arn:aws:secretsmanager:*:*:secret:sym-s2-fugue-*"
+            ]
+        },
+        {
+            "Sid": "S3",
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:PutEncryptionConfiguration",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": [
+                "arn:aws:s3:::sym-s2-fugue-*"
+            ]
+        }
+    ]
+}'''
   
   public def createRole(String accountId, String policyName, String roleName)
   {
