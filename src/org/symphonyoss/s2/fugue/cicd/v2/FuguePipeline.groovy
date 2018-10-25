@@ -454,8 +454,8 @@ deployTo     ${deployTo_}
         Container ms = new Container(this)
             .withName(name)
             .withRole(containerDef."role")
-            .withTenancy(containerDef."tenancy" == "SINGLE" ? Tenancy.SingleTenant : Tenancy.MultiTenant)
-            .withContainerType(containerDef."containerType" == "INIT" ? ContainerType.Init : ContainerType.Runtime)
+            .withTenancy(Tenancy.parse(containerDef."tenancy"))
+            .withContainerType(ContainerType.parse(containerDef."containerType"))
             .withPort(containerDef."port")
             .withEcsTemplate(containerDef."ecsTemplate")
 
@@ -625,7 +625,7 @@ environmentType ${environmentType}
     {
       Container ms = it
       
-      if(ms.containerType == ContainerType.Init && ms.tenancy == Tenancy.MultiTenant)
+      if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.MULTI)
       {
           echo 'Init MULTI ' + ms.toString()
           ms.deployInit(tenantStage, null)
@@ -637,7 +637,7 @@ environmentType ${environmentType}
     {
       Container ms = it
       
-      if(ms.containerType == ContainerType.Init && ms.tenancy == Tenancy.SingleTenant)
+      if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.SINGLE)
       {
         tenantStage.tenants.each
         {
@@ -659,23 +659,23 @@ environmentType ${environmentType}
     {
       Container ms = it
       
-      if(ms.containerType == ContainerType.Runtime)
+      if(ms.containerType == ContainerType.SERVICE)
       {
         switch(ms.tenancy)
         {
-          case Tenancy.SingleTenant:
+          case Tenancy.SINGLE:
             tenantStage.tenants.each
             {
               String tenant = it
               
               echo 'Runtime ' + tenant + ' ' + ms.toString()
-              ms.deployService(tenantStage, tenant)
+              ms.registerTaskDef(tenantStage, tenant)
             }
             break
   
-          case Tenancy.MultiTenant:
+          case Tenancy.MULTI:
             echo 'Runtime MULTI ' + ms.toString()
-              ms.deployService(tenantStage, null)
+              ms.registerTaskDef(tenantStage, null)
               break
         }
       }
