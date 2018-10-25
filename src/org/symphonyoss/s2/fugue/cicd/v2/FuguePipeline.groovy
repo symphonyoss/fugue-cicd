@@ -659,7 +659,7 @@ environmentType ${environmentType}
     {
       Container ms = it
       
-      if(ms.containerType == ContainerType.SERVICE)
+      if(ms.containerType == ContainerType.SERVICE || ms.containerType == ContainerType.SCHEDULED)
       {
         switch(ms.tenancy)
         {
@@ -679,6 +679,9 @@ environmentType ${environmentType}
               break
         }
       }
+      
+      if(ms.containerType == ContainerType.SCHEDULED)
+        throw new RuntimeException("DEBUG STOP")
     }
   }
   
