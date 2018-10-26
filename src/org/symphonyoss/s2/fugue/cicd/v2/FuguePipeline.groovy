@@ -266,8 +266,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     files.split('\n').each
     {
-      name ->
-        if(name.endswith(".json"))
+      String name ->
+        if(name.endsWith(".json"))
         {
           echo 'Ignoring service config file ' + name
         }
