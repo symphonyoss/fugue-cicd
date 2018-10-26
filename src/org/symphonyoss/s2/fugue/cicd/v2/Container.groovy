@@ -79,18 +79,10 @@ class Container extends FuguePipelineTask implements Serializable {
     containerPath == null ? pipeLine_.servicePath : containerPath
   }
   
-  void deployInit(Station tenantStage, String tenant) {
-    
-//    RunInitContainer deploy = new RunInitContainer(pipeLine_, tenantStage, tenant)
-//      
-//    deploy.execute()
-//    
-    echo 'T1 Init MULTI '
+  void deployInit(Station tenantStage, String tenant)
+  {
     registerTaskDef(tenantStage, tenant)
-    
-    echo 'T2 Init MULTI '
     runTask(tenantStage, tenant)
-    echo 'T3 Init MULTI '
   }
   
   void runTask(Station tenantStage, String tenant)
