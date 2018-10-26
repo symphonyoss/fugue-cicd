@@ -686,9 +686,6 @@ environmentType ${environmentType}
               break
         }
       }
-      
-      if(ms.containerType == ContainerType.SCHEDULED)
-        throw new RuntimeException("DEBUG STOP")
     }
   }
   
