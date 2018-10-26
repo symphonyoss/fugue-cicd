@@ -2,8 +2,8 @@ package org.symphonyoss.s2.fugue.cicd.v2
 
 class Container extends FuguePipelineTask implements Serializable {
   private String                name
-  private Tenancy               tenancy         = Tenancy.SingleTenant
-  private ContainerType         containerType   = ContainerType.Runtime
+  private Tenancy               tenancy         = Tenancy.SINGLE
+  private ContainerType         containerType   = ContainerType.SERVICE
   private String                healthCheckPath = '/HealthCheck'
   private String                containerRole
   private String                ecstemplate
@@ -79,18 +79,10 @@ class Container extends FuguePipelineTask implements Serializable {
     containerPath == null ? pipeLine_.servicePath : containerPath
   }
   
-  void deployInit(Station tenantStage, String tenant) {
-    
-//    RunInitContainer deploy = new RunInitContainer(pipeLine_, tenantStage, tenant)
-//      
-//    deploy.execute()
-//    
-    echo 'T1 Init MULTI '
+  void deployInit(Station tenantStage, String tenant)
+  {
     registerTaskDef(tenantStage, tenant)
-    
-    echo 'T2 Init MULTI '
     runTask(tenantStage, tenant)
-    echo 'T3 Init MULTI '
   }
   
   void runTask(Station tenantStage, String tenant)
@@ -180,24 +172,24 @@ exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
     }
   }
   
-  void deployService(Station tenantStage, String tenant) {
-    registerTaskDef(tenantStage, tenant)
-    
-//    def svcstate = getServiceState(tenantStage, tenant)
-//    if(svcstate == null || svcstate.status == 'INACTIVE' || svcstate.status == 'DRAINING') {
-//        createService(tenantStage, tenant)
-//    } else {
-//        updateService(tenantStage, tenant)
-//    }
-//    try {
-//        waitServiceStable(tenantStage, tenant)
-//    } catch(Exception e) {
-//      echo 'Failed to start ' + e.toString()
-//
-//              updateServiceTaskDef(tenantStage, tenant, null, 0)
-//        throw e
-//    }
-  }
+//  void deployService(Station tenantStage, String tenant) {
+//    registerTaskDef(tenantStage, tenant)
+//    
+////    def svcstate = getServiceState(tenantStage, tenant)
+////    if(svcstate == null || svcstate.status == 'INACTIVE' || svcstate.status == 'DRAINING') {
+////        createService(tenantStage, tenant)
+////    } else {
+////        updateService(tenantStage, tenant)
+////    }
+////    try {
+////        waitServiceStable(tenantStage, tenant)
+////    } catch(Exception e) {
+////      echo 'Failed to start ' + e.toString()
+////
+////              updateServiceTaskDef(tenantStage, tenant, null, 0)
+////        throw e
+////    }
+//  }
 
 //  private def waitServiceStable(Station tenantStage, String tenant, int maxseconds = 300) {
 //    def svcstate = getServiceState(tenantStage, tenant)
