@@ -267,9 +267,16 @@ class FuguePipeline extends JenkinsTask implements Serializable
     files.split('\n').each
     {
       name ->
-        def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
-        environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
-        echo 'environmentType ' + name
+        if(name.endswith(".json"))
+        {
+          echo 'Ignoring service config file ' + name
+        }
+        else
+        {
+          def config = readJSON file: 'config/environment/' + name + '/environmentType.json'
+          environmentTypeConfig[name] = new EnvironmentTypeConfig(config."amazon")
+          echo 'environmentType ' + name
+        }
     }
     
     echo 'done environmentTypes'
