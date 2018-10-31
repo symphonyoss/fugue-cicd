@@ -173,6 +173,16 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     String srcServiceImage    = awsAccount + imageName
     String tgtServiceImage    = awsAccount_ + imageName
     
+    try
+    {
+        sh "aws --region ${awsRegion_} ecr describe-repositories --repository-names ${pipeLine_.globalNamePrefix_}fugue/fugue-deploy"
+    }
+    catch(Exception e)
+    {
+        echo 'Exception ' + e.toString()
+        sh "aws --region ${awsRegion_} ecr create-repository --repository-name ${pipeLine_.globalNamePrefix_}fugue/fugue-deploy"
+    }
+    
     sh """
 docker pull ${srcServiceImage}
 docker tag ${srcServiceImage} ${tgtServiceImage}
