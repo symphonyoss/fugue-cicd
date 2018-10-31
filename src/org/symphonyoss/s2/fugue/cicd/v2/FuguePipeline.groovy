@@ -365,6 +365,7 @@ Build Action ${env_.buildAction}
         deployTo('dev')
         pushTo('qa')
         deployTo('qa')
+        targetEnvironmentType_ = 'qa'
         break;
         
       case 'Deploy to Dev':

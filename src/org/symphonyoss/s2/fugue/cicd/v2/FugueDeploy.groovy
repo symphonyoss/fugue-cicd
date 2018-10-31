@@ -279,6 +279,8 @@ logGroup        ${logGroup}
     
     if(environmentType_.equals('smoke'))
       addIfNotNull("CONSUL_URL", "https://consul-dev.symphony.com:8080")
+    else if(environmentType_.equals('stage'))
+      addIfNotNull("CONSUL_URL", "https://sym-ic-consul-stage-cmi-us-east-1.is.isym.io:8080")
     else
       addIfNotNull("CONSUL_URL", "https://consul-" + environmentType_ + ".symphony.com:8080")
       
