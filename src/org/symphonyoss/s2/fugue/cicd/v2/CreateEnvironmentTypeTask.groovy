@@ -98,10 +98,11 @@ roleName            ${roleName}
           .withAccountId(accountId)
           .withCluster(cluster_)
       
-      if(!pipeLine_.toolsDeploy)
-      {
+          // why was this?
+//      if(!pipeLine_.toolsDeploy)
+//      {
         deploy.pullImageFrom('dev')
-      }
+//      }
       
       deploy.execute()
       
