@@ -173,6 +173,16 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     String srcServiceImage    = awsAccount + imageName
     String tgtServiceImage    = awsAccount_ + imageName
     
+    try
+    {
+        sh "aws --region ${awsRegion_} ecr describe-repositories --repository-names ${pipeLine_.globalNamePrefix_}fugue/fugue-deploy"
+    }
+    catch(Exception e)
+    {
+        echo 'Exception ' + e.toString()
+        sh "aws --region ${awsRegion_} ecr create-repository --repository-name ${pipeLine_.globalNamePrefix_}fugue/fugue-deploy"
+    }
+    
     sh """
 docker pull ${srcServiceImage}
 docker tag ${srcServiceImage} ${tgtServiceImage}
@@ -280,7 +290,7 @@ logGroup        ${logGroup}
     if(environmentType_.equals('smoke'))
       addIfNotNull("CONSUL_URL", "https://consul-dev.symphony.com:8080")
     else if(environmentType_.equals('stage'))
-      addIfNotNull("CONSUL_URL", "https://sym-ic-consul-stage-cmi-us-east-1.is.isym.io:8080")
+      addIfNotNull("CONSUL_URL", "https://sym-ic-consul-stage-cmi-us-east-1.is.isym.io")
     else
       addIfNotNull("CONSUL_URL", "https://consul-" + environmentType_ + ".symphony.com:8080")
       
