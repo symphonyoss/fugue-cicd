@@ -466,6 +466,16 @@ deployTo     ${deployTo_}
             .withContainerType(ContainerType.parse(containerDef."containerType"))
             .withPort(containerDef."port")
             .withEcsTemplate(containerDef."ecsTemplate")
+        
+        def v = containerDef."memory";
+        
+        if(v != null)
+            ms.withMemory(v)
+            
+        v = containerDef."jvmHeap";
+        
+        if(v != null)
+            ms.withJvmHeap(v)
 
         containerDef."environment".each { envName, envValue ->
           ms.withEnv(envName, envValue)

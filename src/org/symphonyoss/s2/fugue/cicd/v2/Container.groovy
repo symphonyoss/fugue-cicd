@@ -8,6 +8,8 @@ class Container extends FuguePipelineTask implements Serializable {
   private String                containerRole
   private String                ecstemplate
   private int                   port
+  private int                   memory_ = 1024
+  private int                   jvmHeap_ = 512
   private String                containerPath
   private Map<String, String>   envOverride = [:]
   private Map                   tenants = [:]
@@ -26,7 +28,9 @@ class Container extends FuguePipelineTask implements Serializable {
         "\n      containerRole =" + containerRole +
         "\n      ecstemplate      =" + ecstemplate +
         "\n      port             =" + port +
-        "\n      containerPath =" + containerPath +
+        "\n      memory           =" + memory_ +
+        "\n      jvmHeap          =" + jvmHeap_ +
+        "\n      containerPath    =" + containerPath +
         "\n      envOverride      =" + envOverride +
         "\n    }"
   }
@@ -67,6 +71,16 @@ class Container extends FuguePipelineTask implements Serializable {
   
   public Container withPort(int p) {
       port = p
+      return this
+  }
+  
+  public Container withMemory(int p) {
+      memory_ = p
+      return this
+  }
+  
+  public Container withJvmHeap(int p) {
+      jvmHeap_ = p
       return this
   }
   
@@ -391,8 +405,8 @@ tenantStage.region =${tenantStage.region}
       'SERVICE':serviceFullName(tenantStage, tenant),
       'SERVICE_PORT':port,
       'FUGUE_TENANT':tenant,
-      'MEMORY':1024,
-      'JVM_MEM':1024,
+      'MEMORY':memory_,
+      'JVM_HEAP':jvmHeap_,
       'PERSIST_POD_ID':tenant+'-'+tenantStage.environment+'-glb-ause1-1',
       'LEGACY_POD_ID':tenant+'-'+tenantStage.environment+'-glb-ause1-1',
       'SERVICE_IMAGE':pipeLine_.docker_repo[tenantStage.environmentType]+name + pipeLine_.dockerLabel,
@@ -535,6 +549,10 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
                     "name": "FUGUE_PRIMARY_REGION",
                     "value": "${FUGUE_PRIMARY_REGION}"
                 },
+                {
+                    "name": "FUGUE_JAVA_ARGS",
+                    "value": "-Xms${JVM_HEAP}m -Xmx${JVM_HEAP}m"
+                },
                 
                 
                 
@@ -571,7 +589,7 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
                 },
                 {
                     "name": "SYM_ES_JAVA_ARGS",
-                    "value": "-Xms${JVM_MEM}m -Xmx${JVM_MEM}m -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=50 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+PrintGCDateStamps -verbose:gc -XX:+PrintGCDetails -Dcom.sun.management.jmxremote.port=10483 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+                    "value": "-Xms${JVM_HEAP}m -Xmx${JVM_HEAP}m -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=50 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+PrintGCDateStamps -verbose:gc -XX:+PrintGCDetails -Dcom.sun.management.jmxremote.port=10483 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
                 }
             ]
         }
@@ -639,6 +657,10 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
                     "name": "FUGUE_PRIMARY_REGION",
                     "value": "${FUGUE_PRIMARY_REGION}"
                 },
+                {
+                    "name": "FUGUE_JAVA_ARGS",
+                    "value": "-Xms${JVM_HEAP}m -Xmx${JVM_HEAP}m"
+                },
                 
                 
                 {
@@ -674,7 +696,7 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
                 },
                 {
                     "name": "SYM_ES_JAVA_ARGS",
-                    "value": "-Xms${JVM_MEM}m -Xmx${JVM_MEM}m -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=50 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+PrintGCDateStamps -verbose:gc -XX:+PrintGCDetails -Dcom.sun.management.jmxremote.port=10483 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+                    "value": "-Xms${JVM_HEAP}m -Xmx${JVM_HEAP}m -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=50 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+PrintGCDateStamps -verbose:gc -XX:+PrintGCDetails -Dcom.sun.management.jmxremote.port=10483 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
                 }
             ]
         }
