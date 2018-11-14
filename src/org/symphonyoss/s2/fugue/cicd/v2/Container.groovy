@@ -28,7 +28,9 @@ class Container extends FuguePipelineTask implements Serializable {
         "\n      containerRole =" + containerRole +
         "\n      ecstemplate      =" + ecstemplate +
         "\n      port             =" + port +
-        "\n      containerPath =" + containerPath +
+        "\n      memory           =" + memory_ +
+        "\n      jvmHeap          =" + jvmHeap_ +
+        "\n      containerPath    =" + containerPath +
         "\n      envOverride      =" + envOverride +
         "\n    }"
   }
