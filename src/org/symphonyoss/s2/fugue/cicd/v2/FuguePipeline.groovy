@@ -569,15 +569,26 @@ environmentType ${environmentType}
         service_map.values().each
         {
           Container ms = it
-            
-          try
+          
+          switch(ms.containerType)
           {
-              sh "aws --region ${awsRegion} ecr describe-repositories --repository-names ${globalNamePrefix_}${serviceId_}/${ms.name}"
-          }
-          catch(Exception e)
-          {
-              echo 'Exception ' + e.toString()
-              sh "aws --region ${awsRegion} ecr create-repository --repository-name ${globalNamePrefix_}${serviceId_}/${ms.name}"
+            case ContainerType.SERVICE:
+            case ContainerType.SCHEDULED:
+            case ContainerType.INIT:
+              try
+              {
+                  sh "aws --region ${awsRegion} ecr describe-repositories --repository-names ${globalNamePrefix_}${serviceId_}/${ms.name}"
+              }
+              catch(Exception e)
+              {
+                  echo 'Exception ' + e.toString()
+                  sh "aws --region ${awsRegion} ecr create-repository --repository-name ${globalNamePrefix_}${serviceId_}/${ms.name}"
+              }
+              break;
+              
+            case ContainerType.LAMBDA:
+            // Nothing to do here
+              break;
           }
         }
         
@@ -776,15 +787,27 @@ environmentType ${environmentType}
       {
         Container ms = it
         
-        String repo = docker_repo[pullFrom_]
+        switch(ms.containerType)
+        {
+          case ContainerType.SERVICE:
+          case ContainerType.SCHEDULED:
+          case ContainerType.INIT:
+            String repo = docker_repo[pullFrom_]
         
-        if(repo == null)
-          throw new IllegalStateException("Unknown environment type ${pullFrom_}")
-        
-        String localImage = ms.name + ':' + release
-        String remoteImage = repo + localImage + '-' + buildQualifier_
-        
-        sh 'docker pull ' + remoteImage
+            if(repo == null)
+              throw new IllegalStateException("Unknown environment type ${pullFrom_}")
+            
+            String localImage = ms.name + ':' + release
+            String remoteImage = repo + localImage + '-' + buildQualifier_
+            
+            sh 'docker pull ' + remoteImage
+            break;
+            
+          case ContainerType.LAMBDA:
+          // TODO: implement me
+            throw new IllegalStateException("TODO: implement me");
+            break;
+        }
       }
     }
   }
@@ -799,36 +822,51 @@ environmentType ${environmentType}
       {
         Container ms = it
         
-        String pushRepo = docker_repo[environmentType]
-        
-        if(pushRepo == null)
-          throw new IllegalStateException("Unknown environment type ${environmentType}")
-        
-        
-
-        if(pullFrom_ == null)
+        switch(ms.containerType)
         {
-          String localImage = ms.name + ':' + release
-          String remoteImage = pushRepo + localImage + '-' + buildQualifier_
-          
-          sh """
+          case ContainerType.SERVICE:
+          case ContainerType.SCHEDULED:
+          case ContainerType.INIT:
+            String pushRepo = docker_repo[environmentType]
+            
+            if(pushRepo == null)
+              throw new IllegalStateException("Unknown environment type ${environmentType}")
+            
+            
+    
+            if(pullFrom_ == null)
+            {
+              String localImage = ms.name + ':' + release
+              String remoteImage = pushRepo + localImage + '-' + buildQualifier_
+              
+              sh """
 docker tag ${localImage} ${remoteImage}
 docker push ${remoteImage}
 """
-        }
-        else
-        {
-          String pullRepo = docker_repo[pullFrom_]
-          
-          String baseImage = ms.name + ':' + release + '-' + buildQualifier_
-          String localImage = pullRepo + baseImage
-          String remoteImage = pushRepo + baseImage
-          
-          sh """
+            }
+            else
+            {
+              String pullRepo = docker_repo[pullFrom_]
+              
+              String baseImage = ms.name + ':' + release + '-' + buildQualifier_
+              String localImage = pullRepo + baseImage
+              String remoteImage = pushRepo + baseImage
+              
+              sh """
 docker tag ${localImage} ${remoteImage}
 docker push ${remoteImage}
 """
+            }
+            break;
+            
+          case ContainerType.LAMBDA:
+          // TODO: implement me
+            throw new IllegalStateException("TODO: implement me");
+            break;
         }
+        
+        
+        
       }
     }
     else
