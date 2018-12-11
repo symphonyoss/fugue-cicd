@@ -860,6 +860,8 @@ docker push ${remoteImage}
             break;
             
           case ContainerType.LAMBDA:
+            sh "ls -l ${ms.name}"
+            sh "ls -l ${ms.name}/target/${ms.name}-${release}.jar"
           // TODO: implement me
             throw new IllegalStateException("TODO: implement me");
             break;
