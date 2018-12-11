@@ -805,7 +805,14 @@ environmentType ${environmentType}
             break;
             
           case ContainerType.LAMBDA:
-          // Nothing to do here
+            steps.withCredentials([[
+            $class:             'AmazonWebServicesCredentialsBinding',
+            accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+            credentialsId:      getCredentialName(pullFrom_),
+            secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+            {
+              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${ms.name}-${release}-${buildQualifier}.jar ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+            }
             break;
         }
       }
@@ -865,17 +872,28 @@ docker push ${remoteImage}
             
             if(pullFrom_ == null)
             {
-              sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+              steps.withCredentials([[
+              $class:             'AmazonWebServicesCredentialsBinding',
+              accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+              credentialsId:      getCredentialName(environmentType),
+              secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+              {
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+              }
             }
             else
             {
-              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+              steps.withCredentials([[
+              $class:             'AmazonWebServicesCredentialsBinding',
+              accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+              credentialsId:      getCredentialName(pullFrom_),
+              secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+              {
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+              }
             }
             break;
         }
-        
-        
-        
       }
     }
     else
