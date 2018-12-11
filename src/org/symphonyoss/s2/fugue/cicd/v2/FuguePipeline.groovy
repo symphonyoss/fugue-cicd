@@ -805,8 +805,7 @@ environmentType ${environmentType}
             break;
             
           case ContainerType.LAMBDA:
-          // TODO: implement me
-            throw new IllegalStateException("TODO: implement me");
+          // Nothing to do here
             break;
         }
       }
@@ -863,8 +862,15 @@ docker push ${remoteImage}
           case ContainerType.LAMBDA:
             sh "ls -l ${ms.name}"
             sh "ls -l ${ms.name}/target/${ms.name}-${release}.jar"
-          // TODO: implement me
-            throw new IllegalStateException("TODO: implement me");
+            
+            if(pullFrom_ == null)
+            {
+              sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+            }
+            else
+            {
+              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+            }
             break;
         }
         
