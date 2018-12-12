@@ -465,9 +465,10 @@ deployTo     ${deployTo_}
             .withRole(containerDef."role")
             .withTenancy(Tenancy.parse(containerDef."tenancy"))
             .withContainerType(ContainerType.parse(containerDef."containerType"))
-            .withPort(containerDef."port")
+            
             .withEcsTemplate(containerDef."ecsTemplate")
-        
+       
+          
         def v = containerDef."memory";
         
         if(v != null)
@@ -478,6 +479,11 @@ deployTo     ${deployTo_}
         if(v != null)
             ms.withJvmHeap(v)
 
+        v = containerDef."port"
+        
+        if(v != null)
+          ms.withPort(v)
+          
         containerDef."environment".each { envName, envValue ->
           ms.withEnv(envName, envValue)
         }
