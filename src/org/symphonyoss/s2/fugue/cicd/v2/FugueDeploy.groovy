@@ -41,6 +41,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  launchType_
   private String  releaseTrack_
   private String  station_
+  private String  buildId_
   
   public FugueDeploy(FuguePipeline pipeLine, String task, String awsRegion)
   {
@@ -73,6 +74,13 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     configGitOrg_ = org
     configGitRepo_ = repo
     configGitBranch_ = branch
+    
+    return this
+  }
+  
+  public FugueDeploy withBuildId(String s)
+  {
+    buildId_ = s
     
     return this
   }
@@ -286,6 +294,7 @@ logGroup        ${logGroup}
     addIfNotNull("FUGUE_PRIMARY_REGION", primaryRegion_)
     addIfNotNull("FUGUE_TRACK", releaseTrack_)
     addIfNotNull("FUGUE_STATION", station_)
+    addIfNotNull("FUGUE_BUILD_ID", buildId_)
     
     if(environmentType_.equals('smoke'))
       addIfNotNull("CONSUL_URL", "https://consul-dev.symphony.com:8080")

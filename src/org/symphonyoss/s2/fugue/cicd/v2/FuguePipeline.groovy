@@ -985,6 +985,7 @@ docker push ${remoteImage}
         .withTrack(releaseTrack)
         .withStation(tenantStage)
         .withServiceName(serviceId_)
+        .withBuildId(release + '-' + buildQualifier)
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
