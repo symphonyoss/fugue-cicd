@@ -1,7 +1,7 @@
 package org.symphonyoss.s2.fugue.cicd.v2
 
 enum ContainerType {
-  SERVICE, INIT, SCHEDULED;
+  SERVICE, INIT, SCHEDULED, LAMBDA;
   
   public static ContainerType parse(String s)
   {

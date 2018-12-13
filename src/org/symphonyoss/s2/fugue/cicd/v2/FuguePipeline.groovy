@@ -355,6 +355,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 Preflight V2.2
 Build Action ${env_.buildAction}
 """
+    sh 'ls -lR'
     
     switch(env_.buildAction)
     {
@@ -464,9 +465,10 @@ deployTo     ${deployTo_}
             .withRole(containerDef."role")
             .withTenancy(Tenancy.parse(containerDef."tenancy"))
             .withContainerType(ContainerType.parse(containerDef."containerType"))
-            .withPort(containerDef."port")
+            
             .withEcsTemplate(containerDef."ecsTemplate")
-        
+       
+          
         def v = containerDef."memory";
         
         if(v != null)
@@ -477,6 +479,11 @@ deployTo     ${deployTo_}
         if(v != null)
             ms.withJvmHeap(v)
 
+        v = containerDef."port"
+        
+        if(v != null)
+          ms.withPort(v)
+          
         containerDef."environment".each { envName, envValue ->
           ms.withEnv(envName, envValue)
         }
@@ -569,15 +576,26 @@ environmentType ${environmentType}
         service_map.values().each
         {
           Container ms = it
-            
-          try
+          
+          switch(ms.containerType)
           {
-              sh "aws --region ${awsRegion} ecr describe-repositories --repository-names ${globalNamePrefix_}${serviceId_}/${ms.name}"
-          }
-          catch(Exception e)
-          {
-              echo 'Exception ' + e.toString()
-              sh "aws --region ${awsRegion} ecr create-repository --repository-name ${globalNamePrefix_}${serviceId_}/${ms.name}"
+            case ContainerType.SERVICE:
+            case ContainerType.SCHEDULED:
+            case ContainerType.INIT:
+              try
+              {
+                  sh "aws --region ${awsRegion} ecr describe-repositories --repository-names ${globalNamePrefix_}${serviceId_}/${ms.name}"
+              }
+              catch(Exception e)
+              {
+                  echo 'Exception ' + e.toString()
+                  sh "aws --region ${awsRegion} ecr create-repository --repository-name ${globalNamePrefix_}${serviceId_}/${ms.name}"
+              }
+              break;
+              
+            case ContainerType.LAMBDA:
+            // Nothing to do here
+              break;
           }
         }
         
@@ -776,15 +794,33 @@ environmentType ${environmentType}
       {
         Container ms = it
         
-        String repo = docker_repo[pullFrom_]
+        switch(ms.containerType)
+        {
+          case ContainerType.SERVICE:
+          case ContainerType.SCHEDULED:
+          case ContainerType.INIT:
+            String repo = docker_repo[pullFrom_]
         
-        if(repo == null)
-          throw new IllegalStateException("Unknown environment type ${pullFrom_}")
-        
-        String localImage = ms.name + ':' + release
-        String remoteImage = repo + localImage + '-' + buildQualifier_
-        
-        sh 'docker pull ' + remoteImage
+            if(repo == null)
+              throw new IllegalStateException("Unknown environment type ${pullFrom_}")
+            
+            String localImage = ms.name + ':' + release
+            String remoteImage = repo + localImage + '-' + buildQualifier_
+            
+            sh 'docker pull ' + remoteImage
+            break;
+            
+          case ContainerType.LAMBDA:
+            steps.withCredentials([[
+            $class:             'AmazonWebServicesCredentialsBinding',
+            accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+            credentialsId:      getCredentialName(pullFrom_),
+            secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+            {
+              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${ms.name}-${release}-${buildQualifier}.jar ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+            }
+            break;
+        }
       }
     }
   }
@@ -799,35 +835,72 @@ environmentType ${environmentType}
       {
         Container ms = it
         
-        String pushRepo = docker_repo[environmentType]
-        
-        if(pushRepo == null)
-          throw new IllegalStateException("Unknown environment type ${environmentType}")
-        
-        
-
-        if(pullFrom_ == null)
+        switch(ms.containerType)
         {
-          String localImage = ms.name + ':' + release
-          String remoteImage = pushRepo + localImage + '-' + buildQualifier_
-          
-          sh """
+          case ContainerType.SERVICE:
+          case ContainerType.SCHEDULED:
+          case ContainerType.INIT:
+            String pushRepo = docker_repo[environmentType]
+            
+            if(pushRepo == null)
+              throw new IllegalStateException("Unknown environment type ${environmentType}")
+            
+            
+    
+            if(pullFrom_ == null)
+            {
+              String localImage = ms.name + ':' + release
+              String remoteImage = pushRepo + localImage + '-' + buildQualifier_
+              
+              sh """
 docker tag ${localImage} ${remoteImage}
 docker push ${remoteImage}
 """
-        }
-        else
-        {
-          String pullRepo = docker_repo[pullFrom_]
-          
-          String baseImage = ms.name + ':' + release + '-' + buildQualifier_
-          String localImage = pullRepo + baseImage
-          String remoteImage = pushRepo + baseImage
-          
-          sh """
+            }
+            else
+            {
+              String pullRepo = docker_repo[pullFrom_]
+              
+              String baseImage = ms.name + ':' + release + '-' + buildQualifier_
+              String localImage = pullRepo + baseImage
+              String remoteImage = pushRepo + baseImage
+              
+              sh """
 docker tag ${localImage} ${remoteImage}
 docker push ${remoteImage}
 """
+            }
+            break;
+            
+          case ContainerType.LAMBDA:
+            sh "ls -l ${ms.name}"
+            sh "ls -l ${ms.name}/target/${ms.name}-${release}.jar"
+            
+            if(pullFrom_ == null)
+            {
+              steps.withCredentials([[
+              $class:             'AmazonWebServicesCredentialsBinding',
+              accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+              credentialsId:      getCredentialName(environmentType),
+              secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+              {
+                sh 'aws sts get-caller-identity'
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${release}-${buildQualifier}.jar"
+              }
+            }
+            else
+            {
+              steps.withCredentials([[
+              $class:             'AmazonWebServicesCredentialsBinding',
+              accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+              credentialsId:      getCredentialName(pullFrom_),
+              secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+              {
+                sh 'aws sts get-caller-identity'
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${release}-${buildQualifier}.jar"
+              }
+            }
+            break;
         }
       }
     }
@@ -918,6 +991,7 @@ docker push ${remoteImage}
         .withTrack(releaseTrack)
         .withStation(tenantStage)
         .withServiceName(serviceId_)
+        .withBuildId(release + '-' + buildQualifier)
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
