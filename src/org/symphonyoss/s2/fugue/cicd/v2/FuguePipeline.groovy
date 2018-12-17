@@ -355,7 +355,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
 Preflight V2.2
 Build Action ${env_.buildAction}
 """
-    sh 'ls -lR'
     
     switch(env_.buildAction)
     {
