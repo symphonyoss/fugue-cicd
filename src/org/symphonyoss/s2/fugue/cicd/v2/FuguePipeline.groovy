@@ -889,7 +889,7 @@ docker push ${remoteImage}
               steps.withCredentials([[
               $class:             'AmazonWebServicesCredentialsBinding',
               accessKeyVariable:  'AWS_ACCESS_KEY_ID',
-              credentialsId:      getCredentialName(pullFrom_),
+              credentialsId:      getCredentialName(environmentType),
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
