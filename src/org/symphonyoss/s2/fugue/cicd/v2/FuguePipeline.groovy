@@ -816,7 +816,7 @@ environmentType ${environmentType}
             credentialsId:      getCredentialName(pullFrom_),
             secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
             {
-              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${ms.name}-${release}-${buildQualifier}.jar ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${release}-${buildQualifier}.jar ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
             }
             break;
         }
