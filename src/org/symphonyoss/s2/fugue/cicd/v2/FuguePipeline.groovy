@@ -872,9 +872,6 @@ docker push ${remoteImage}
             break;
             
           case ContainerType.LAMBDA:
-            sh "ls -l ${ms.name}"
-            sh "ls -l ${ms.name}/target/${ms.name}-${release}.jar"
-            
             if(pullFrom_ == null)
             {
               steps.withCredentials([[
