@@ -604,6 +604,9 @@ environmentType ${environmentType}
         {
                         
           sh "docker pull 189141687483.dkr.ecr.${awsRegion}.amazonaws.com/symphony-es/base-java8:latest"
+          sh "docker pull 189141687483.dkr.ecr.${awsRegion}.amazonaws.com/symbase/java8:latest"
+          sh "docker pull 189141687483.dkr.ecr.${awsRegion}.amazonaws.com/symbase/java10:latest"
+          sh "docker pull 189141687483.dkr.ecr.${awsRegion}.amazonaws.com/symbase/java11:latest"
           
           
           steps.withCredentials([steps.file(credentialsId: 'maven-settings', variable: 'FILE')]) {
