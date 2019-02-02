@@ -350,10 +350,10 @@ logGroup        ${logGroup}
         sh(returnStdout: true, script: runCommand
         )
       )
-        
+      echo "taskRun: ${taskRun}"
       echo """
 Task run
-taskRun: ${taskRun}
+
 taskArn: ${taskRun.tasks[0].taskArn}
 lastStatus: ${taskRun.tasks[0].lastStatus}
 """
