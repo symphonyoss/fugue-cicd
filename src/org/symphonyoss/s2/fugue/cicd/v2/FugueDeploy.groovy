@@ -353,6 +353,7 @@ logGroup        ${logGroup}
         
       echo """
 Task run
+taskRun: ${taskRun}
 taskArn: ${taskRun.tasks[0].taskArn}
 lastStatus: ${taskRun.tasks[0].lastStatus}
 """
