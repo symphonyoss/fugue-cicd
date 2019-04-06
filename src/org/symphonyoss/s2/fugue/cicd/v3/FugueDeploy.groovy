@@ -380,6 +380,21 @@ ${taskDescription}
 """
         throw new IllegalStateException('Init task fugue-deploy failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
       }
+      
+      echo "BRUCE"
+      if(podName_ != null)
+      {
+        def config = readJSON(text:
+          sh(returnStdout: true, script: "aws s3 cp --quiet s3://sym-s2-fugue-${environmentType_}-us-east-1-config/config/sym-s2-smoke-s2smoke1-sym-ac6-dev-chat-glb-1-s2fwd.json -" ))
+        
+        def podId = config."id"."podId"
+        
+        echo "podName=${podName_} podId={$podId}"
+      }
+      else
+      {
+        echo "not a pod"
+      }
     }
     
     
