@@ -8,7 +8,7 @@ class Station implements Serializable {
   boolean               primaryRegion
   String                environmentType
   String                logGroupName
-  List<String>          tenants = new ArrayList<>()
+  List<String>          podNames = new ArrayList<>()
 
   public String toString() {
     "    {" +
@@ -17,7 +17,7 @@ class Station implements Serializable {
         "\n      environment        =" + environment +
         "\n      environmentType    =" + environmentType +
         "\n      logGroupName       =" + logGroupName +
-        "\n      tenants            =" + tenants +
+        "\n      podNames           =" + podNames +
         "\n      primaryEnvironment =" + primaryEnvironment +
         "\n      primaryRegion      =" + primaryRegion +
         "\n    }"
@@ -67,9 +67,9 @@ class Station implements Serializable {
     return this
   }
 
-  public Station withTenants(String ...t) {
-    for(String tenant : t)
-      tenants.add(tenant)
+  public Station withPodNames(String ...t) {
+    for(String podName : t)
+      podNames.add(podName)
     return this
   }
 }

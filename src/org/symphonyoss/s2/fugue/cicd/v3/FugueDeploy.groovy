@@ -23,10 +23,9 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
 
   private String  environmentType_
   private String  environment_
-  private String  realm_
   private String  region_
   private String  servicename_
-  private String  tenantId_
+  private String  podName_
   private boolean primaryEnvironment_
   private boolean primaryRegion_
   private String  configTaskdef_
@@ -92,9 +91,9 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     return this
   }
   
-  public FugueDeploy withTenantId(String s)
+  public FugueDeploy withPodName(String s)
   {
-    tenantId_ = s
+    podName_ = s
     
     return this
   }
@@ -111,7 +110,6 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   {
     environmentType_    = s.environmentType
     environment_        = s.environment
-    realm_              = s.realm
     region_             = s.region
     primaryEnvironment_ = s.primaryEnvironment
     primaryRegion_      = s.primaryRegion
@@ -143,13 +141,6 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   public FugueDeploy withEnvironment(String s)
   {
     environment_    = s
-    
-    return this
-  }
-  
-  public FugueDeploy withRealm(String s)
-  {
-    realm_    = s
     
     return this
   }
@@ -235,9 +226,8 @@ launchType      ${launchType_}
 action          ${action_}
 environmentType ${environmentType_}
 environment     ${environment_}
-realm           ${realm_}
 region          ${region_}
-tenantId        ${tenantId_}
+podName        ${podName_}
 
 serviceImage    ${serviceImage}
 taskDefFamily   ${taskDefFamily}
@@ -285,11 +275,10 @@ logGroup        ${logGroup}
                     
     addIfNotNull("FUGUE_ENVIRONMENT_TYPE", environmentType_)
     addIfNotNull("FUGUE_ENVIRONMENT", environment_)
-    addIfNotNull("FUGUE_REALM", realm_)
     addIfNotNull("FUGUE_REGION", region_)
     addIfNotNull("FUGUE_SERVICE", servicename_)
     addIfNotNull("FUGUE_ACTION", action_)
-    addIfNotNull("FUGUE_TENANT", tenantId_)
+    addIfNotNull("FUGUE_POD_NAME", podName_)
     addIfNotNull("FUGUE_PRIMARY_ENVIRONMENT", primaryEnvironment_)
     addIfNotNull("FUGUE_PRIMARY_REGION", primaryRegion_)
     addIfNotNull("FUGUE_TRACK", releaseTrack_)
@@ -325,10 +314,10 @@ logGroup        ${logGroup}
       
       deleteOldTaskDefs(taskDefFamily)
       
-      def taskdef_file = 'ecs-' + environment_ + '-' + tenantId_ + '.json'
+      def taskdef_file = 'ecs-' + environment_ + '-' + podName_ + '.json'
       writeFile file:taskdef_file, text:configTaskdef_
       
-      sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-' + environment_ + '-' + tenantId_ + '.json'
+      sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-' + environment_ + '-' + podName_ + '.json'
 
       sh 'aws sts get-caller-identity'
       

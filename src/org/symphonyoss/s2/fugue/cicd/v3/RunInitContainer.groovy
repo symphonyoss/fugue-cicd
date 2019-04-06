@@ -8,22 +8,22 @@ package org.symphonyoss.s2.fugue.cicd.v3
 
 class RunInitContainer extends RunTask
 {
-  private Station tenantStage_
-  private String tenant_
+  private Station station_
+  private String podName_
   
-  public RunInitContainer(FuguePipeline pipeLine, Station tenantStage, String tenant)
+  public RunInitContainer(FuguePipeline pipeLine, Station station, String podName)
   {
       super(pipeLine)
       
-      tenantStage_ = tenantStage
-      tenant_ = tenant
+      station_ = station
+      podName_ = podName
   }
   
   public void execute()
   {
     steps_.echo 'RunInitContainer.execute()'
-    steps_.echo 'tenantStage_ = ' + tenantStage_
-    steps_.echo 'tenant_ = ' + tenant_
+    steps_.echo 'station_ = ' + station_
+    steps_.echo 'podName_ = ' + podName_
     
   }
 }

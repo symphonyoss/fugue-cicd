@@ -14,13 +14,13 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private EnvActionImpl environ
   private DSL           steps
   
-  private Map tenants = [:]
+  private Map podMap = [:]
 
   private Map aws_identity = [:]
   private Map docker_repo = [:]
   private Map<String, EnvironmentTypeConfig> environmentTypeConfig = [:]
   private Map<String, Container> service_map = [:]
-  private Map<String, Station> tenant_stage_map = [:]
+  private Map<String, Station> stationMap = [:]
   private Map<String, String> role_map = [:]
   private Set<String> logGroupSet = []
   private String symbase = 'symbase'
@@ -128,10 +128,10 @@ class FuguePipeline extends JenkinsTask implements Serializable
       return this
   }
   
-  public FuguePipeline withStation(Station tenantStage) {
-    // It should be an error to include the same tenant in the same environment twice in one tenantStage or
-    // in separate tenantStages
-    tenant_stage_map.put(tenantStage.name, tenantStage)
+  public FuguePipeline withStation(Station station) {
+    // It should be an error to include the same podName in the same environment twice in one station or
+    // in separate stations
+    stationMap.put(station.name, station)
     return this
   }
   
@@ -207,8 +207,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
     ':' + release + '-' + buildQualifier_
   }
 
-  private String serviceFullName(String env, String tenant) {
-      return env+'-'+tenant+'-'+serviceId_
+  private String serviceFullName(String env, String podName) {
+      return env+'-'+podName+'-'+serviceId_
   }
   
   public void deleteUser(String userName, String groupName)
@@ -509,8 +509,8 @@ deployTo     ${deployTo_}
             .withPrimaryRegion(stationDef."primaryRegion")
 
 
-        stationDef."tenants".each { tenant ->
-          ts.withTenants(tenant)
+        stationDef."podNames".each { podName ->
+          ts.withPodNames(podName)
         }
 
         echo 'ts=' + ts
@@ -654,7 +654,7 @@ environmentType ${environmentType}
     }
   }
   
-  public void deployInitContainers(Station tenantStage)
+  public void deployInitContainers(Station station)
   {
     echo 'Init Containers'
     
@@ -665,7 +665,7 @@ environmentType ${environmentType}
       if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.MULTI)
       {
           echo 'Init MULTI ' + ms.toString()
-          ms.deployInit(tenantStage, null)
+          ms.deployInit(station, null)
           echo 'DONE Init MULTI ' + ms.name
       }
     }
@@ -676,19 +676,19 @@ environmentType ${environmentType}
       
       if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.SINGLE)
       {
-        tenantStage.tenants.each
+        station.podNames.each
         {
-          String tenant = it
+          String podName = it
        
-          echo 'Init ' + tenant + ' ' + ms.toString()
+          echo 'Init ' + podName + ' ' + ms.toString()
           
-          ms.deployInit(tenantStage, tenant)
+          ms.deployInit(station, podName)
         }
       }
     }
   }
   
-  public void deployServiceContainers(Station tenantStage)
+  public void deployServiceContainers(Station station)
   {
     echo 'Runtime Containers'
     
@@ -701,77 +701,77 @@ environmentType ${environmentType}
         switch(ms.tenancy)
         {
           case Tenancy.SINGLE:
-            tenantStage.tenants.each
+            station.podNames.each
             {
-              String tenant = it
+              String podName = it
               
-              echo 'Runtime ' + tenant + ' ' + ms.toString()
-              ms.registerTaskDef(tenantStage, tenant)
+              echo 'Runtime ' + podName + ' ' + ms.toString()
+              ms.registerTaskDef(station, podName)
             }
             break
   
           case Tenancy.MULTI:
             echo 'Runtime MULTI ' + ms.toString()
-              ms.registerTaskDef(tenantStage, null)
+              ms.registerTaskDef(station, null)
               break
         }
       }
     }
   }
   
-  public void deployInitContainers(String tenantStageName)
+  public void deployInitContainers(String stationName)
   {
-    Station tenantStage = tenant_stage_map.get(tenantStageName)
+    Station station = stationMap.get(stationName)
  
-    deployInitContainers(tenantStage)
+    deployInitContainers(station)
   }
   
-  public boolean deployStation(String tenantStageName, Purpose requiredPurpose = Purpose.Service)
+  public boolean deployStation(String stationName, Purpose requiredPurpose = Purpose.Service)
   {
-    echo 'Deploy for ' + tenantStageName
+    echo 'Deploy for ' + stationName
   
-    Station tenantStage = tenant_stage_map.get(tenantStageName)
+    Station station = stationMap.get(stationName)
     
-    echo "ValidPurpose=${getDeployTo(tenantStage.environmentType)} requiredPurpose=${requiredPurpose}"
-    if(getDeployTo(tenantStage.environmentType).isValidFor(requiredPurpose))
+    echo "ValidPurpose=${getDeployTo(station.environmentType)} requiredPurpose=${requiredPurpose}"
+    if(getDeployTo(station.environmentType).isValidFor(requiredPurpose))
     {
       echo "OK, lets do this!"
       
       boolean doMultiTenantConfig = true
       
-      tenantStage.tenants.each {
-        String tenant = it
+      station.podNames.each {
+        String podName = it
         
-        echo 'for environmentType=' + tenantStage.environmentType +
-        ', environment=' + tenantStage.environment + ', tenant ' + tenant
+        echo 'for environmentType=' + station.environmentType +
+        ', environment=' + station.environment + ', podName ' + podName
         
-        deployConfig(tenantStage, tenant, 'DeployConfig')
+        deployConfig(station, podName, 'DeployConfig')
         doMultiTenantConfig = false
 
       }
       
       if(doMultiTenantConfig)
       {
-        deployConfig(tenantStage, null, 'DeployConfig')
+        deployConfig(station, null, 'DeployConfig')
       }
         
       if(!toolsDeploy) {
-        deployInitContainers(tenantStage)
+        deployInitContainers(station)
       
         // this just creates task defs
-        deployServiceContainers(tenantStage)
+        deployServiceContainers(station)
         
         // this actually deploys service containers
-        fugueDeployStation(releaseTrack, tenantStage)
+        fugueDeployStation(releaseTrack, station)
         
         
-//        tenantStage.tenants.each {
-//            String tenant = it
+//        station.podNames.each {
+//            String podName = it
 //            
-//            echo 'for environmentType=' + tenantStage.environmentType +
-//            ', environment=' + tenantStage.environment + ', tenant ' + tenant
+//            echo 'for environmentType=' + station.environmentType +
+//            ', environment=' + station.environment + ', podName ' + podName
 //            
-//            deployConfig(tenantStage, tenant, 'Deploy')
+//            deployConfig(station, podName, 'Deploy')
 //    
 //          }
       }
@@ -779,7 +779,7 @@ environmentType ${environmentType}
     }
     else
     {
-      echo 'No access for environmentType ' + tenantStage.environmentType + ', skipped.'
+      echo 'No access for environmentType ' + station.environmentType + ', skipped.'
       return false
     }
   }
@@ -961,16 +961,16 @@ docker push ${remoteImage}
     Thread.sleep(time)
   }
 
-  public void deployConfig(Station tenantStage, String tenant, String task)
+  public void deployConfig(Station station, String podName, String task)
   {
     String logGroup
-    String accountId = getCredentialName(tenantStage.environmentType)
+    String accountId = getCredentialName(station.environmentType)
     
     FugueDeploy deploy = new FugueDeploy(this, task,
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
-        .withStation(tenantStage)
-        .withTenantId(tenant)
+        .withStation(station)
+        .withPodName(podName)
         .withServiceName(serviceId_)
     
     if(toolsDeploy)
@@ -979,15 +979,15 @@ docker push ${remoteImage}
     deploy.execute() 
   }
   
-  public void fugueDeployStation(String releaseTrack, Station tenantStage)
+  public void fugueDeployStation(String releaseTrack, Station station)
   {
-    String accountId = getCredentialName(tenantStage.environmentType)
+    String accountId = getCredentialName(station.environmentType)
     
     FugueDeploy deploy = new FugueDeploy(this, 'DeployStation',
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
         .withTrack(releaseTrack)
-        .withStation(tenantStage)
+        .withStation(station)
         .withServiceName(serviceId_)
         .withBuildId(release + '-' + buildQualifier)
     
@@ -997,26 +997,26 @@ docker push ${remoteImage}
     deploy.execute()
   }
   
-  String logGroupName(Station tenantStage, String tenant)
+  String logGroupName(Station station, String podName)
   {
-    return logGroupName(tenantStage, tenant, symteam)
+    return logGroupName(station, podName, symteam)
   }
   
-  String logGroupName(Station tenantStage, String tenant, String team)
+  String logGroupName(Station station, String podName, String team)
   {
-    if(tenantStage.logGroupName == null) {
-      String name = globalNamePrefix_ + tenantStage.environmentType + '-' + tenantStage.environment + '-';
+    if(station.logGroupName == null) {
+      String name = globalNamePrefix_ + station.environmentType + '-' + station.environment + '-';
       
-      return tenant == null ? name + team : name + tenant + '-' + team;
+      return podName == null ? name + team : name + podName + '-' + team;
     }
     else {
-      return tenantStage.logGroupName;
+      return station.logGroupName;
     }
   }
   
-  String createLogGroup(Station tenantStage, String tenant)
+  String createLogGroup(Station station, String podName)
   {
-    createLogGroup(logGroupName(tenantStage, tenant));
+    createLogGroup(logGroupName(station, podName));
   }
   
   String createLogGroup(String name)

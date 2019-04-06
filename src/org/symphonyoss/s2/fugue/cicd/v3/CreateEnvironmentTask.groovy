@@ -84,7 +84,6 @@ region_             ${region_}
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
           .withEnvironmentType(environmentType_)
           .withEnvironment(environment_)
-          .withRealm(realm_)
           .withRegion(region_)
           .withDockerLabel(dockerLabel_)
           .withRole(roleName)

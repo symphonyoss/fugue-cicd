@@ -12,7 +12,7 @@ class Container extends FuguePipelineTask implements Serializable {
   private int                   jvmHeap_ = 512
   private String                containerPath
   private Map<String, String>   envOverride = [:]
-  private Map                   tenants = [:]
+  private Map                   pods = [:]
   
   public Container(FuguePipeline pipeLine)
   {
@@ -93,39 +93,39 @@ class Container extends FuguePipelineTask implements Serializable {
     containerPath == null ? pipeLine_.servicePath : containerPath
   }
   
-  void deployInit(Station tenantStage, String tenant)
+  void deployInit(Station station, String podName)
   {
-    registerTaskDef(tenantStage, tenant)
-    runTask(tenantStage, tenant)
+    registerTaskDef(station, podName)
+    runTask(station, podName)
   }
   
-  void runTask(Station tenantStage, String tenant)
+  void runTask(Station station, String podName)
   {
-    String clusterId = pipeLine_.getEnvironmentTypeConfig(tenantStage.environmentType).getClusterId();
+    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
     
-    echo 'runTask tenant=' + tenant + ", tenantStage=" + tenantStage.toString() + ', this=' + toString()
+    echo 'runTask podName=' + podName + ", station=" + station.toString() + ', this=' + toString()
     echo 'envOverride=' + envOverride
     echo """
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-tenantStage.environment = ${tenantStage.environment}
-tenant=${tenant}
+station.environment = ${station.environment}
+podName=${podName}
 
-tenants[tenantStage.environment][tenant]['ecs-taskdef-family']  = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-family']}
-tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-revision']}
+pods[station.environment][podName]['ecs-taskdef-family']  = ${pods[station.environment][podName]['ecs-taskdef-family']}
+pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.environment][podName]['ecs-taskdef-revision']}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 """
-    if(tenants[tenantStage.environment][tenant]['ecs-taskdef-family'] != null &&
-       tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] != null) {
+    if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
+       pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
         withCredentials([[
           $class: 'AmazonWebServicesCredentialsBinding',
           accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
+          credentialsId: pipeLine_.getCredentialName(station.environmentType),
           secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
         
-        String logGroupName = pipeLine_.createLogGroup(tenantStage, tenant);
+        String logGroupName = pipeLine_.createLogGroup(station, podName);
                          
-        String override = '{"containerOverrides": [{"name": "' + serviceFullName(tenantStage, tenant) +
+        String override = '{"containerOverrides": [{"name": "' + serviceFullName(station, podName) +
          '","environment": ['
          String comma = ''
          
@@ -141,7 +141,7 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
         def taskRun = readJSON(text:
           sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + 
             clusterId +
-            ' --task-definition '+serviceFullName(tenantStage, tenant)+
+            ' --task-definition '+serviceFullName(station, podName)+
             ' --count 1 --overrides \'' + override + '\''
           )
         )
@@ -172,8 +172,8 @@ stoppedReason: ${taskDescription.tasks[0].stoppedReason}
 exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 """
         sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroupName +
-        ' --log-stream-name '+serviceFullName(tenantStage, tenant)+
-        '/'+serviceFullName(tenantStage, tenant)+
+        ' --log-stream-name '+serviceFullName(station, podName)+
+        '/'+serviceFullName(station, podName)+
         '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/",$//\' | sed -e \'s/\\\\t/      /\''
 
         
@@ -186,149 +186,89 @@ exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
     }
   }
   
-//  void deployService(Station tenantStage, String tenant) {
-//    registerTaskDef(tenantStage, tenant)
-//    
-////    def svcstate = getServiceState(tenantStage, tenant)
-////    if(svcstate == null || svcstate.status == 'INACTIVE' || svcstate.status == 'DRAINING') {
-////        createService(tenantStage, tenant)
-////    } else {
-////        updateService(tenantStage, tenant)
-////    }
-////    try {
-////        waitServiceStable(tenantStage, tenant)
-////    } catch(Exception e) {
-////      echo 'Failed to start ' + e.toString()
-////
-////              updateServiceTaskDef(tenantStage, tenant, null, 0)
-////        throw e
-////    }
-//  }
-
-//  private def waitServiceStable(Station tenantStage, String tenant, int maxseconds = 300) {
-//    def svcstate = getServiceState(tenantStage, tenant)
-//    while(!(svcstate.runningCount > 0
-//            && svcstate.deployments.size() == 1
-//            && svcstate.runningCount == svcstate.desiredCount
-//            && svcstate.events.size() >= 1
-//            && svcstate.events[0].message.contains('reached a steady state'))
-//          && !(svcstate.runningCount > 0
-//               && svcstate.deployments.size() >= 1
-//               && svcstate.runningCount > svcstate.desiredCount
-//               && svcstate.events.size() >= 1
-//               && svcstate.events[0].message.contains('has begun draining connections'))) {
-//        echo """WAITING:
-//RUNNING:     ${svcstate.runningCount}
-//DEPLOYMENTS: ${svcstate.deployments.size()}
-//EXPECTED:    ${svcstate.runningCount} == ${svcstate.desiredCount}
-//STABLE:      ${svcstate.events.size()>=1?svcstate.events[0].message.contains('reached a steady state'):false}
-//DRAINING:    ${svcstate.events.size()>=1?svcstate.events[0].message.contains('has begun draining connections'):false}
-//"""
-//        maxseconds -= 15
-//        if(maxseconds<0) {
-//            if(!(svcstate.runningCount > 0)) {
-//                throw new Exception('Timeout Waiting for stable - running count')
-//            } else if(svcstate.deployments.size() != 1) {
-//                throw new Exception('Timeout Waiting for stable - deployments: '+svcstate.deployments.size())
-//            } else if (svcstate.runningCount < svcstate.desiredCount) {
-//                throw new Exception('Timeout Waiting for stable - desired count')
-//            } else if (svcstate.events.size()<1 || !svcstate.events[0].message.contains('reached a steady state')) {
-//                throw new Exception('Timeout Waiting for stable - steady state')
-//            } else {
-//                throw new Exception('Timeout Waiting for stable')
-//            }
-//        }
-//        //echo 'Sleeping 15 s'
-//        sleep 15000
-//        //sleep time:15 unit:steps.SECONDS
-//        svcstate = getServiceState(tenantStage, tenant)
-//    }
-//    return svcstate
-//}
-  
-  private void updateService(Station tenantStage, String tenant) {
+  private void updateService(Station station, String podName) {
     echo 'updateService'
-      if(tenants[tenantStage.environment][tenant]['ecs-taskdef-family'] != null &&
-         tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] != null) {
-          updateServiceTaskDef(tenantStage, tenant,
-                               tenants[tenantStage.environment][tenant]['ecs-taskdef-family']+':'+
-                               tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'],
+      if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
+         pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
+          updateServiceTaskDef(station, podName,
+                               pods[station.environment][podName]['ecs-taskdef-family']+':'+
+                               pods[station.environment][podName]['ecs-taskdef-revision'],
                                1)
       }
   }
   
-  private void updateServiceTaskDef(Station tenantStage, String tenant,
+  private void updateServiceTaskDef(Station station, String podName,
     String taskdef=null, int desired=-1)
   {
-    String clusterId = pipeLine_.getEnvironmentTypeConfig(tenantStage.environmentType).getClusterId();
+    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
     
     echo 'updateServiceTaskDef'
     withCredentials([[
       $class: 'AmazonWebServicesCredentialsBinding',
       accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-      credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
+      credentialsId: pipeLine_.getCredentialName(station.environmentType),
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
-      sh 'aws --region us-east-1 ecs update-service --cluster '+clusterId+' --service '+serviceFullName(tenantStage, tenant)+(taskdef!=null?(' --task-definition '+serviceFullName(tenantStage, tenant)):'')+(desired>=0?(' --desired-count '+desired):'')+' > ecs-service-update-'+tenantStage.environment+'-'+tenant+'.json'
+      sh 'aws --region us-east-1 ecs update-service --cluster '+clusterId+' --service '+serviceFullName(station, podName)+(taskdef!=null?(' --task-definition '+serviceFullName(station, podName)):'')+(desired>=0?(' --desired-count '+desired):'')+' > ecs-service-update-'+station.environment+'-'+podName+'.json'
     }
   }
   
-  private void createService(Station tenantStage, String tenant, int desiredCount = 1)
+  private void createService(Station station, String podName, int desiredCount = 1)
   {
-    String clusterId = pipeLine_.getEnvironmentTypeConfig(tenantStage.environmentType).getClusterId();
+    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
  
        echo 'createService'
-      if(tenants[tenantStage.environment][tenant]['ecs-taskdef-family'] != null &&
-         tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] != null) {
+      if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
+         pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
           withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
             accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
+            credentialsId: pipeLine_.getCredentialName(station.environmentType),
             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
             ]])
           {
-              String logGroupName = pipeLine_.createLogGroup(tenantStage, tenant);
+              String logGroupName = pipeLine_.createLogGroup(station, podName);
               
               
               //TODO: this needs to move to DeployConfig and we need to make it work with multiple containers, we
               // need to create a separate ELB for each container I think
-//              sh 'aws --region us-east-1 elbv2 create-target-group --name '+serviceFullName(tenantStage, tenant)+' --health-check-path ' + healthCheckPath + ' --protocol HTTP --port '+port+' --vpc-id '+ECSClusterMaps.env_cluster[tenantStage.environment]['vpcid'] + ' | tee aws-ialb-tg-'+tenantStage.environment+'.json'
-//              def ialb_tg = readJSON file:'aws-ialb-tg-'+tenantStage.environment+'.json'
+//              sh 'aws --region us-east-1 elbv2 create-target-group --name '+serviceFullName(station, podName)+' --health-check-path ' + healthCheckPath + ' --protocol HTTP --port '+port+' --vpc-id '+ECSClusterMaps.env_cluster[station.environment]['vpcid'] + ' | tee aws-ialb-tg-'+station.environment+'.json'
+//              def ialb_tg = readJSON file:'aws-ialb-tg-'+station.environment+'.json'
 //              
 //              echo 'ialb_tg=' + ialb_tg
 //              
 //              def random_prio = ((new java.util.Random()).nextInt(50000)+1)
-//              def LB_CONDITIONS='[{\\"Field\\":\\"host-header\\",\\"Values\\":[\\"'+tenant+'.'+ECSClusterMaps.env_cluster[tenantStage.environment]['dns_suffix']+'\\"]},{\\"Field\\":\\"path-pattern\\",\\"Values\\":[\\"'+path+'*\\"]}]'
-//              sh 'aws --region us-east-1 elbv2 create-rule --listener-arn '+ECSClusterMaps.env_cluster[tenantStage.environment]['ialb_larn']+' --conditions \"'+LB_CONDITIONS+'\" --priority '+random_prio+' --actions \"Type=forward,TargetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+'\"'
+//              def LB_CONDITIONS='[{\\"Field\\":\\"host-header\\",\\"Values\\":[\\"'+podName+'.'+ECSClusterMaps.env_cluster[station.environment]['dns_suffix']+'\\"]},{\\"Field\\":\\"path-pattern\\",\\"Values\\":[\\"'+path+'*\\"]}]'
+//              sh 'aws --region us-east-1 elbv2 create-rule --listener-arn '+ECSClusterMaps.env_cluster[station.environment]['ialb_larn']+' --conditions \"'+LB_CONDITIONS+'\" --priority '+random_prio+' --actions \"Type=forward,TargetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+'\"'
 //              // def lb_rule_sh = 'aws-ialb-rule-'+env+'.sh'
 //              // writeFile file:lb_rule_sh, text:'aws --region us-east-1 elbv2 create-rule --listener-arn '+ECSClusterMaps.env_cluster[environment]['ialb_larn']+' --conditions "'+LB_CONDITIONS+'" --priority '+3273+' --actions "Type=forward,TargetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+'"'
 //              // sh 'ls -alh'
 //              // sh 'cat '+lb_rule_sh
 //              // sh 'sh '+lb_rule_sh
               sh 'aws --region us-east-1 ecs create-service --cluster ' + clusterId +
-                ' --service-name ' + serviceFullName(tenantStage, tenant) +
-                ' --task-definition '+serviceFullName(tenantStage, tenant)+
+                ' --service-name ' + serviceFullName(station, podName) +
+                ' --task-definition '+serviceFullName(station, podName)+
                 ' --desired-count ' + desiredCount
-// put this back when loadbalance is fixed                + ' --role ecsServiceRole --load-balancers "targetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+',containerName='+serviceFullName(tenantStage, tenant)+',containerPort='+port+'"'
+// put this back when loadbalance is fixed                + ' --role ecsServiceRole --load-balancers "targetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+',containerName='+serviceFullName(station, podName)+',containerPort='+port+'"'
 
           }
       }
   }
   
-//  private def getServiceState(Station tenantStage, String tenant) {
+//  private def getServiceState(Station station, String podName) {
 //    def retval
 //    try {
 //        withCredentials([[
 //          $class: 'AmazonWebServicesCredentialsBinding',
 //          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-//          credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
+//          credentialsId: pipeLine_.getCredentialName(station.environmentType),
 //          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
 //          ]])
 //        {
-//            String clusterId = pipeLine_.getEnvironmentTypeConfig(tenantStage.environmentType).getClusterId();
+//            String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
 //    
-//            sh 'aws --region us-east-1 ecs describe-services --cluster '+clusterId+' --services '+serviceFullName(tenantStage, tenant)+' > ecs-service-'+tenantStage.environment+'-'+tenant+'.json'
-//            def svcstate = readJSON file: 'ecs-service-'+tenantStage.environment+'-'+tenant+'.json'
+//            sh 'aws --region us-east-1 ecs describe-services --cluster '+clusterId+' --services '+serviceFullName(station, podName)+' > ecs-service-'+station.environment+'-'+podName+'.json'
+//            def svcstate = readJSON file: 'ecs-service-'+station.environment+'-'+podName+'.json'
 //            echo """
 //ECS Service State:    ${svcstate.services[0].status}
 //ECS Service Running:  ${svcstate.services[0].runningCount}
@@ -346,29 +286,28 @@ exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 //    return retval
 //}
   
-  String fugueConfig(Station tenantStage, String tenant)
+  String fugueConfig(Station station, String podName)
   {
     echo """
 pipeLine_.awsRegion = ${pipeLine_.awsRegion}
-tenantStage.environmentType = ${tenantStage.environmentType}
-tenantStage.environment =${tenantStage.environment}
-tenantStage.realm = ${tenantStage.realm}
-tenantStage.region =${tenantStage.region}
+station.environmentType = ${station.environmentType}
+station.environment =${station.environment}
+station.region =${station.region}
 """
     String prefix = 'https://s3.' + pipeLine_.awsRegion + '.amazonaws.com/sym-s2-fugue-' +
-      tenantStage.environmentType + '-' + pipeLine_.awsRegion +
-      '-config/config/sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment;
+      station.environmentType + '-' + pipeLine_.awsRegion +
+      '-config/config/sym-s2-' + station.environmentType + '-' + station.environment;
     
-    if(tenant != null)
-      prefix = prefix  + '-' + tenant;
+    if(podName != null)
+      prefix = prefix  + '-' + podName;
       
     return prefix + '-' + pipeLine_.serviceId_ + ".json"
   }
   
-  private void registerTaskDef(Station tenantStage, String tenant)
+  private void registerTaskDef(Station station, String podName)
   {
-    if(tenants[tenantStage.environment] == null) tenants[tenantStage.environment] = [:]
-    if(tenants[tenantStage.environment][tenant] == null) tenants[tenantStage.environment][tenant] = [:]
+    if(pods[station.environment] == null) pods[station.environment] = [:]
+    if(pods[station.environment][podName] == null) pods[station.environment][podName] = [:]
 
     // Check if we were given a template file and allow it to override
     // the default template
@@ -380,44 +319,43 @@ tenantStage.region =${tenantStage.region}
     }
     
     // dev-s2dev3-sym-ac8-s2fwd-init-role
-    String baseRoleName = tenant == null ? 
-      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + pipeLine_.serviceId_ + '-' + containerRole :
-      'sym-s2-' + tenantStage.environmentType + '-' + tenantStage.environment + '-' + tenant + '-' + pipeLine_.serviceId_ + '-' + containerRole
+    String baseRoleName = podName == null ? 
+      'sym-s2-' + station.environmentType + '-' + station.environment + '-' + pipeLine_.serviceId_ + '-' + containerRole :
+      'sym-s2-' + station.environmentType + '-' + station.environment + '-' + podName + '-' + pipeLine_.serviceId_ + '-' + containerRole
     
-    String roleArn = 'arn:aws:iam::' + pipeLine_.aws_identity[pipeLine_.getCredentialName(tenantStage.environmentType)].Account + ':role/' + baseRoleName + '-role'
+    String roleArn = 'arn:aws:iam::' + pipeLine_.aws_identity[pipeLine_.getCredentialName(station.environmentType)].Account + ':role/' + baseRoleName + '-role'
     
     def template_args = 
     [
       'ENV':'dev',
       'REGION':'ause1',
       'AWSREGION':pipeLine_.awsRegion,
-      'FUGUE_ENVIRONMENT_TYPE':tenantStage.environmentType,
-      'FUGUE_ENVIRONMENT':tenantStage.environment,
-      'FUGUE_REALM':tenantStage.realm,
-      'FUGUE_REGION':tenantStage.region,
-      'FUGUE_CONFIG':fugueConfig(tenantStage, tenant),
+      'FUGUE_ENVIRONMENT_TYPE':station.environmentType,
+      'FUGUE_ENVIRONMENT':station.environment,
+      'FUGUE_REGION':station.region,
+      'FUGUE_CONFIG':fugueConfig(station, podName),
       'FUGUE_SERVICE':pipeLine_.serviceId_,
-      'FUGUE_PRIMARY_ENVIRONMENT':tenantStage.primaryEnvironment,
-      'FUGUE_PRIMARY_REGION':tenantStage.primaryRegion,
+      'FUGUE_PRIMARY_ENVIRONMENT':station.primaryEnvironment,
+      'FUGUE_PRIMARY_REGION':station.primaryRegion,
       'TASK_ROLE_ARN':roleArn,
       'LOG_GROUP':'',
       'SERVICE_GROUP':pipeLine_.symteam,
-      'SERVICE':serviceFullName(tenantStage, tenant),
+      'SERVICE':serviceFullName(station, podName),
       'SERVICE_PORT':port,
-      'FUGUE_TENANT':tenant,
+      'FUGUE_POD_NAME':podName,
       'MEMORY':memory_,
       'JVM_HEAP':jvmHeap_,
-      'PERSIST_POD_ID':tenant+'-'+tenantStage.environment+'-glb-ause1-1',
-      'LEGACY_POD_ID':tenant+'-'+tenantStage.environment+'-glb-ause1-1',
-      'SERVICE_IMAGE':pipeLine_.docker_repo[tenantStage.environmentType]+name + pipeLine_.dockerLabel,
+//      'PERSIST_POD_ID':podName+'-'+station.environment+'-glb-ause1-1',
+//      'LEGACY_POD_ID':podName+'-'+station.environment+'-glb-ause1-1',
+      'SERVICE_IMAGE':pipeLine_.docker_repo[station.environmentType]+name + pipeLine_.dockerLabel,
       'CONSUL_TOKEN':'',
       'GITHUB_TOKEN':''
     ]
     
-    echo 'tenantStage.primaryEnvironment is ' + tenantStage.primaryEnvironment
+    echo 'station.primaryEnvironment is ' + station.primaryEnvironment
     echo 'template_args is ' + template_args
 
-    withCredentials([string(credentialsId: 'sym-consul-'+tenantStage.environmentType,
+    withCredentials([string(credentialsId: 'sym-consul-'+station.environmentType,
     variable: 'CONSUL_TOKEN')])
     {
       // TODO: CONSUL_TOKEN needs to be moved
@@ -433,41 +371,41 @@ tenantStage.region =${tenantStage.region}
     withCredentials([[
       $class: 'AmazonWebServicesCredentialsBinding',
       accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-      credentialsId: pipeLine_.getCredentialName(tenantStage.environmentType),
+      credentialsId: pipeLine_.getCredentialName(station.environmentType),
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
 
-      template_args['LOG_GROUP'] = pipeLine_.createLogGroup(tenantStage, tenant)
+      template_args['LOG_GROUP'] = pipeLine_.createLogGroup(station, podName)
       
         //def taskdef = (new groovy.text.SimpleTemplateEngine()).createTemplate(taskdef_template).make(template_args).toString()
         def taskdef = (new org.apache.commons.lang3.text.StrSubstitutor(template_args)).replace(taskdef_template)
         //echo taskdef
-        def taskdef_file = 'ecs-'+tenantStage.environment+'-'+tenant+'.json'
+        def taskdef_file = 'ecs-'+station.environment+'-'+podName+'.json'
         writeFile file:taskdef_file, text:taskdef
         
 //          echo 'taskdef file is ' + taskdef_file
           echo 'V1 taskdef is ' + taskdef
-          echo 'V1 tenantStage.primaryEnvironment is ' + tenantStage.primaryEnvironment
+          echo 'V1 station.primaryEnvironment is ' + station.primaryEnvironment
           echo 'V1 template_args is ' + template_args
         
-            sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-'+tenantStage.environment+'-'+tenant+'.json'
-            def tdefout = readJSON file: 'ecs-taskdef-out-'+tenantStage.environment+'-'+tenant+'.json'
-            tenants[tenantStage.environment][tenant]['ecs-taskdef-arn'] = tdefout.taskDefinition.taskDefinitionArn
-            tenants[tenantStage.environment][tenant]['ecs-taskdef-family'] = tdefout.taskDefinition.family
-            tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = tdefout.taskDefinition.revision
+            sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-'+station.environment+'-'+podName+'.json'
+            def tdefout = readJSON file: 'ecs-taskdef-out-'+station.environment+'-'+podName+'.json'
+            pods[station.environment][podName]['ecs-taskdef-arn'] = tdefout.taskDefinition.taskDefinitionArn
+            pods[station.environment][podName]['ecs-taskdef-family'] = tdefout.taskDefinition.family
+            pods[station.environment][podName]['ecs-taskdef-revision'] = tdefout.taskDefinition.revision
             echo """
-ECS Task Definition ARN:      ${tenants[tenantStage.environment][tenant]['ecs-taskdef-arn']}
-ECS Task Definition Family:   ${tenants[tenantStage.environment][tenant]['ecs-taskdef-family']}
-ECS Task Definition Revision: ${tenants[tenantStage.environment][tenant]['ecs-taskdef-revision']}
+ECS Task Definition ARN:      ${pods[station.environment][podName]['ecs-taskdef-arn']}
+ECS Task Definition Family:   ${pods[station.environment][podName]['ecs-taskdef-family']}
+ECS Task Definition Revision: ${pods[station.environment][podName]['ecs-taskdef-revision']}
 """
             
 echo """
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-tenantStage.environment = ${tenantStage.environment}
-tenant=${tenant}
+station.environment = ${station.environment}
+podName=${podName}
 
-tenants[tenantStage.environment][tenant]['ecs-taskdef-family']  = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-family']}
-tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[tenantStage.environment][tenant]['ecs-taskdef-revision']}
+pods[station.environment][podName]['ecs-taskdef-family']  = ${pods[station.environment][podName]['ecs-taskdef-family']}
+pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.environment][podName]['ecs-taskdef-revision']}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 """
@@ -475,12 +413,12 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
     }
   }
   
-  private String serviceFullName(Station tenantStage, String tenant)
+  private String serviceFullName(Station station, String podName)
   {
-    String tenantIdStr = (tenant == null) ? "" : "-${tenant}"
+    String podNameIdStr = (podName == null) ? "" : "-${podName}"
     
-    return "sym-s2-${tenantStage.environmentType}-${tenantStage.environment}${tenantIdStr}-${pipeLine_.serviceId_}-${name}"
-//      (tenant == null ? pipeLine_.serviceId_ + '-' + name : tenant + '-' + pipeLine_.serviceId_ + '-' + name)
+    return "sym-s2-${station.environmentType}-${station.environment}${podNameIdStr}-${pipeLine_.serviceId_}-${name}"
+//      (podName == null ? pipeLine_.serviceId_ + '-' + name : podName + '-' + pipeLine_.serviceId_ + '-' + name)
   }
 
   
@@ -520,10 +458,6 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
                 {
                     "name": "FUGUE_ENVIRONMENT",
                     "value": "${FUGUE_ENVIRONMENT}"
-                },
-                {
-                    "name": "FUGUE_REALM",
-                    "value": "${FUGUE_REALM}"
                 },
                 {
                     "name": "FUGUE_REGION",
@@ -628,10 +562,6 @@ tenants[tenantStage.environment][tenant]['ecs-taskdef-revision'] = ${tenants[ten
                 {
                     "name": "FUGUE_ENVIRONMENT",
                     "value": "${FUGUE_ENVIRONMENT}"
-                },
-                {
-                    "name": "FUGUE_REALM",
-                    "value": "${FUGUE_REALM}"
                 },
                 {
                     "name": "FUGUE_REGION",
