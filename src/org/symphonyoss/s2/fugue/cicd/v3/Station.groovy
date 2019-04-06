@@ -3,7 +3,6 @@ package org.symphonyoss.s2.fugue.cicd.v3
 class Station implements Serializable {
   String                name
   String                region
-  String                realm
   String                environment
   boolean               primaryEnvironment
   boolean               primaryRegion
@@ -15,7 +14,6 @@ class Station implements Serializable {
     "    {" +
         "\n      name               =" + name +
         "\n      region             =" + region +
-        "\n      realm              =" + realm +
         "\n      environment        =" + environment +
         "\n      environmentType    =" + environmentType +
         "\n      logGroupName       =" + logGroupName +
@@ -32,11 +30,6 @@ class Station implements Serializable {
 
   public Station withRegion(String n) {
     region = n
-    return this
-  }
-
-  public Station withRealm(String n) {
-    realm = n
     return this
   }
 

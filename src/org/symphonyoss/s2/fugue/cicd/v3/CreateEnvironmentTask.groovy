@@ -12,7 +12,6 @@ class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
 {
   private String  environmentType_
   private String  environment_
-  private String  realm_
   private String  region_
   private String  dockerLabel_      = ':' + FuguePipeline.FUGUE_VERSION
   private String  awsRegion_        = 'us-east-1'
@@ -23,13 +22,12 @@ class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
   private String  configGitBranch_
 
   public CreateEnvironmentTask(FuguePipeline pipeLine, String environmentType, String environment,
-    String realm, String region)
+    String region)
   {
       super(pipeLine)
       
       environmentType_ = environmentType
       environment_     = environment
-      realm_           = realm
       region_          = region
   }
   
@@ -60,12 +58,11 @@ class CreateEnvironmentTask extends FuguePipelineTask implements Serializable
   {
     echo """
 ------------------------------------------------------------------------------------------------------------------------
-CreateEnvironmentTask V3
+CreateEnvironmentTask org.symphonyoss.s2.fugue.cicd.v3
 
 awsRegion_          ${awsRegion_}
 environmentType_    ${environmentType_}
 environment_        ${environment_}
-realm_              ${realm_}
 region_             ${region_}
 ------------------------------------------------------------------------------------------------------------------------
 """
@@ -95,27 +92,6 @@ region_             ${region_}
           .withCluster(cluster_)
         
       deploy.execute()
- 
-// No environment credentials actually needed.     
-//      def creds = readJSON(text:
-//        sh(returnStdout: true, script: 'aws secretsmanager get-secret-value --region us-east-1 --secret-id sym-s2-fugue-' + environmentType_ + '-' + environment_ + '-root-cred'))
-//    
-//      def secrets = readJSON(text: creds."SecretString")
-//      
-//      secrets.each
-//      {
-//          name, value ->
-//            echo """
-//---------------------------------------------------
-//Store credential
-//
-//name          ${name}
-//accessKeyId   ${value."accessKeyId"}
-//---------------------------------------------------
-//"""
-//
-//            CredentialHelper.saveCredential(steps_, name, value."accessKeyId", value."secretAccessKey")
-//      }
     }
     
     echo """

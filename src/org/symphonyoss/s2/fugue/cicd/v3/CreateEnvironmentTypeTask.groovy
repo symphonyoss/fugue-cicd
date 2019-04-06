@@ -64,7 +64,7 @@ class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializabl
 
     echo """
 ------------------------------------------------------------------------------------------------------------------------
-CreateEnvironmentTypeTask org.symphonyoss.s2.fugue.cicd.v2
+CreateEnvironmentTypeTask org.symphonyoss.s2.fugue.cicd.v3
 
 awsRegion_          ${awsRegion_}
 environmentType_    ${environmentType_}
@@ -98,11 +98,13 @@ roleName            ${roleName}
           .withAccountId(accountId)
           .withCluster(cluster_)
       
-          // why was this?
-//      if(!pipeLine_.toolsDeploy)
-//      {
+      echo 'shall we pull deploy? ' + (!pipeLine_.toolsDeploy)
+          
+      // When we build a new version of FugueDeploy its not there to pull, but we did just build it
+      if(!pipeLine_.toolsDeploy)
+      {
         deploy.pullImageFrom('dev')
-//      }
+      }
       
       deploy.execute()
       
