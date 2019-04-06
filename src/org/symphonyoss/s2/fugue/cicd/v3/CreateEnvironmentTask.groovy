@@ -3,7 +3,7 @@ package org.symphonyoss.s2.fugue.cicd.v3
 import java.util.Map.Entry
 
 /**
- * Task to create an environment type, creating roles and other prerequisites if necessary.
+ * Task to create an environment, creating roles and other prerequisites if necessary.
  * 
  * @author Bruce Skingle
  *
