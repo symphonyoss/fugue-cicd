@@ -368,6 +368,14 @@ Build Action ${env_.buildAction}
         targetEnvironmentType_ = 'qa'
         break;
         
+      case 'Build to Dev':
+        doBuild_ = true
+        pushTo('dev')
+        deployTo('smoke', Purpose.SmokeTest)
+        deployTo('dev')
+        targetEnvironmentType_ = 'dev'
+        break;
+        
       case 'Deploy to Dev':
         doBuild_ = false
         pullFrom_ = 'dev'
@@ -1071,7 +1079,7 @@ docker push ${remoteImage}
   public static def parameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
    
     steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
     steps.string(name: 'buildQualifier',    defaultValue: Default.value(env,  'buildQualifier',    ''),      description: 'The build qualifier for promotion.'),
