@@ -381,7 +381,6 @@ Build Action ${env_.buildAction}
         pullFrom_ = 'dev'
         deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev')
-        targetEnvironmentType_ = 'dev'
         break;
         
       case 'Build to Smoke Test':
