@@ -481,8 +481,6 @@ deployTo     ${deployTo_}
 
       def service = readJSON file:'config/service/' + serviceId_ + '/service.json'
 
-      echo 'service is ' + service
-
       service."containers".each { name, containerDef ->
         echo 'Container ' + name + ' = ' + containerDef
 
@@ -520,30 +518,31 @@ deployTo     ${deployTo_}
         this.withContainer(ms)
       }
 
-
-      def track = readJSON file:'config/track/' + releaseTrack + '.json'
-
-      echo 'track is ' + track
-      
-
-      track."stations".each { stationDef ->
-
-        Station ts = new Station()
-            .withName(stationDef."name")
-            .withEnvironmentType(stationDef."environmentType")
-            .withEnvironment(stationDef."environment")
-            .withRegion(stationDef."region")
-            .withPrimaryEnvironment(stationDef."primaryEnvironment")
-            .withPrimaryRegion(stationDef."primaryRegion")
-
-
-        stationDef."podNames".each { podName ->
-          ts.withPodNames(podName)
+      if(releaseTrack != null)
+      {
+        def track = readJSON file:'config/track/' + releaseTrack + '.json'
+  
+        echo 'track is ' + track
+        
+  
+        track."stations".each { stationDef ->
+  
+          Station ts = new Station()
+              .withName(stationDef."name")
+              .withEnvironmentType(stationDef."environmentType")
+              .withEnvironment(stationDef."environment")
+              .withRegion(stationDef."region")
+              .withPrimaryEnvironment(stationDef."primaryEnvironment")
+              .withPrimaryRegion(stationDef."primaryRegion")
+  
+          stationDef."podNames".each { podName ->
+            ts.withPodNames(podName)
+          }
+  
+          echo 'ts=' + ts
+  
+          this.withStation(ts)
         }
-
-        echo 'ts=' + ts
-
-        this.withStation(ts)
       }
     }
     
