@@ -1012,7 +1012,8 @@ docker push ${remoteImage}
   {
     String accountId = getCredentialName(station.environmentType)
     
-    FugueDeploy deploy = new FugueDeploy(this, 'DeployStation',
+    FugueDeploy deploy = new FugueDeploy(this, 
+      releaseTrack == null ? 'Deploy' : 'DeployStation',
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
         .withTrack(releaseTrack)
