@@ -31,7 +31,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
   private String awsRegion = 'us-east-1'
   private String release
-  private String buildId_
+  private String buildId
   private String servicePath
   private boolean toolsDeploy = false
   private boolean useRootCredentials = false
@@ -75,7 +75,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     b.append "{" +
       "\n  symteam              =" + symteam +
       "\n  release              =" + release +
-      "\n  buildId              =" + buildId_ +
+      "\n  buildId              =" + buildId +
       "\n  servicePath          =" + servicePath +
       "\n  awsRegion            =" + awsRegion +
       "\n  roles                = [" + role_map + "]" +
@@ -139,7 +139,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   }
   
   public FuguePipeline withBuildId(String v) {
-      buildId_ = v
+      buildId = v
       return this
   }
   
@@ -198,11 +198,11 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public String getBuildId()
   {
-    return buildId_;
+    return buildId;
   }
 
   public String getDockerLabel() {
-    ':' + buildId_
+    ':' + buildId
   }
 
   private String serviceFullName(String env, String podName) {
@@ -284,7 +284,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     echo """
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildId = ${buildId_}
+@ buildId = ${buildId}
 @ releaseVersion = ${release}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
@@ -296,7 +296,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
     echo """
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildId = ${buildId_}
+@ buildId = ${buildId}
 @ releaseVersion = ${release}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
@@ -421,7 +421,7 @@ Build Action ${env_.buildAction}
         abort('Do not set buildId for a build action.')
       }
       
-      buildId_ = release + "-" + new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
+      buildId = release + "-" + new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
     }
     else
     {
@@ -812,7 +812,7 @@ environmentType ${environmentType}
               throw new IllegalStateException("Unknown environment type ${pullFrom_}")
             
             String localImage = ms.name + ':' + release
-            String remoteImage = repo + ms.name + ':' + buildId_
+            String remoteImage = repo + ms.name + ':' + buildId
             
             sh 'docker pull ' + remoteImage
             break;
@@ -824,7 +824,7 @@ environmentType ${environmentType}
             credentialsId:      getCredentialName(pullFrom_),
             secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
             {
-              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId_}.jar ${ms.name}/target/${ms.name}-${buildId_}.jar"
+              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId}.jar ${ms.name}/target/${ms.name}-${buildId}.jar"
             }
             break;
         }
@@ -857,7 +857,7 @@ environmentType ${environmentType}
             if(pullFrom_ == null)
             {
               String localImage = ms.name + ':' + release
-              String remoteImage = pushRepo + ms.name + ':' + buildId_
+              String remoteImage = pushRepo + ms.name + ':' + buildId
               
               sh """
 docker tag ${localImage} ${remoteImage}
@@ -868,7 +868,7 @@ docker push ${remoteImage}
             {
               String pullRepo = docker_repo[pullFrom_]
               
-              String baseImage = ms.name + ':' + buildId_
+              String baseImage = ms.name + ':' + buildId
               String localImage = pullRepo + baseImage
               String remoteImage = pushRepo + baseImage
               
@@ -889,7 +889,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId_}.jar"
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId}.jar"
               }
             }
             else
@@ -901,7 +901,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.name}/target/${ms.name}-${buildId_}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId_}.jar"
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId}.jar"
               }
             }
             break;
@@ -929,7 +929,7 @@ docker push ${remoteImage}
         throw new IllegalStateException("Unknown environment type ${environmentType}")
       
       String localImage = name + ':' + release
-      String remoteImage = repo + name + ':' + release + '-' + buildId_
+      String remoteImage = repo + name + ':' + release + '-' + buildId
       
       echo 'localImage=' + localImage
       echo 'remoteImage=' + remoteImage
@@ -980,7 +980,7 @@ docker push ${remoteImage}
         .withServiceName(serviceId_)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + buildId_)
+      deploy.withDockerLabel(':' + buildId)
       
     deploy.execute() 
   }
@@ -995,10 +995,10 @@ docker push ${remoteImage}
         .withTrack(releaseTrack)
         .withStation(station)
         .withServiceName(serviceId_)
-        .withBuildId(release + '-' + buildQualifier)
+        .withBuildId(buildId)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + buildId_)
+      deploy.withDockerLabel(':' + buildId)
       
     deploy.execute()
   }
