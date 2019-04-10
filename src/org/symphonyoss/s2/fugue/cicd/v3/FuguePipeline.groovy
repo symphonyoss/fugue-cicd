@@ -29,6 +29,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private String serviceId_
   private String symteam = 'sym'
 
+  private Station deployStation
   private String awsRegion = 'us-east-1'
   private String release
   private String buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
