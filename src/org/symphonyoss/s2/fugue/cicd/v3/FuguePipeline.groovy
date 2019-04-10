@@ -845,6 +845,7 @@ environmentType ${environmentType}
             credentialsId:      getCredentialName(pullFrom_),
             secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
             {
+              sh 'aws sts get-caller-identity'
               //sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId}.jar ${ms.name}/target/${ms.name}-${buildId}.jar"
               sh "aws s3 sync s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_} ${ms.name}/target --exclude \"*\" --include ${ms.name}-${buildId}.jar"
             }
