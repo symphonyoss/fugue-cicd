@@ -346,7 +346,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void createDeployStation()
   {
     doBuild_ = false
-    pullFrom_ = env_."environmentId"
+    pullFrom_ = env_."environmentType"
     
     deployStation = new Station()
       .withPodNames(env_."podName")
