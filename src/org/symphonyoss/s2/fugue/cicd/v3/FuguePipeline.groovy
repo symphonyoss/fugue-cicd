@@ -342,6 +342,20 @@ class FuguePipeline extends JenkinsTask implements Serializable
     steps_.error(message)
   }
   
+  public void createDeployStation()
+  {
+    doBuild_ = false
+    pullFrom_ = env_."environmentId"
+    
+    deployStation = new Station()
+      .withPodNames(env_."podName")
+      .withEnvironmentType(env_."environmentType")
+      .withEnvironment(env_."environmentId")
+      .withRegion(env_."regionId")
+      
+    serviceId_ = (env_."serviceId")
+  }
+  
   public void preflight()
   {
     echo """====================================
@@ -407,6 +421,19 @@ Build Action ${env_.buildAction}
         pushTo('prod')
         deployTo('prod')
         targetEnvironmentType_ = 'prod'
+        break;
+      
+      case 'Deploy Pod':
+        createDeployStation()
+        deployTo(env_."environmentId")
+        break;
+        
+      case 'Undeploy Pod':
+        createDeployStation()
+        break;
+        
+      case 'Undeploy AllPods':
+        createDeployStation()
         break;
     }
     
@@ -728,9 +755,9 @@ environmentType ${environmentType}
   
   public boolean deployStation(String stationName, Purpose requiredPurpose = Purpose.Service)
   {
-    echo 'Deploy for ' + stationName
-  
-    Station station = stationMap.get(stationName)
+    Station station = stationName == null ? deployStation: stationMap.get(stationName)
+    
+    echo 'Deploy for ' + station
     
     echo "ValidPurpose=${getDeployTo(station.environmentType)} requiredPurpose=${requiredPurpose}"
     if(getDeployTo(station.environmentType).isValidFor(requiredPurpose))
@@ -1101,6 +1128,29 @@ docker push ${remoteImage}
   {
     def list = [
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    ]
+   
+    list.addAll(buildIdParameters(env, steps))
+    list.addAll(sourceVersionParameters(env, steps))
+    list.addAll(configVersionParameters(env, steps))
+   
+    if(extras != null)
+     list.addAll(extras)
+     
+    return [
+  steps.parameters(list)
+]
+  }
+  
+  public static def deployParameters(env, steps, extras = null)
+  {
+    def list = [
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction',      ['Deploy Pod', 'Undeploy Pod', 'Undeploy AllPods']), description: 'Action to perform'),
+    steps.string(name: 'podName',           defaultValue: Default.value(env,  'podName',          'sym-ac6-dev-chat-glb-1'),  description: 'Pod Name.'),
+    steps.string(name: 'environmentType',   defaultValue: Default.value(env,  'environmentType',  'dev'),                     description: 'Environment Type ID.'),
+    steps.string(name: 'environmentId',     defaultValue: Default.value(env,  'environmentId',    's2dev2'),                  description: 'Environment  ID.'),
+    steps.string(name: 'regionId',          defaultValue: Default.value(env,  'regionId',         'us-east-1'),               description: 'Region ID.'),
+    steps.string(name: 'serviceId',         defaultValue: Default.value(env,  'serviceId',        's2fwd'),                   description: 'Service ID.'),
     ]
    
     list.addAll(buildIdParameters(env, steps))
