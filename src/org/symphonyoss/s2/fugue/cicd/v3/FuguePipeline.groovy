@@ -426,7 +426,7 @@ Build Action ${env_.buildAction}
       
       case 'Deploy Pod':
         createDeployStation()
-        deployTo(env_."environmentId")
+        deployTo(env_."environmentType")
         break;
         
       case 'Undeploy Pod':
