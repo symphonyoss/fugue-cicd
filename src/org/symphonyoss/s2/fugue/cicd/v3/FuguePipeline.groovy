@@ -31,7 +31,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
   private String awsRegion = 'us-east-1'
   private String release
-  private String buildId
+  private String buildQualifier = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
+  private String buildId = buildQualifier
   private String servicePath
   private boolean toolsDeploy = false
   private boolean useRootCredentials = false
@@ -135,6 +136,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public FuguePipeline withRelease(String v) {
       release = v
+      buildId = release + "-" + buildQualifier
       return this
   }
   
@@ -248,8 +250,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    echo 'FuguePipeline V3.1'
-    
     sh 'aws --version'
     
     echo 'git credentialsId: symphonyjenkinsauto url: https://github.com/' + configGitOrg + '/' + configGitRepo + '.git branch: ' + configGitBranch
@@ -345,7 +345,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void preflight()
   {
     echo """====================================
-Preflight V2.2
+Preflight
+echo 'FuguePipeline V3.2'
 Build Action ${env_.buildAction}
 """
     
@@ -415,8 +416,6 @@ Build Action ${env_.buildAction}
       {
         abort('Do not set buildId for a build action.')
       }
-      
-      buildId = release + "-" + new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
     }
     else
     {
