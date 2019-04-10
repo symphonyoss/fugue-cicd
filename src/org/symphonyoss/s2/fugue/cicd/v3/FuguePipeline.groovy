@@ -195,11 +195,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
     useRootCredentials = b
     return this
   }
-  
-  public String getBuildId()
-  {
-    return buildId;
-  }
 
   public String getDockerLabel() {
     ':' + buildId
@@ -253,7 +248,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void loadConfig()
   {
-    echo 'FuguePipeline V3'
+    echo 'FuguePipeline V3.1'
     
     sh 'aws --version'
     
