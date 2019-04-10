@@ -31,7 +31,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
   private String awsRegion = 'us-east-1'
   private String release
-  private String buildQualifier_
+  private String buildId_
   private String servicePath
   private boolean toolsDeploy = false
   private boolean useRootCredentials = false
@@ -57,8 +57,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     this.environ = env
     this.steps = steps
-    
-    buildQualifier_ = new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
   }
 
   public static FuguePipeline instance(EnvActionImpl env, DSL steps)
@@ -77,7 +75,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     b.append "{" +
       "\n  symteam              =" + symteam +
       "\n  release              =" + release +
-      "\n  buildQualifier_       =" + buildQualifier_ +
+      "\n  buildId              =" + buildId_ +
       "\n  servicePath          =" + servicePath +
       "\n  awsRegion            =" + awsRegion +
       "\n  roles                = [" + role_map + "]" +
@@ -140,8 +138,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
       return this
   }
   
-  public FuguePipeline withBuildQualifier(String v) {
-      buildQualifier_ = v
+  public FuguePipeline withBuildId(String v) {
+      buildId_ = v
       return this
   }
   
@@ -198,13 +196,13 @@ class FuguePipeline extends JenkinsTask implements Serializable
     return this
   }
   
-  public String getBuildQualifier()
+  public String getBuildId()
   {
-    return buildQualifier_;
+    return buildId_;
   }
 
   public String getDockerLabel() {
-    ':' + release + '-' + buildQualifier_
+    ':' + buildId_
   }
 
   private String serviceFullName(String env, String podName) {
@@ -286,7 +284,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     echo """
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildQualifier = ${buildQualifier_}
+@ buildId = ${buildId_}
 @ releaseVersion = ${release}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
@@ -298,7 +296,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
     echo """
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildQualifier = ${buildQualifier_}
+@ buildId = ${buildId_}
 @ releaseVersion = ${release}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
@@ -316,7 +314,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean qualifierIsSet()
   {
-    return !("".equals(env_.buildQualifier.trim()) && "".equals(env_.releaseVersion.trim()))
+    return !("".equals(env_.buildId.trim()))
   }
   
   private void pushTo(String environmentType)
@@ -420,19 +418,20 @@ Build Action ${env_.buildAction}
     {
       if(qualifierIsSet())
       {
-        abort('Do not set releaseVersion or buildQualifier for a build action.')
+        abort('Do not set buildId for a build action.')
       }
+      
+      buildId_ = release + "-" + new Date().format('yyyyMMdd-HHmmss-') + new Random().nextInt(9999)
     }
     else
     {
       if(qualifierIsSet())
       {
-        withRelease(env_.releaseVersion.trim())
-        withBuildQualifier(env_.buildQualifier.trim())
+        withBuildId(env_.buildId.trim())
       }
       else
       {
-        abort('releaseVersion and buildQualifier must be defined for a promotion action.')
+        abort('buildId must be defined for a promotion action.')
       }
     }
     
@@ -813,7 +812,7 @@ environmentType ${environmentType}
               throw new IllegalStateException("Unknown environment type ${pullFrom_}")
             
             String localImage = ms.name + ':' + release
-            String remoteImage = repo + localImage + '-' + buildQualifier_
+            String remoteImage = repo + ms.name + ':' + buildId_
             
             sh 'docker pull ' + remoteImage
             break;
@@ -825,7 +824,7 @@ environmentType ${environmentType}
             credentialsId:      getCredentialName(pullFrom_),
             secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
             {
-              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${release}-${buildQualifier}.jar ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar"
+              sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId_}.jar ${ms.name}/target/${ms.name}-${buildId_}.jar"
             }
             break;
         }
@@ -858,7 +857,7 @@ environmentType ${environmentType}
             if(pullFrom_ == null)
             {
               String localImage = ms.name + ':' + release
-              String remoteImage = pushRepo + localImage + '-' + buildQualifier_
+              String remoteImage = pushRepo + ms.name + ':' + buildId_
               
               sh """
 docker tag ${localImage} ${remoteImage}
@@ -869,7 +868,7 @@ docker push ${remoteImage}
             {
               String pullRepo = docker_repo[pullFrom_]
               
-              String baseImage = ms.name + ':' + release + '-' + buildQualifier_
+              String baseImage = ms.name + ':' + buildId_
               String localImage = pullRepo + baseImage
               String remoteImage = pushRepo + baseImage
               
@@ -890,7 +889,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${release}-${buildQualifier}.jar"
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId_}.jar"
               }
             }
             else
@@ -902,7 +901,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}-${buildQualifier}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${release}-${buildQualifier}.jar"
+                sh "aws s3 cp ${ms.name}/target/${ms.name}-${buildId_}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId_}.jar"
               }
             }
             break;
@@ -930,7 +929,7 @@ docker push ${remoteImage}
         throw new IllegalStateException("Unknown environment type ${environmentType}")
       
       String localImage = name + ':' + release
-      String remoteImage = repo + localImage + '-' + buildQualifier_
+      String remoteImage = repo + name + ':' + release + '-' + buildId_
       
       echo 'localImage=' + localImage
       echo 'remoteImage=' + remoteImage
@@ -981,7 +980,7 @@ docker push ${remoteImage}
         .withServiceName(serviceId_)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
+      deploy.withDockerLabel(':' + buildId_)
       
     deploy.execute() 
   }
@@ -999,7 +998,7 @@ docker push ${remoteImage}
         .withBuildId(release + '-' + buildQualifier)
     
     if(toolsDeploy)
-      deploy.withDockerLabel(':' + release + '-' + buildQualifier_)
+      deploy.withDockerLabel(':' + buildId_)
       
     deploy.execute()
   }
@@ -1075,26 +1074,53 @@ docker push ${remoteImage}
 //    ]
 //  }'''
   
+  public static def buildIdParameters(env, steps)
+  {
+    def list = [
+    steps.string(name: 'buildId',    defaultValue: Default.value(env,  'buildId',    ''),      description: 'The build ID for promotion.'),
+    ]
+     
+    return list
+  }
+  
+  public static def sourceVersionParameters(env, steps)
+  {
+    def list = [
+    steps.string(name: 'serviceRepoOrg',    defaultValue: Default.value(env,  'serviceRepoOrg',    'SymphonyOSF'),  description: 'GitHub organization (fork) for service source code repo.'),
+    steps.string(name: 'serviceRepoBranch', defaultValue: Default.value(env,  'serviceRepoBranch', 'master'),description: 'GitHub branch for service source code repo.'),
+   ]
+     
+    return list
+  }
+  
+  public static def configVersionParameters(env, steps)
+  {
+    def list = [
+    steps.string(name: 'configRepoOrg',     defaultValue: Default.value(env,  'configRepoOrg',     'SymphonyOSF'),  description: 'GitHub organization (fork) for config repo.'),
+    steps.string(name: 'configRepoBranch',  defaultValue: Default.value(env,  'configRepoBranch',  'master'), description: 'GitHub branch for config repo.')
+   ]
+     
+    return list
+  }
+  
   public static def parameters(env, steps, extras = null)
   {
     def list = [
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    ]
    
-    steps.string(name: 'releaseVersion',    defaultValue: Default.value(env,  'releaseVersion',    ''),      description: 'The release version for promotion.'),
-    steps.string(name: 'buildQualifier',    defaultValue: Default.value(env,  'buildQualifier',    ''),      description: 'The build qualifier for promotion.'),
-    steps.string(name: 'serviceRepoOrg',    defaultValue: Default.value(env,  'serviceRepoOrg',    'SymphonyOSF'),  description: 'GitHub organization (fork) for service source code repo.'),
-    steps.string(name: 'serviceRepoBranch', defaultValue: Default.value(env,  'serviceRepoBranch', 'master'),description: 'GitHub branch for service source code repo.'),
-    steps.string(name: 'configRepoOrg',     defaultValue: Default.value(env,  'configRepoOrg',     'SymphonyOSF'),  description: 'GitHub organization (fork) for config repo.'),
-    steps.string(name: 'configRepoBranch',  defaultValue: Default.value(env,  'configRepoBranch',  'master'), description: 'GitHub branch for config repo.')
-   ]
+    list.addAll(buildIdParameters(env, steps))
+    list.addAll(sourceVersionParameters(env, steps))
+    list.addAll(configVersionParameters(env, steps))
    
-   if(extras != null)
+    if(extras != null)
      list.addAll(extras)
      
     return [
   steps.parameters(list)
 ]
   }
+  
   
   public void validateRootPolicy(String accountId, String environmentType)
   {
