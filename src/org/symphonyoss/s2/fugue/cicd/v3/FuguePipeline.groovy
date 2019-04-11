@@ -479,6 +479,10 @@ doBuild      ${doBuild_}
 pullFrom     ${pullFrom_}
 pushTo       ${pushTo_}
 deployTo     ${deployTo_}
+
+fugueDryRun  ${fugueDryRun_}
+fugueCreate  ${fugueCreate_}
+fugueDelete  ${fugueDelete_}
 ===================================="""
     
     serviceGitOrg = env_.serviceRepoOrg
@@ -1017,6 +1021,10 @@ docker push ${remoteImage}
         .withStation(station)
         .withPodName(podName)
         .withServiceName(serviceId_)
+        
+        .withDryRun(fugueDryRun_)
+        .withCreate(fugueCreate_)
+        .withDelete(fugueDelete_)
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + buildId)
