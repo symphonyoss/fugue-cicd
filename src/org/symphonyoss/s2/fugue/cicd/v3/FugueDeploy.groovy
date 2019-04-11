@@ -64,21 +64,21 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
       return this
   }
   
-  public FugueDeploy withDryRun(String n)
+  public FugueDeploy withDryRun(boolean n)
   {
       dryRun_ = n
       
       return this
   }
   
-  public FugueDeploy withCreate(String n)
+  public FugueDeploy withCreate(boolean n)
   {
       create_ = n
       
       return this
   }
   
-  public FugueDeploy withDelete(String n)
+  public FugueDeploy withDelete(boolean n)
   {
       delete_ = n
       
