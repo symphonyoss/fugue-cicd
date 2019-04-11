@@ -11,6 +11,9 @@ import java.util.Map.Entry
 class FugueDeploy extends FuguePipelineTask implements Serializable
 {
   private String  action_
+  private String  dryRun_
+  private String  create_
+  private String  delete_
   private String  awsRegion_
   private String  dockerLabel_  = ':' + FuguePipeline.FUGUE_VERSION
 
@@ -57,6 +60,27 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   public FugueDeploy withCluster(String n)
   {
       cluster_ = n
+      
+      return this
+  }
+  
+  public FugueDeploy withDryRun(String n)
+  {
+      dryRun_ = n
+      
+      return this
+  }
+  
+  public FugueDeploy withCreate(String n)
+  {
+      create_ = n
+      
+      return this
+  }
+  
+  public FugueDeploy withDelete(String n)
+  {
+      delete_ = n
       
       return this
   }
@@ -224,6 +248,9 @@ fargateLaunch   ${fargateLaunch_}
 launchType      ${launchType_}
 
 action          ${action_}
+dryRun          ${dryRun_}
+create          ${create_}
+delete          ${delete_}
 environmentType ${environmentType_}
 environment     ${environment_}
 region          ${region_}
@@ -278,6 +305,9 @@ logGroup        ${logGroup}
     addIfNotNull("FUGUE_REGION", region_)
     addIfNotNull("FUGUE_SERVICE", servicename_)
     addIfNotNull("FUGUE_ACTION", action_)
+    addIfNotNull("FUGUE_DRY_RUN", dryRun_)
+    addIfNotNull("FUGUE_CREATE", create_)
+    addIfNotNull("FUGUE_DELETE", delete_)
     addIfNotNull("FUGUE_POD_NAME", podName_)
     addIfNotNull("FUGUE_PRIMARY_ENVIRONMENT", primaryEnvironment_)
     addIfNotNull("FUGUE_PRIMARY_REGION", primaryRegion_)

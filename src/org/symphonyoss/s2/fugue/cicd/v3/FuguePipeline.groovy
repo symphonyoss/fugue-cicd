@@ -37,6 +37,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private String servicePath
   private boolean toolsDeploy = false
   private boolean useRootCredentials = false
+  private boolean fugueDryRun_ = false
+  private boolean fugueCreate_ = true
+  private boolean fugueDelete_ = false
   
   private boolean               doBuild_
   private Map<String, Boolean>  pushTo_ = [:]
@@ -353,8 +356,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
       .withEnvironmentType(env_."environmentType")
       .withEnvironment(env_."environmentId")
       .withRegion(env_."regionId")
-      
-    serviceId_ = (env_."serviceId")
   }
   
   public void preflight()
@@ -364,6 +365,16 @@ Preflight
 echo 'FuguePipeline V3.3'
 Build Action ${env_.buildAction}
 """
+    switch(env_."dryRun")
+    {
+      case 'Dry Run':
+        fugueDryRun_ = true;
+        break;
+      
+      default:
+        fugueDryRun_ = false;
+        break;
+    }
     
     switch(env_.buildAction)
     {
@@ -425,16 +436,21 @@ Build Action ${env_.buildAction}
         break;
       
       case 'Deploy Pod':
+        fugueCreate_ = true
+        fugueDelete_ = false
         createDeployStation()
         deployTo(env_."environmentType")
         break;
         
       case 'Undeploy Pod':
+        fugueCreate_ = false
+        fugueDelete_ = true
         createDeployStation()
         break;
         
       case 'Undeploy AllPods':
-        createDeployStation()
+        fugueCreate_ = false
+        fugueDelete_ = true
         break;
     }
     
@@ -1149,11 +1165,11 @@ docker push ${remoteImage}
   {
     def list = [
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction',      ['Deploy Pod', 'Undeploy Pod', 'Undeploy AllPods']), description: 'Action to perform'),
+    steps.choice(name: 'dryRun',            choices:      Default.choice(env, 'dryRun',           ['Execute', 'Dry Run']),    description: 'Dry run or actually do it'),
     steps.string(name: 'podName',           defaultValue: Default.value(env,  'podName',          'sym-ac6-dev-chat-glb-1'),  description: 'Pod Name.'),
     steps.string(name: 'environmentType',   defaultValue: Default.value(env,  'environmentType',  'dev'),                     description: 'Environment Type ID.'),
     steps.string(name: 'environmentId',     defaultValue: Default.value(env,  'environmentId',    's2dev2'),                  description: 'Environment  ID.'),
-    steps.string(name: 'regionId',          defaultValue: Default.value(env,  'regionId',         'us-east-1'),               description: 'Region ID.'),
-    steps.string(name: 'serviceId',         defaultValue: Default.value(env,  'serviceId',        's2fwd'),                   description: 'Service ID.'),
+    steps.string(name: 'regionId',          defaultValue: Default.value(env,  'regionId',         'us-east-1'),               description: 'Service ID.'),
     ]
    
     list.addAll(buildIdParameters(env, steps))
