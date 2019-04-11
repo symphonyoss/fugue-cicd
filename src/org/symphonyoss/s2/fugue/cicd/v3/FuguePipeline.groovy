@@ -837,29 +837,35 @@ environmentType ${environmentType}
     {
       echo "OK, lets do this!"
       
-      boolean doMultiTenantConfig = true
-      
-      station.podNames.each {
-        String podName = it
-        
-        echo 'for environmentType=' + station.environmentType +
-        ', environment=' + station.environment + ', podName ' + podName
-        
-        deployConfig(station, podName, 'DeployConfig')
-        doMultiTenantConfig = false
-
-      }
-      
-      if(doMultiTenantConfig)
+      if(fugueCreate_)
       {
-        deployConfig(station, null, 'DeployConfig')
+        boolean doMultiTenantConfig = true
+        
+        station.podNames.each {
+          String podName = it
+          
+          echo 'for environmentType=' + station.environmentType +
+          ', environment=' + station.environment + ', podName ' + podName
+          
+          deployConfig(station, podName, 'DeployConfig')
+          doMultiTenantConfig = false
+  
+        }
+        
+        if(doMultiTenantConfig)
+        {
+          deployConfig(station, null, 'DeployConfig')
+        }
       }
         
       if(!toolsDeploy) {
         deployInitContainers(station)
       
-        // this just creates task defs
-        deployServiceContainers(station)
+        if(fugueCreate_) // no point doing this if it's a delete
+        {
+          // this just creates task defs
+          deployServiceContainers(station)
+        }
         
         // this actually deploys service containers
         fugueDeployStation(releaseTrack, station)
@@ -1074,11 +1080,6 @@ docker push ${remoteImage}
         .withStation(station)
         .withPodName(podName)
         .withServiceName(serviceId_)
-        
-        .withDryRun(fugueDryRun_)
-        .withCreate(fugueCreate_)
-        .withDelete(fugueDelete_)
-        .withDeletePod(fugueDeletePod_)
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + buildId)
