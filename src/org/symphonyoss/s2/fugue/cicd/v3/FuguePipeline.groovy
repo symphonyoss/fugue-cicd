@@ -500,8 +500,10 @@ fugueDeletePod  ${fugueDeletePod_}
     configGitOrg = env_.configRepoOrg
     configGitBranch = env_.configRepoBranch
     
-       
-    sh 'rm -rf *'
+    if(doBuild_)
+    {
+      sh 'rm -rf *'
+    }
     
     if(configGitRepo != null)
     {
@@ -713,17 +715,33 @@ environmentType ${environmentType}
   
   public void deployInitContainers(Station station, Tenancy tenancy)
   {
+    echo 'Init Containers for tenancy ' + tenancy
+    
     service_map.values().each
     {
       Container ms = it
       
+      echo 'Init Container? ' + ms
+      
       if(ms.containerType == ContainerType.INIT && ms.tenancy == tenancy)
       {
-        String podName = tenancy == Tenancy.SINGLE ? it : null
-        
-        echo 'Init ' + tenancy + ms.toString()
-        ms.deployInit(station, podName)
-        echo 'DONE Init ' + tenancy + ms.name
+        if(tenancy == Tenancy.SINGLE)
+        {
+          station.podNames.each
+          {
+            String podName = it
+  
+            echo 'Init ' + podName
+            ms.deployInit(station, podName)
+            echo 'DONE Init ' + podName
+          }
+        }
+      }
+      else
+      {
+        echo 'Init Multi'
+        ms.deployInit(station, null)
+        echo 'DONE Init multi'
       }
     }
   }
