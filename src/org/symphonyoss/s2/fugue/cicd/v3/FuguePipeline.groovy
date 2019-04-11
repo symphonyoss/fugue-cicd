@@ -711,38 +711,63 @@ environmentType ${environmentType}
     }
   }
   
+  public void deployInitContainers(Station station, Tenancy tenancy)
+  {
+    service_map.values().each
+    {
+      Container ms = it
+      
+      if(ms.containerType == ContainerType.INIT && ms.tenancy == tenancy)
+      {
+        String podName = tenancy == Tenancy.SINGLE ? it : null
+        
+        echo 'Init ' + tenancy + ms.toString()
+        ms.deployInit(station, podName)
+        echo 'DONE Init ' + tenancy + ms.name
+      }
+    }
+  }
+  
   public void deployInitContainers(Station station)
   {
     echo 'Init Containers'
     
-    service_map.values().each
-    {
-      Container ms = it
-      
-      if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.MULTI)
-      {
-          echo 'Init MULTI ' + ms.toString()
-          ms.deployInit(station, null)
-          echo 'DONE Init MULTI ' + ms.name
-      }
-    }
+    if(fugueCreate_)
+      deployInitContainers(station, Tenancy.MULTI)
     
-    service_map.values().each
-    {
-      Container ms = it
+    deployInitContainers(station, Tenancy.SINGLE)
+        
+    if(fugueDelete_)
+      deployInitContainers(station, Tenancy.MULTI)
       
-      if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.SINGLE)
-      {
-        station.podNames.each
-        {
-          String podName = it
-       
-          echo 'Init ' + podName + ' ' + ms.toString()
-          
-          ms.deployInit(station, podName)
-        }
-      }
-    }
+//    service_map.values().each
+//    {
+//      Container ms = it
+//      
+//      if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.MULTI)
+//      {
+//          echo 'Init MULTI ' + ms.toString()
+//          ms.deployInit(station, null)
+//          echo 'DONE Init MULTI ' + ms.name
+//      }
+//    }
+//    
+//    service_map.values().each
+//    {
+//      Container ms = it
+//      
+//      if(ms.containerType == ContainerType.INIT && ms.tenancy == Tenancy.SINGLE)
+//      {
+//        station.podNames.each
+//        {
+//          String podName = it
+//       
+//          echo 'Init ' + podName + ' ' + ms.toString()
+//          
+//          ms.deployInit(station, podName)
+//        }
+//      }
+//    }
   }
   
   public void deployServiceContainers(Station station)

@@ -136,6 +136,12 @@ pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.envi
            echo 'envOverride name=' + name + ', value=' + value
         }
         
+        override = override + comma + '{"name": "FUGUE_DRY_RUN", "value": "' + pipeLine_.fugueDryRun_ + '"}'
+        comma = ','
+        override = override + comma + '{"name": "FUGUE_CREATE", "value": "' + pipeLine_.fugueCreate_ + '"}'
+        override = override + comma + '{"name": "FUGUE_DELETE", "value": "' + pipeLine_.fugueDelete_ + '"}'
+        override = override + comma + '{"name": "FUGUE_DELETE_POD", "value": "' + pipeLine_.fugueDeletePod_ + '"}'
+        
         override = override + ']}]}'
  
         def taskRun = readJSON(text:
