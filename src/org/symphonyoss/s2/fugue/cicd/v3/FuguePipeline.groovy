@@ -736,12 +736,12 @@ environmentType ${environmentType}
             echo 'DONE Init ' + podName
           }
         }
-      }
-      else
-      {
-        echo 'Init Multi'
-        ms.deployInit(station, null)
-        echo 'DONE Init multi'
+        else
+        {
+          echo 'Init Multi'
+          ms.deployInit(station, null)
+          echo 'DONE Init multi'
+        }
       }
     }
   }
