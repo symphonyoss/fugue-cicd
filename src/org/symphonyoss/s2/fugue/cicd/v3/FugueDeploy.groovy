@@ -14,6 +14,7 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  dryRun_
   private String  create_
   private String  delete_
+  private String  deletePod_
   private String  awsRegion_
   private String  dockerLabel_  = ':' + FuguePipeline.FUGUE_VERSION
 
@@ -81,6 +82,13 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   public FugueDeploy withDelete(boolean n)
   {
       delete_ = n
+      
+      return this
+  }
+  
+  public FugueDeploy withDeletePod(boolean n)
+  {
+      deletePod_ = n
       
       return this
   }
@@ -251,6 +259,7 @@ action          ${action_}
 dryRun          ${dryRun_}
 create          ${create_}
 delete          ${delete_}
+deletePod       ${deletePod_}
 environmentType ${environmentType_}
 environment     ${environment_}
 region          ${region_}
@@ -308,6 +317,7 @@ logGroup        ${logGroup}
     addIfNotNull("FUGUE_DRY_RUN", dryRun_)
     addIfNotNull("FUGUE_CREATE", create_)
     addIfNotNull("FUGUE_DELETE", delete_)
+    addIfNotNull("FUGUE_DELETE_POD", deletePod_)
     addIfNotNull("FUGUE_POD_NAME", podName_)
     addIfNotNull("FUGUE_PRIMARY_ENVIRONMENT", primaryEnvironment_)
     addIfNotNull("FUGUE_PRIMARY_REGION", primaryRegion_)

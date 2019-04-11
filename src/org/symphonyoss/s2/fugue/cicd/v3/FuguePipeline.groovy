@@ -40,6 +40,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private boolean fugueDryRun_ = false
   private boolean fugueCreate_ = true
   private boolean fugueDelete_ = false
+  private boolean fugueDeletePod_ = false
   
   private boolean               doBuild_
   private Map<String, Boolean>  pushTo_ = [:]
@@ -438,19 +439,27 @@ Build Action ${env_.buildAction}
       case 'Deploy Pod':
         fugueCreate_ = true
         fugueDelete_ = false
+        fugueDeletePod_ = false
         createDeployStation()
         deployTo(env_."environmentType")
+        targetEnvironmentType_ = env_."environmentType"
         break;
         
       case 'Undeploy Pod':
         fugueCreate_ = false
-        fugueDelete_ = true
+        fugueDelete_ = false
+        fugueDeletePod_ = true
         createDeployStation()
+        deployTo(env_."environmentType")
+        targetEnvironmentType_ = env_."environmentType"
         break;
         
       case 'Undeploy AllPods':
         fugueCreate_ = false
         fugueDelete_ = true
+        fugueDeletePod_ = true
+        deployTo(env_."environmentType")
+        targetEnvironmentType_ = env_."environmentType"
         break;
     }
     
@@ -475,14 +484,15 @@ Build Action ${env_.buildAction}
     
     
     echo """====================================
-doBuild      ${doBuild_}
-pullFrom     ${pullFrom_}
-pushTo       ${pushTo_}
-deployTo     ${deployTo_}
+doBuild         ${doBuild_}
+pullFrom        ${pullFrom_}
+pushTo          ${pushTo_}
+deployTo        ${deployTo_}
 
-fugueDryRun  ${fugueDryRun_}
-fugueCreate  ${fugueCreate_}
-fugueDelete  ${fugueDelete_}
+fugueDryRun     ${fugueDryRun_}
+fugueCreate     ${fugueCreate_}
+fugueDelete     ${fugueDelete_}
+fugueDeletePod  ${fugueDeletePod_}
 ===================================="""
     
     serviceGitOrg = env_.serviceRepoOrg
@@ -1025,6 +1035,7 @@ docker push ${remoteImage}
         .withDryRun(fugueDryRun_)
         .withCreate(fugueCreate_)
         .withDelete(fugueDelete_)
+        .withDeletePod(fugueDeletePod_)
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + buildId)
