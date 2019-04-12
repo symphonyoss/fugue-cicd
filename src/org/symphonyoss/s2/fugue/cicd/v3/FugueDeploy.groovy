@@ -224,10 +224,10 @@ fargateLaunch   ${fargateLaunch_}
 launchType      ${launchType_}
 
 action          ${action_}
-dryRun          ${dryRun_}
-create          ${create_}
-delete          ${delete_}
-deletePod       ${deletePod_}
+dryRun          ${pipeLine_.fugueDryRun_}
+create          ${pipeLine_.fugueCreate_}
+delete          ${pipeLine_.fugueDelete_}
+deletePod       ${pipeLine_.fugueDeletePod_}
 environmentType ${environmentType_}
 environment     ${environment_}
 region          ${region_}
