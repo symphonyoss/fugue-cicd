@@ -366,6 +366,7 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
       {
         try
         {
+          echo 'read logs...'
           def logEvents = readJSON(text:
             sh(returnStdout: true, script: 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
           ' --log-stream-name fugue-deploy/' + taskDefFamily + '/' + taskId + 
@@ -380,14 +381,11 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
             echo event."message"
           }
         }
-        catch(RuntimeException e)
+        catch(Exception e)
         {
           echo 'No logs yet...'
+          e.printStackTrace()
         }
-        
-        sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + cluster_ +
-          ' --tasks ' + taskArn
-        sh 'aws sts get-caller-identity'
   
         def taskDescription = readJSON(text:
           sh(returnStdout: true, script: 'aws --region us-east-1 ecs describe-tasks  --cluster ' + 
