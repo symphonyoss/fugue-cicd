@@ -366,9 +366,8 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
       {
         try
         {
-          echo 'read logs...'
           def logEvents = readJSON(text:
-            sh(returnStdout: true, script: 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
+            sh(returnStdout: true, script: 'sh -x ; aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
           ' --log-stream-name fugue-deploy/' + taskDefFamily + '/' + taskId + 
           nextToken
             )
