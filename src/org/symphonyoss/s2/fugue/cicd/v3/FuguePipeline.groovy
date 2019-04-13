@@ -686,7 +686,10 @@ environmentType ${environmentType}
   
   public boolean verifyCreds(String environmentType, boolean force = false)
   {
-    if(force || verifyCreds_[environmentType])
+    if(force)
+      verifyCreds_[environmentType] = true;
+      
+    if(verifyCreds_[environmentType])
     {
       try
       {
