@@ -32,6 +32,16 @@ class JenkinsTask implements Serializable
     steps_."echo" message
   }
   
+  public void echoOff()
+  {
+    steps_."set -x"
+  }
+  
+  public void echoOn()
+  {
+    steps_."set +x"
+  }
+  
   public def sh(String script, boolean returnStdout = false, boolean returnStatus = false)
   {
     return steps_."sh"(script: script, returnStdout: returnStdout, returnStatus: returnStatus)

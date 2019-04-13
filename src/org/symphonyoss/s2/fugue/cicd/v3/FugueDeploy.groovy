@@ -351,6 +351,7 @@ logGroup        ${logGroup_}
         sh(returnStdout: true, script: runCommand
         )
       )
+      echoOff
       echo "taskRun: ${taskRun}"
       echo """
 Task run
@@ -412,9 +413,13 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
   """
             throw new IllegalStateException('Init task fugue-deploy failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
           }
+          
+          echoOn
+          return
         }
         sleep 10000
       }
+      echoOn
       throw new IllegalStateException('Timed out waiting for task fugue-deploy')
     }
     
