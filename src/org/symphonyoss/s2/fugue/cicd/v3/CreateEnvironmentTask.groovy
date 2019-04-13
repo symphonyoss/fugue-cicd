@@ -89,7 +89,7 @@ region_             ${region_}
           .withRole(roleName)
           .withAccountId(accountId)
           .withCluster(cluster_)
-          .withLogGroup('fugue-deploy')
+          .withLogGroup(pipeLine_.fugueLogGroupName_)
         
       deploy.execute()
     }

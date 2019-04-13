@@ -26,6 +26,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private String symbase = 'symbase'
 
   private globalNamePrefix_ = 'sym-s2-'
+  private String fugueLogGroupName_ = globalNamePrefix_ + "fugue"
   private String serviceId_
 
   private Station deployStation

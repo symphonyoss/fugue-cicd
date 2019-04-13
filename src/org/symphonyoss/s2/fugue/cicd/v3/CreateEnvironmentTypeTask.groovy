@@ -97,7 +97,7 @@ roleName            ${roleName}
           .withRole(roleName)
           .withAccountId(accountId)
           .withCluster(cluster_)
-          .withLogGroup('fugue-deploy')
+          .withLogGroup(pipeLine_.fugueLogGroupName_)
       
       echo 'shall we pull deploy? ' + (!pipeLine_.toolsDeploy)
           
