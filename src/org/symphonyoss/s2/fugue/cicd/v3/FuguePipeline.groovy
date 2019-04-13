@@ -38,9 +38,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private boolean toolsDeploy = false
   private boolean useRootCredentials = false
   private boolean fugueDryRun_ = false
-  private boolean fugueCreate_ = true
-  private boolean fugueDelete_ = false
-  private boolean fugueDeletePod_ = false
   
   private boolean               doBuild_
   private Map<String, Boolean>  pushTo_ = [:]
@@ -436,7 +433,7 @@ Build Action ${env_.buildAction}
         targetEnvironmentType_ = 'prod'
         break;
       
-      case 'Deploy Pod':
+      case 'Deploy':
         fugueCreate_ = true
         fugueDelete_ = false
         fugueDeletePod_ = false
@@ -445,7 +442,7 @@ Build Action ${env_.buildAction}
         targetEnvironmentType_ = env_."environmentType"
         break;
         
-      case 'Undeploy Pod':
+      case 'Undeploy':
         fugueCreate_ = false
         fugueDelete_ = false
         fugueDeletePod_ = true
@@ -454,7 +451,7 @@ Build Action ${env_.buildAction}
         targetEnvironmentType_ = env_."environmentType"
         break;
         
-      case 'Undeploy AllPods':
+      case 'Undeploy All':
         fugueCreate_ = false
         fugueDelete_ = true
         fugueDeletePod_ = true
@@ -1227,7 +1224,7 @@ docker push ${remoteImage}
   public static def deployParameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction',      ['Deploy Pod', 'Undeploy Pod', 'Undeploy AllPods']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction',      ['Deploy', 'Undeploy Pod', 'Undeploy All']), description: 'Action to perform'),
     steps.choice(name: 'dryRun',            choices:      Default.choice(env, 'dryRun',           ['Execute', 'Dry Run']),    description: 'Dry run or actually do it'),
     steps.string(name: 'podName',           defaultValue: Default.value(env,  'podName',          'sym-ac6-dev-chat-glb-1'),  description: 'Pod Name.'),
     steps.string(name: 'environmentType',   defaultValue: Default.value(env,  'environmentType',  'dev'),                     description: 'Environment Type ID.'),

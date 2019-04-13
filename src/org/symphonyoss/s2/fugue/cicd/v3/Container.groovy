@@ -115,81 +115,81 @@ pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.envi
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 """
-    if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
-       pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          credentialsId: pipeLine_.getCredentialName(station.environmentType),
-          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-        
-        String logGroupName = pipeLine_.createLogGroup(station, podName);
-                         
-        String override = '{"containerOverrides": [{"name": "' + serviceFullName(station, podName) +
-         '","environment": ['
-         String comma = ''
-         
-         echo 'envOverride=' + envOverride
-         envOverride.each {
-           name, value -> override = override + comma + '{"name": "' + name + '", "value": "' + value + '"}'
-           comma = ','
-           echo 'envOverride name=' + name + ', value=' + value
-        }
-        
-        override = override + comma + '{"name": "FUGUE_DRY_RUN", "value": "' + pipeLine_.fugueDryRun_ + '"}'
-        comma = ','
-        override = override + comma + '{"name": "FUGUE_CREATE", "value": "' + pipeLine_.fugueCreate_ + '"}'
-        override = override + comma + '{"name": "FUGUE_DELETE", "value": "' + pipeLine_.fugueDelete_ + '"}'
-        override = override + comma + '{"name": "FUGUE_DELETE_POD", "value": "' + pipeLine_.fugueDeletePod_ + '"}'
-        
-        override = override + ']}]}'
- 
-        def taskRun = readJSON(text:
-          sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + 
-            clusterId +
-            ' --task-definition '+serviceFullName(station, podName)+
-            ' --count 1 --overrides \'' + override + '\''
-          )
-        )
-        
-        echo """
-Task run
-taskArn: ${taskRun.tasks[0].taskArn}
-lastStatus: ${taskRun.tasks[0].lastStatus}
-"""
-        String taskArn = taskRun.tasks[0].taskArn
-        String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
-        
-        sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + clusterId +
-        ' --tasks ' + taskArn
-        
-
-        sh 'aws --region us-east-1 ecs describe-tasks  --cluster ' + clusterId +
-        ' --tasks ' + taskArn +
-        ' > ' + name + '-taskDescription.json'
-        
-        def taskDescription = readJSON file:name + '-taskDescription.json'
-        
-        echo """
-Task run
-taskArn: ${taskDescription.tasks[0].taskArn}
-lastStatus: ${taskDescription.tasks[0].lastStatus}
-stoppedReason: ${taskDescription.tasks[0].stoppedReason}
-exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
-"""
-        sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroupName +
-        ' --log-stream-name '+serviceFullName(station, podName)+
-        '/'+serviceFullName(station, podName)+
-        '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/",$//\' | sed -e \'s/\\\\t/      /\''
-
-        
-        if(taskDescription.tasks[0].containers[0].exitCode != 0) {
-          
-          
-          throw new IllegalStateException('Init task ' + name + ' failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
-        }
-      }
-    }
+//    if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
+//       pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
+//        withCredentials([[
+//          $class: 'AmazonWebServicesCredentialsBinding',
+//          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//          credentialsId: pipeLine_.getCredentialName(station.environmentType),
+//          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+//        
+//        String logGroupName = pipeLine_.createLogGroup(station, podName);
+//                         
+//        String override = '{"containerOverrides": [{"name": "' + serviceFullName(station, podName) +
+//         '","environment": ['
+//         String comma = ''
+//         
+//         echo 'envOverride=' + envOverride
+//         envOverride.each {
+//           name, value -> override = override + comma + '{"name": "' + name + '", "value": "' + value + '"}'
+//           comma = ','
+//           echo 'envOverride name=' + name + ', value=' + value
+//        }
+//        
+//        override = override + comma + '{"name": "FUGUE_DRY_RUN", "value": "' + pipeLine_.fugueDryRun_ + '"}'
+//        comma = ','
+//        override = override + comma + '{"name": "FUGUE_CREATE", "value": "' + pipeLine_.fugueCreate_ + '"}'
+//        override = override + comma + '{"name": "FUGUE_DELETE", "value": "' + pipeLine_.fugueDelete_ + '"}'
+//        override = override + comma + '{"name": "FUGUE_DELETE_POD", "value": "' + pipeLine_.fugueDeletePod_ + '"}'
+//        
+//        override = override + ']}]}'
+// 
+//        def taskRun = readJSON(text:
+//          sh(returnStdout: true, script: 'aws --region us-east-1 ecs run-task --cluster ' + 
+//            clusterId +
+//            ' --task-definition '+serviceFullName(station, podName)+
+//            ' --count 1 --overrides \'' + override + '\''
+//          )
+//        )
+//        
+//        echo """
+//Task run
+//taskArn: ${taskRun.tasks[0].taskArn}
+//lastStatus: ${taskRun.tasks[0].lastStatus}
+//"""
+//        String taskArn = taskRun.tasks[0].taskArn
+//        String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
+//        
+//        sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + clusterId +
+//        ' --tasks ' + taskArn
+//        
+//
+//        sh 'aws --region us-east-1 ecs describe-tasks  --cluster ' + clusterId +
+//        ' --tasks ' + taskArn +
+//        ' > ' + name + '-taskDescription.json'
+//        
+//        def taskDescription = readJSON file:name + '-taskDescription.json'
+//        
+//        echo """
+//Task run
+//taskArn: ${taskDescription.tasks[0].taskArn}
+//lastStatus: ${taskDescription.tasks[0].lastStatus}
+//stoppedReason: ${taskDescription.tasks[0].stoppedReason}
+//exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
+//"""
+//        sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroupName +
+//        ' --log-stream-name '+serviceFullName(station, podName)+
+//        '/'+serviceFullName(station, podName)+
+//        '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/",$//\' | sed -e \'s/\\\\t/      /\''
+//
+//        
+//        if(taskDescription.tasks[0].containers[0].exitCode != 0) {
+//          
+//          
+//          throw new IllegalStateException('Init task ' + name + ' failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
+//        }
+//      }
+//    }
   }
   
   private void updateService(Station station, String podName) {
