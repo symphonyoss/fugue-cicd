@@ -38,6 +38,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private boolean toolsDeploy = false
   private boolean useRootCredentials = false
   private boolean fugueDryRun_ = false
+  private String  fugueAction_ = "Deploy"
   
   private boolean               doBuild_
   private Map<String, Boolean>  pushTo_ = [:]
@@ -434,29 +435,22 @@ Build Action ${env_.buildAction}
         break;
       
       case 'Deploy':
-        fugueCreate_ = true
-        fugueDelete_ = false
-        fugueDeletePod_ = false
         createDeployStation()
         deployTo(env_."environmentType")
         targetEnvironmentType_ = env_."environmentType"
         break;
         
       case 'Undeploy':
-        fugueCreate_ = false
-        fugueDelete_ = false
-        fugueDeletePod_ = true
         createDeployStation()
         deployTo(env_."environmentType")
         targetEnvironmentType_ = env_."environmentType"
+        fugueAction_ = "Undeploy"
         break;
         
       case 'Undeploy All':
-        fugueCreate_ = false
-        fugueDelete_ = true
-        fugueDeletePod_ = true
         deployTo(env_."environmentType")
         targetEnvironmentType_ = env_."environmentType"
+        fugueAction_ = "UndeployAll"
         break;
     }
     
@@ -487,9 +481,7 @@ pushTo          ${pushTo_}
 deployTo        ${deployTo_}
 
 fugueDryRun     ${fugueDryRun_}
-fugueCreate     ${fugueCreate_}
-fugueDelete     ${fugueDelete_}
-fugueDeletePod  ${fugueDeletePod_}
+fbuildAction    ${env_.buildAction}
 ===================================="""
     
     serviceGitOrg = env_.serviceRepoOrg
@@ -1089,7 +1081,7 @@ docker push ${remoteImage}
     String accountId = getCredentialName(station.environmentType)
     
     FugueDeploy deploy = new FugueDeploy(this, 
-      releaseTrack == null ? 'Deploy' : 'DeployStation',
+      fugueAction_,
       awsRegion)
         .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
         .withTrack(releaseTrack)

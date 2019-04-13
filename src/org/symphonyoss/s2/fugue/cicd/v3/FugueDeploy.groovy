@@ -231,7 +231,7 @@ deletePod       ${pipeLine_.fugueDeletePod_}
 environmentType ${environmentType_}
 environment     ${environment_}
 region          ${region_}
-podName        ${podName_}
+podName         ${podName_}
 
 serviceImage    ${serviceImage}
 taskDefFamily   ${taskDefFamily}
