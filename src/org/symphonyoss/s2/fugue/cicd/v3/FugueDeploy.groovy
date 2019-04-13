@@ -384,7 +384,6 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
         catch(Exception e)
         {
           echo 'No logs yet...'
-          e.printStackTrace()
         }
   
         def taskDescription = readJSON(text:
@@ -394,7 +393,7 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
           )
         )
         
-        if("STOPPED".equals(${taskDescription.tasks[0].lastStatus}))
+        if("STOPPED".equals(taskDescription.tasks[0].lastStatus))
         {
           echo """
   Task run
