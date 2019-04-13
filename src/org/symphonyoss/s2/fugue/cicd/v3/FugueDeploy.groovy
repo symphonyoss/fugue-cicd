@@ -322,7 +322,7 @@ logGroup        ${logGroup_}
       credentialsId: accountId_,
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
-      pipeLine_.createLogGroup(logGroup)
+      pipeLine_.createLogGroup(logGroup_)
       
       deleteOldTaskDefs(taskDefFamily)
       
