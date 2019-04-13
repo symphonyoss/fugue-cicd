@@ -275,7 +275,7 @@ logGroup        ${logGroup_}
                 "options": {
                     "awslogs-group": "${logGroup_}",
                     "awslogs-region": "${awsRegion_}",
-                    "awslogs-stream-prefix": "${pipeLine_.fugueLogGroupName_}"
+                    "awslogs-stream-prefix": "fugue-deploy"
                 }
             },
             "environment": [
@@ -322,6 +322,7 @@ logGroup        ${logGroup_}
       credentialsId: accountId_,
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
+      sh 'aws sts get-caller-identity'
       pipeLine_.createLogGroup(logGroup_)
       
       deleteOldTaskDefs(taskDefFamily)
@@ -363,7 +364,7 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
       
       sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + cluster_ +
         ' --tasks ' + taskArn
-      
+      sh 'aws sts get-caller-identity'
 
       def taskDescription = readJSON(text:
         sh(returnStdout: true, script: 'aws --region us-east-1 ecs describe-tasks  --cluster ' + 
