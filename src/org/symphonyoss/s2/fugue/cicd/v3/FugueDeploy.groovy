@@ -199,7 +199,7 @@ docker push ${tgtServiceImage}
     if(environment_ != null)
       taskDefFamily = taskDefFamily + '-' + environment_
       
-    String logGroup         = pipeLine_.logGroupName(environmentType_, environment_, podName_, servicename_)
+    String logGroup         = pipeLine_.useRootCredentials ? pipeLine_.globalNamePrefix_ + 'fugue-deploy' : pipeLine_.logGroupName(environmentType_, environment_, podName_, servicename_)
     String consulToken
     String gitHubToken
     
