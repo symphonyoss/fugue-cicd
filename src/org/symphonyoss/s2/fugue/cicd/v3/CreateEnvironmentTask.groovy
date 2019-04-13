@@ -69,6 +69,7 @@ region_             ${region_}
     String  accountId = 'sym-s2-fugue-' + environmentType_ + '-cicd'
     String  roleName  = 'sym-s2-fugue-' + environmentType_ + '-admin-role'
     
+    pipeLine_.verifyCreds(environmentType_)
     pipeLine_.verifyUserAccess(accountId)
     
     withCredentials([[

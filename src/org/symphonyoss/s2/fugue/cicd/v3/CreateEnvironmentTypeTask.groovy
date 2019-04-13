@@ -72,6 +72,7 @@ accountId           ${accountId}
 roleName            ${roleName}
 ------------------------------------------------------------------------------------------------------------------------
 """
+    pipeLine_.verifyCreds(environmentType_)
     verifyUserAccess(accountId, environmentType_)
     
     withCredentials([[
