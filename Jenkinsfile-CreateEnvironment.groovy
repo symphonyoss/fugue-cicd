@@ -16,7 +16,6 @@ properties([
 node
 {
     FuguePipeline pipeLine = FuguePipeline.instance(env, steps)
-      .withTeam('fugue')
       .withConfigGitRepo('SymphonyOSF', 'S2-fugue-config', 'master')
       .withToolsDeploy(true)
     

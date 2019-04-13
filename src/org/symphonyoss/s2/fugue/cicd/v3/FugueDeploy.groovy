@@ -199,7 +199,7 @@ docker push ${tgtServiceImage}
     if(environment_ != null)
       taskDefFamily = taskDefFamily + '-' + environment_
       
-    String logGroup         = pipeLine_.globalNamePrefix_ + 'fugue'
+    String logGroup         = pipeLine_.logGroupName(environmentType_, environment_, podName_, servicename_)
     String consulToken
     String gitHubToken
     
@@ -265,7 +265,7 @@ logGroup        ${logGroup}
                 "options": {
                     "awslogs-group": "${logGroup}",
                     "awslogs-region": "${awsRegion_}",
-                    "awslogs-stream-prefix": "${taskDefFamily}"
+                    "awslogs-stream-prefix": "fugue-deploy"
                 }
             },
             "environment": [

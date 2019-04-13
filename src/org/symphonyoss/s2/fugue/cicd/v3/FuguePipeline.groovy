@@ -27,7 +27,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
 
   private globalNamePrefix_ = 'sym-s2-'
   private String serviceId_
-  private String symteam = 'sym'
 
   private Station deployStation
   private String awsRegion = 'us-east-1'
@@ -42,6 +41,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean               doBuild_
   private Map<String, Boolean>  pushTo_ = [:]
+  private Map<String, Boolean>  verifyCreds_ = [:]
   private Map<String, Purpose>  deployTo_ = [:]
   private String                pullFrom_
   private String                targetEnvironmentType_
@@ -77,7 +77,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
     StringBuilder b = new StringBuilder();
     
     b.append "{" +
-      "\n  symteam              =" + symteam +
       "\n  release              =" + release +
       "\n  buildId              =" + buildId +
       "\n  servicePath          =" + servicePath +
@@ -123,11 +122,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public FuguePipeline withPath(String n) {
     this.servicePath = n
     return this
-  }
-
-  public FuguePipeline withTeam(String t) {
-      this.symteam = t
-      return this
   }
   
   public FuguePipeline withStation(Station station) {
@@ -318,11 +312,13 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private void pushTo(String environmentType)
   {
     pushTo_[environmentType] = true
+    verifyCreds_[environmentType] = true
   }
   
   private void deployTo(String environmentType, Purpose purpose = Purpose.Service)
   {
     deployTo_[environmentType] = purpose
+    verifyCreds_[environmentType] = true
   }
   
   public Purpose getDeployTo(String environmentType)
@@ -578,6 +574,9 @@ serviceGitBranch is ${serviceGitBranch}
       steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
     }
     
+    
+    verifyCreds_[pullFrom_] = true
+    
     if(!verifyCreds('dev'))
     {
       abort("No dev credentials")
@@ -686,19 +685,26 @@ environmentType ${environmentType}
   
   public boolean verifyCreds(String environmentType)
   {
-    try
+    if(verifyCreds_[environmentType])
     {
-      verifyUserAccess(getCredentialName(environmentType), environmentType);
-      
-      return true
+      try
+      {
+        verifyUserAccess(getCredentialName(environmentType), environmentType);
+        
+        return true
+      }
+      catch(Exception e)
+      {
+        pushTo_[environmentType] = false
+        deployTo_[environmentType] = Purpose.None
+        echo "No valid credentials for environmentType ${environmentType}"
+        
+        return false
+      }
     }
-    catch(Exception e)
+    else
     {
-      pushTo_[environmentType] = false
-      deployTo_[environmentType] = Purpose.None
-      echo "No valid credentials for environmentType ${environmentType}"
-      
-      return false
+      echo "No need to verify credentials for environmentType ${environmentType}"
     }
   }
   
@@ -1110,19 +1116,26 @@ docker push ${remoteImage}
   
   String logGroupName(Station station, String podName)
   {
-    return logGroupName(station, podName, symteam)
+    return logGroupName(station, podName, serviceId_)
   }
   
-  String logGroupName(Station station, String podName, String team)
+  String logGroupName(Station station, String podName, String serviceId)
   {
     if(station.logGroupName == null) {
-      String name = globalNamePrefix_ + station.environmentType + '-' + station.environment + '-';
-      
-      return podName == null ? name + team : name + podName + '-' + team;
+      return logGroupName(station.environmentType, station.environment, podName, serviceId)
     }
     else {
       return station.logGroupName;
     }
+  }
+  
+  String logGroupName(String environmentType, String environment, String podName, String serviceId)
+  {
+    
+      String name = globalNamePrefix_ + environmentType + '-' + environment + '-';
+      
+      return podName == null ? name + serviceId : name + podName + '-' + serviceId;
+    
   }
   
   String createLogGroup(Station station, String podName)

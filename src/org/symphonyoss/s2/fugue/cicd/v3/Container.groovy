@@ -345,7 +345,7 @@ station.region =${station.region}
       'FUGUE_PRIMARY_REGION':station.primaryRegion,
       'TASK_ROLE_ARN':roleArn,
       'LOG_GROUP':'',
-      'SERVICE_GROUP':pipeLine_.symteam,
+      'SERVICE_ID':pipeLine_.serviceId_,
       'SERVICE':serviceFullName(station, podName),
       'SERVICE_PORT':port,
       'FUGUE_POD_NAME':podName,
@@ -453,7 +453,7 @@ pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.envi
                 "options": {
                     "awslogs-group": "${LOG_GROUP}",
                     "awslogs-region": "${AWSREGION}",
-                    "awslogs-stream-prefix": "${SERVICE}"
+                    "awslogs-stream-prefix": "${SERVICE_ID}"
                 }
             },
             "environment": [
@@ -557,7 +557,7 @@ pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.envi
                 "options": {
                     "awslogs-group": "${LOG_GROUP}",
                     "awslogs-region": "${AWSREGION}",
-                    "awslogs-stream-prefix": "${SERVICE}"
+                    "awslogs-stream-prefix": "${SERVICE_ID}"
                 }
             },
             "environment": [
