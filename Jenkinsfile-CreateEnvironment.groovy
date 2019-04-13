@@ -9,7 +9,7 @@ properties([
   parameters([
     string(name: 'environmentType', defaultValue: 'dev',        description: 'The environment type', ),
     string(name: 'environment',     defaultValue: 's2dev1',     description: 'The environment ID', ),
-    string(name: 'region',          defaultValue: 'awsUsEast1', description: 'The region ID', )
+    string(name: 'region',          defaultValue: 'us-east-1',  description: 'The region ID', )
    ])
 ])
 
