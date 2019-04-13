@@ -41,6 +41,8 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
   private String  releaseTrack_
   private String  station_
   private String  buildId_
+  private String  logGroup_
+  
   
   public FugueDeploy(FuguePipeline pipeLine, String task, String awsRegion)
   {
@@ -84,6 +86,13 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
     return this
   }
   
+  public FugueDeploy withLogGroup(String s)
+  {
+    logGroup_ = s
+    
+    return this
+  }
+  
   public FugueDeploy withDockerLabel(String s)
   {
     dockerLabel_ = s
@@ -120,6 +129,8 @@ class FugueDeploy extends FuguePipelineTask implements Serializable
 //    cluster_            = environmentType_ + '-' + environment_ + '-' + region_
     cluster_            = pipeLine_.getEnvironmentTypeConfig(environmentType_).getClusterId()
     station_            = s.name
+    logGroup_           = pipeLine_.logGroupName(environmentType_, environment_, podName_, servicename_)
+    
     
     return this
   }
@@ -199,7 +210,6 @@ docker push ${tgtServiceImage}
     if(environment_ != null)
       taskDefFamily = taskDefFamily + '-' + environment_
       
-    String logGroup         = pipeLine_.useRootCredentials ? pipeLine_.globalNamePrefix_ + 'fugue-deploy' : pipeLine_.logGroupName(environmentType_, environment_, podName_, servicename_)
     String consulToken
     String gitHubToken
     
@@ -232,7 +242,7 @@ podName         ${podName_}
 
 serviceImage    ${serviceImage}
 taskDefFamily   ${taskDefFamily}
-logGroup        ${logGroup}
+logGroup        ${logGroup_}
 ------------------------------------------------------------------------------------------------------------------------
 """   
     String networkMode = fargateLaunch_ ? 'awsvpc' : 'bridge'
@@ -263,7 +273,7 @@ logGroup        ${logGroup}
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "${logGroup}",
+                    "awslogs-group": "${logGroup_}",
                     "awslogs-region": "${awsRegion_}",
                     "awslogs-stream-prefix": "fugue-deploy"
                 }
