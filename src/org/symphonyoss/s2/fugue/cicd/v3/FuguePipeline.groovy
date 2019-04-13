@@ -843,7 +843,24 @@ environmentType ${environmentType}
 //        }
 //      }
         
-      if(!toolsDeploy) {
+      if(toolsDeploy) 
+      {
+        String accountId = getCredentialName(station.environmentType)
+    
+        FugueDeploy deploy = new FugueDeploy(this, 
+          "DeployConfig",
+          awsRegion)
+            .withConfigGitRepo(configGitOrg, configGitRepo, configGitBranch)
+            .withTrack(releaseTrack)
+            .withStation(station)
+            .withServiceName(serviceId_)
+            .withBuildId(buildId)
+            .withDockerLabel(':' + buildId)
+          
+        deploy.execute()
+      }
+      else
+      {
         deployInitContainers(station)
       
         if("Deploy".equals(fugueAction_)) // no point doing this if it's a delete
