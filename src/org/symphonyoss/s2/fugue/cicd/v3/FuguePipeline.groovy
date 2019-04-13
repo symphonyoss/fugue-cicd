@@ -1020,7 +1020,7 @@ docker push ${remoteImage}
         throw new IllegalStateException("Unknown environment type ${environmentType}")
       
       String localImage = name + ':' + release
-      String remoteImage = repo + name + ':' + release + '-' + buildId
+      String remoteImage = repo + name + ':' + buildId
       
       echo 'localImage=' + localImage
       echo 'remoteImage=' + remoteImage
