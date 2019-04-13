@@ -21,7 +21,8 @@ node
     stage('Preflight')
     {
       steps.sh 'aws --version'
-      
+      pipeLine.verifyCreds('dev')
+      pipeLine.verifyCreds(environmentType)
       pipeLine.toolsPreFlight()
     }
     stage('Create EnvironmentType')

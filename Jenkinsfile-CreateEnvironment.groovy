@@ -21,6 +21,8 @@ node
     
     stage('Preflight')
     {
+      pipeLine.verifyCreds('dev')
+      pipeLine.verifyCreds(environmentType)
       pipeLine.toolsPreFlight()
     }
     stage('Create Environment')
