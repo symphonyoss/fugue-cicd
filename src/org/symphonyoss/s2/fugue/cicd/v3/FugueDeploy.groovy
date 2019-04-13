@@ -362,21 +362,27 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
       String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
       String nextToken = ""
       int    limit=30
-      
       while(limit-- > 0)
       {
-        def logEvents = readJSON(text:
-          sh(returnStdout: true, script: 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
-        ' --log-stream-name fugue-deploy/' + taskDefFamily + '/' + taskId + 
-        nextToken
-          )
-        )
-        
-        nextToken = ' --next-token "' + logEvents."nextForwardToken" + '"'
-        
-        for(def event : logEvents."events")
+        try
         {
-          echo event."message"
+          def logEvents = readJSON(text:
+            sh(returnStdout: true, script: 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
+          ' --log-stream-name fugue-deploy/' + taskDefFamily + '/' + taskId + 
+          nextToken
+            )
+          )
+          
+          nextToken = ' --next-token "' + logEvents."nextForwardToken" + '"'
+          
+          for(def event : logEvents."events")
+          {
+            echo event."message"
+          }
+        }
+        catch(RuntimeException e)
+        {
+          echo 'No logs yet...'
         }
         
         sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + cluster_ +
@@ -410,8 +416,9 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
             throw new IllegalStateException('Init task fugue-deploy failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
           }
         }
-        throw new IllegalStateException('Timed out waiting for task fugue-deploy')
+        sleep 10
       }
+      throw new IllegalStateException('Timed out waiting for task fugue-deploy')
     }
     
     
