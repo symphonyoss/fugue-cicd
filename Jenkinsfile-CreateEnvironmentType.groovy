@@ -1,9 +1,9 @@
 @Library('fugue-cicd')
 
 
-import org.symphonyoss.s2.fugue.cicd.v2.FuguePipeline
-import org.symphonyoss.s2.fugue.cicd.v2.FugueDeploy
-import org.symphonyoss.s2.fugue.cicd.v2.CreateEnvironmentTypeTask
+import org.symphonyoss.s2.fugue.cicd.v3.FuguePipeline
+import org.symphonyoss.s2.fugue.cicd.v3.FugueDeploy
+import org.symphonyoss.s2.fugue.cicd.v3.CreateEnvironmentTypeTask
 
 properties([
   parameters([
@@ -15,7 +15,6 @@ node
 {
     FuguePipeline pipeLine = FuguePipeline.instance(env, steps)
       .withUseRootCredentials(true)  // We need to force use of root credentials
-      .withTeam('fugue')
       .withConfigGitRepo('SymphonyOSF', 'S2-fugue-config', 'master')
       .withToolsDeploy(true)
     
