@@ -322,7 +322,6 @@ logGroup        ${logGroup_}
       credentialsId: accountId_,
       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
     {
-      sh 'aws sts get-caller-identity'
       pipeLine_.createLogGroup(logGroup_)
       
       deleteOldTaskDefs(taskDefFamily)
@@ -361,37 +360,57 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
 """
       String taskArn = taskRun.tasks[0].taskArn
       String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
+      String nextToken = ""
+      int    limit=30
       
-      sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + cluster_ +
-        ' --tasks ' + taskArn
-      sh 'aws sts get-caller-identity'
-
-      def taskDescription = readJSON(text:
-        sh(returnStdout: true, script: 'aws --region us-east-1 ecs describe-tasks  --cluster ' + 
-          cluster_ +
-          ' --tasks ' + taskArn
+      while(limit-- > 0)
+      {
+        def logEvents = readJSON(text:
+          sh(returnStdout: true, script: 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
+        ' --log-stream-name fugue-deploy/' + taskDefFamily + '/' + taskId + 
+        nextToken
+          )
         )
-      )
-      
-      echo """
-Task run
-taskArn: ${taskDescription.tasks[0].taskArn}
-lastStatus: ${taskDescription.tasks[0].lastStatus}
-stoppedReason: ${taskDescription.tasks[0].stoppedReason}
-exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
-"""
-      //TODO: only print log if failed...
-      sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
-      ' --log-stream-name ' + taskDefFamily + '/' + taskDefFamily + '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/"$//\' | sed -e \'s/\\\\t/      /\''
-      if(taskDescription.tasks[0].containers[0].exitCode != 0) {
         
-        echo """
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Failed Task Description
-${taskDescription}
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-"""
-        throw new IllegalStateException('Init task fugue-deploy failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
+        nextToken = ' --next-token "' + logEvents."nextForwardToken" + '"'
+        
+        for(def event : logEvents."events")
+        {
+          echo event."message"
+        }
+        
+        sh 'aws --region us-east-1 ecs wait tasks-stopped --cluster ' + cluster_ +
+          ' --tasks ' + taskArn
+        sh 'aws sts get-caller-identity'
+  
+        def taskDescription = readJSON(text:
+          sh(returnStdout: true, script: 'aws --region us-east-1 ecs describe-tasks  --cluster ' + 
+            cluster_ +
+            ' --tasks ' + taskArn
+          )
+        )
+        
+        if("STOPPED".equals(${taskDescription.tasks[0].lastStatus}))
+        {
+          echo """
+  Task run
+  taskArn: ${taskDescription.tasks[0].taskArn}
+  lastStatus: ${taskDescription.tasks[0].lastStatus}
+  stoppedReason: ${taskDescription.tasks[0].stoppedReason}
+  exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
+  """
+          if(taskDescription.tasks[0].containers[0].exitCode != 0)
+          {
+            echo """
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Failed Task Description
+  ${taskDescription}
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  """
+            throw new IllegalStateException('Init task fugue-deploy failed with exit code ' + taskDescription.tasks[0].containers[0].exitCode)
+          }
+        }
+        throw new IllegalStateException('Timed out waiting for task fugue-deploy')
       }
     }
     
