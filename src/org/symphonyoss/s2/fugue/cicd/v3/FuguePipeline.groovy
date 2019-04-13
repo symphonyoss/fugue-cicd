@@ -739,13 +739,9 @@ environmentType ${environmentType}
   {
     echo 'Init Containers'
     
-    if(fugueCreate_)
-      deployInitContainers(station, Tenancy.MULTI)
+    deployInitContainers(station, Tenancy.MULTI)
     
     deployInitContainers(station, Tenancy.SINGLE)
-        
-    if(fugueDelete_)
-      deployInitContainers(station, Tenancy.MULTI)
       
 //    service_map.values().each
 //    {
@@ -826,37 +822,37 @@ environmentType ${environmentType}
     {
       echo "OK, lets do this!"
       
-      if(fugueCreate_)
-      {
-        boolean doMultiTenantConfig = true
-        
-        station.podNames.each {
-          String podName = it
-          
-          echo 'for environmentType=' + station.environmentType +
-          ', environment=' + station.environment + ', podName ' + podName
-          
-          deployConfig(station, podName, 'DeployConfig')
-          doMultiTenantConfig = false
-  
-        }
-        
-        if(doMultiTenantConfig)
-        {
-          deployConfig(station, null, 'DeployConfig')
-        }
-      }
+//      if("Deploy".equals(fugueAction_))
+//      {
+//        boolean doMultiTenantConfig = true
+//        
+//        station.podNames.each {
+//          String podName = it
+//          
+//          echo 'for environmentType=' + station.environmentType +
+//          ', environment=' + station.environment + ', podName ' + podName
+//          
+//          deployConfig(station, podName, 'DeployConfig')
+//          doMultiTenantConfig = false
+//  
+//        }
+//        
+//        if(doMultiTenantConfig)
+//        {
+//          deployConfig(station, null, 'DeployConfig')
+//        }
+//      }
         
       if(!toolsDeploy) {
         deployInitContainers(station)
       
-        if(fugueCreate_) // no point doing this if it's a delete
+        if("Deploy".equals(fugueAction_)) // no point doing this if it's a delete
         {
           // this just creates task defs
           deployServiceContainers(station)
         }
         
-        // this actually deploys service containers
+        // this calls FugueDeploy to actually deploys service containers
         fugueDeployStation(releaseTrack, station)
         
         
