@@ -275,7 +275,7 @@ logGroup        ${logGroup_}
                 "options": {
                     "awslogs-group": "${logGroup_}",
                     "awslogs-region": "${awsRegion_}",
-                    "awslogs-stream-prefix": "fugue-deploy"
+                    "awslogs-stream-prefix": "${pipeLine_.fugueLogGroupName_}"
                 }
             },
             "environment": [
@@ -380,7 +380,7 @@ stoppedReason: ${taskDescription.tasks[0].stoppedReason}
 exitCode: ${taskDescription.tasks[0].containers[0].exitCode}
 """
       //TODO: only print log if failed...
-      sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup +
+      sh 'aws --region us-east-1 logs get-log-events --log-group-name ' + logGroup_ +
       ' --log-stream-name ' + taskDefFamily + '/' + taskDefFamily + '/' + taskId + ' | fgrep "message" | sed -e \'s/ *"message": "//\' | sed -e \'s/"$//\' | sed -e \'s/\\\\t/      /\''
       if(taskDescription.tasks[0].containers[0].exitCode != 0) {
         
