@@ -225,9 +225,6 @@ launchType      ${launchType_}
 
 action          ${action_}
 dryRun          ${pipeLine_.fugueDryRun_}
-create          ${pipeLine_.fugueCreate_}
-delete          ${pipeLine_.fugueDelete_}
-deletePod       ${pipeLine_.fugueDeletePod_}
 environmentType ${environmentType_}
 environment     ${environment_}
 region          ${region_}
@@ -283,9 +280,6 @@ logGroup        ${logGroup}
     addIfNotNull("FUGUE_SERVICE", servicename_)
     addIfNotNull("FUGUE_ACTION", action_)
     addIfNotNull("FUGUE_DRY_RUN", pipeLine_.fugueDryRun_)
-    addIfNotNull("FUGUE_CREATE", pipeLine_.fugueCreate_)
-    addIfNotNull("FUGUE_DELETE", pipeLine_.fugueDelete_)
-    addIfNotNull("FUGUE_DELETE_POD", pipeLine_.fugueDeletePod_)
     addIfNotNull("FUGUE_POD_NAME", podName_)
     addIfNotNull("FUGUE_PRIMARY_ENVIRONMENT", primaryEnvironment_)
     addIfNotNull("FUGUE_PRIMARY_REGION", primaryRegion_)
