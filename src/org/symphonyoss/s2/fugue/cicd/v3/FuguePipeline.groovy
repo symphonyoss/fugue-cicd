@@ -358,7 +358,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     echo """====================================
 Preflight
-echo 'FuguePipeline V3.5'
+echo 'FuguePipeline V3.6'
 Build Action ${env_.buildAction}
 """
     switch(env_."dryRun")
@@ -825,7 +825,7 @@ environmentType ${environmentType}
   {
     Station station = stationName == null ? deployStation: stationMap.get(stationName)
     
-    echo 'Deploy for ' + station
+    echo "Deploy for stationName=${stationName} station=${station} podNames=${station.podNames}"
     
     echo "ValidPurpose=${getDeployTo(station.environmentType)} requiredPurpose=${requiredPurpose}"
     if(getDeployTo(station.environmentType).isValidFor(requiredPurpose))
