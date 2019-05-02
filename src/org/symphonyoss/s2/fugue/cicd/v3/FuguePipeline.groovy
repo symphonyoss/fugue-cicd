@@ -1101,6 +1101,8 @@ docker push ${remoteImage}
   
   public void fugueDeployStation(String releaseTrack, Station station)
   {
+    echo "fugueDeployStation(releaseTrack=${releaseTrack}, station=${station})"
+    
     String accountId = getCredentialName(station.environmentType)
     
     FugueDeploy deploy = new FugueDeploy(this, 
@@ -1111,6 +1113,15 @@ docker push ${remoteImage}
         .withStation(station)
         .withServiceName(serviceId_)
         .withBuildId(buildId)
+    
+    if(station.name == null)
+    {
+      for(String name : station.getPodNames())
+      {
+        deploy.withPodName(name)
+        echo "add podName ${name}"
+      }
+    }
     
     if(toolsDeploy)
       deploy.withDockerLabel(':' + buildId)
