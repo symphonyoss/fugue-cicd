@@ -437,7 +437,7 @@ Build Action ${env_.buildAction}
         targetEnvironmentType_ = env_."environmentType"
         break;
         
-      case 'Undeploy':
+      case 'Undeploy Pod':
         createDeployStation()
         deployTo(env_."environmentType")
         targetEnvironmentType_ = env_."environmentType"
