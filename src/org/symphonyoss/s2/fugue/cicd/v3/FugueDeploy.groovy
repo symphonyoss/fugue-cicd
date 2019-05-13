@@ -387,6 +387,8 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
             l = l + event."message" + '\n'
             notDone = true; // go around at least one more time to get more log data
           }
+          
+          echo l
         }
         catch(Exception e)
         {
