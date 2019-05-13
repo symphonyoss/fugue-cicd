@@ -373,6 +373,11 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
             )
           )
           
+          echo "TRACE 1"
+          echo "logEvents=${logEvents}"
+          
+          echo "TRACE 2"
+          
           nextToken = ' --next-token "' + logEvents."nextForwardToken" + '"'
           String l = ""
           
@@ -380,7 +385,10 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
           {
             l = l + event."message" + '\n'
           }
+          
+          echo "TRACE 3"
           echo l
+          echo "TRACE 4"
         }
         catch(Exception e)
         {
