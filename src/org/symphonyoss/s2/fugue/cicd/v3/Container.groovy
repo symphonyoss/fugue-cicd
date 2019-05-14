@@ -52,7 +52,7 @@ class Container extends FuguePipelineTask implements Serializable {
   }
   
   String getImage() {
-    containerImage == null ? name_ : containerImage
+    containerImage == null ? name : containerImage
   }
 
   public Container withName(String n) {
