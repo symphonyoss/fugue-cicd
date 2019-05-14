@@ -358,7 +358,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     echo """====================================
 Preflight
-echo 'FuguePipeline V3.6'
+echo 'FuguePipeline V3.7'
 Build Action ${env_.buildAction}
 """
     switch(env_."dryRun")

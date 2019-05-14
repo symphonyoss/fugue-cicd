@@ -101,20 +101,20 @@ class Container extends FuguePipelineTask implements Serializable {
   
   void runTask(Station station, String podName)
   {
-    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
-    
-    echo 'runTask podName=' + podName + ", station=" + station.toString() + ', this=' + toString()
-    echo 'envOverride=' + envOverride
-    echo """
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-station.environment = ${station.environment}
-podName=${podName}
-
-pods[station.environment][podName]['ecs-taskdef-family']  = ${pods[station.environment][podName]['ecs-taskdef-family']}
-pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.environment][podName]['ecs-taskdef-revision']}
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-"""
+//    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
+//    
+//    echo 'runTask podName=' + podName + ", station=" + station.toString() + ', this=' + toString()
+//    echo 'envOverride=' + envOverride
+//    echo """
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//station.environment = ${station.environment}
+//podName=${podName}
+//
+//pods[station.environment][podName]['ecs-taskdef-family']  = ${pods[station.environment][podName]['ecs-taskdef-family']}
+//pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.environment][podName]['ecs-taskdef-revision']}
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+//"""
 //    if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
 //       pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
 //        withCredentials([[
@@ -192,105 +192,75 @@ pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.envi
 //    }
   }
   
-  private void updateService(Station station, String podName) {
-    echo 'updateService'
-      if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
-         pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
-          updateServiceTaskDef(station, podName,
-                               pods[station.environment][podName]['ecs-taskdef-family']+':'+
-                               pods[station.environment][podName]['ecs-taskdef-revision'],
-                               1)
-      }
-  }
-  
-  private void updateServiceTaskDef(Station station, String podName,
-    String taskdef=null, int desired=-1)
-  {
-    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
-    
-    echo 'updateServiceTaskDef'
-    withCredentials([[
-      $class: 'AmazonWebServicesCredentialsBinding',
-      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-      credentialsId: pipeLine_.getCredentialName(station.environmentType),
-      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
-    {
-      sh 'aws --region us-east-1 ecs update-service --cluster '+clusterId+' --service '+serviceFullName(station, podName)+(taskdef!=null?(' --task-definition '+serviceFullName(station, podName)):'')+(desired>=0?(' --desired-count '+desired):'')+' > ecs-service-update-'+station.environment+'-'+podName+'.json'
-    }
-  }
-  
-  private void createService(Station station, String podName, int desiredCount = 1)
-  {
-    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
- 
-       echo 'createService'
-      if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
-         pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
-          withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            credentialsId: pipeLine_.getCredentialName(station.environmentType),
-            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-            ]])
-          {
-              String logGroupName = pipeLine_.createLogGroup(station, podName);
-              
-              
-              //TODO: this needs to move to DeployConfig and we need to make it work with multiple containers, we
-              // need to create a separate ELB for each container I think
-//              sh 'aws --region us-east-1 elbv2 create-target-group --name '+serviceFullName(station, podName)+' --health-check-path ' + healthCheckPath + ' --protocol HTTP --port '+port+' --vpc-id '+ECSClusterMaps.env_cluster[station.environment]['vpcid'] + ' | tee aws-ialb-tg-'+station.environment+'.json'
-//              def ialb_tg = readJSON file:'aws-ialb-tg-'+station.environment+'.json'
-//              
-//              echo 'ialb_tg=' + ialb_tg
-//              
-//              def random_prio = ((new java.util.Random()).nextInt(50000)+1)
-//              def LB_CONDITIONS='[{\\"Field\\":\\"host-header\\",\\"Values\\":[\\"'+podName+'.'+ECSClusterMaps.env_cluster[station.environment]['dns_suffix']+'\\"]},{\\"Field\\":\\"path-pattern\\",\\"Values\\":[\\"'+path+'*\\"]}]'
-//              sh 'aws --region us-east-1 elbv2 create-rule --listener-arn '+ECSClusterMaps.env_cluster[station.environment]['ialb_larn']+' --conditions \"'+LB_CONDITIONS+'\" --priority '+random_prio+' --actions \"Type=forward,TargetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+'\"'
-//              // def lb_rule_sh = 'aws-ialb-rule-'+env+'.sh'
-//              // writeFile file:lb_rule_sh, text:'aws --region us-east-1 elbv2 create-rule --listener-arn '+ECSClusterMaps.env_cluster[environment]['ialb_larn']+' --conditions "'+LB_CONDITIONS+'" --priority '+3273+' --actions "Type=forward,TargetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+'"'
-//              // sh 'ls -alh'
-//              // sh 'cat '+lb_rule_sh
-//              // sh 'sh '+lb_rule_sh
-              sh 'aws --region us-east-1 ecs create-service --cluster ' + clusterId +
-                ' --service-name ' + serviceFullName(station, podName) +
-                ' --task-definition '+serviceFullName(station, podName)+
-                ' --desired-count ' + desiredCount
-// put this back when loadbalance is fixed                + ' --role ecsServiceRole --load-balancers "targetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+',containerName='+serviceFullName(station, podName)+',containerPort='+port+'"'
-
-          }
-      }
-  }
-  
-//  private def getServiceState(Station station, String podName) {
-//    def retval
-//    try {
-//        withCredentials([[
-//          $class: 'AmazonWebServicesCredentialsBinding',
-//          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-//          credentialsId: pipeLine_.getCredentialName(station.environmentType),
-//          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-//          ]])
-//        {
-//            String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
+//  private void updateService(Station station, String podName) {
+//    echo 'updateService'
+//      if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
+//         pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
+//          updateServiceTaskDef(station, podName,
+//                               pods[station.environment][podName]['ecs-taskdef-family']+':'+
+//                               pods[station.environment][podName]['ecs-taskdef-revision'],
+//                               1)
+//      }
+//  }
+//  
+//  private void updateServiceTaskDef(Station station, String podName,
+//    String taskdef=null, int desired=-1)
+//  {
+//    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
 //    
-//            sh 'aws --region us-east-1 ecs describe-services --cluster '+clusterId+' --services '+serviceFullName(station, podName)+' > ecs-service-'+station.environment+'-'+podName+'.json'
-//            def svcstate = readJSON file: 'ecs-service-'+station.environment+'-'+podName+'.json'
-//            echo """
-//ECS Service State:    ${svcstate.services[0].status}
-//ECS Service Running:  ${svcstate.services[0].runningCount}
-//ECS Service Pending:  ${svcstate.services[0].pendingCount}
-//ECS Service Desired:  ${svcstate.services[0].desiredCount}
-//ECS Service Event[0]: ${svcstate.services[0].events.size()>=1?svcstate.services[0].events[0].message:''}
-//ECS Service Event[1]: ${svcstate.services[0].events.size()>=2?svcstate.services[0].events[1].message:''}
-//ECS Service Event[2]: ${svcstate.services[0].events.size()>=3?svcstate.services[0].events[2].message:''}
-//"""
-//            retval = svcstate.services[0]
-//        }
-//    } catch(Exception e) {
-//        echo 'Failed Getting Service State: '+e
+//    echo 'updateServiceTaskDef'
+//    withCredentials([[
+//      $class: 'AmazonWebServicesCredentialsBinding',
+//      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//      credentialsId: pipeLine_.getCredentialName(station.environmentType),
+//      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
+//    {
+//      sh 'aws --region us-east-1 ecs update-service --cluster '+clusterId+' --service '+serviceFullName(station, podName)+(taskdef!=null?(' --task-definition '+serviceFullName(station, podName)):'')+(desired>=0?(' --desired-count '+desired):'')+' > ecs-service-update-'+station.environment+'-'+podName+'.json'
 //    }
-//    return retval
-//}
+//  }
+  
+//  private void createService(Station station, String podName, int desiredCount = 1)
+//  {
+//    String clusterId = pipeLine_.getEnvironmentTypeConfig(station.environmentType).getClusterId();
+// 
+//       echo 'createService'
+//      if(pods[station.environment][podName]['ecs-taskdef-family'] != null &&
+//         pods[station.environment][podName]['ecs-taskdef-revision'] != null) {
+//          withCredentials([[
+//            $class: 'AmazonWebServicesCredentialsBinding',
+//            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//            credentialsId: pipeLine_.getCredentialName(station.environmentType),
+//            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+//            ]])
+//          {
+//              String logGroupName = pipeLine_.createLogGroup(station, podName);
+//              
+//              
+//              //TODO: this needs to move to DeployConfig and we need to make it work with multiple containers, we
+//              // need to create a separate ELB for each container I think
+////              sh 'aws --region us-east-1 elbv2 create-target-group --name '+serviceFullName(station, podName)+' --health-check-path ' + healthCheckPath + ' --protocol HTTP --port '+port+' --vpc-id '+ECSClusterMaps.env_cluster[station.environment]['vpcid'] + ' | tee aws-ialb-tg-'+station.environment+'.json'
+////              def ialb_tg = readJSON file:'aws-ialb-tg-'+station.environment+'.json'
+////              
+////              echo 'ialb_tg=' + ialb_tg
+////              
+////              def random_prio = ((new java.util.Random()).nextInt(50000)+1)
+////              def LB_CONDITIONS='[{\\"Field\\":\\"host-header\\",\\"Values\\":[\\"'+podName+'.'+ECSClusterMaps.env_cluster[station.environment]['dns_suffix']+'\\"]},{\\"Field\\":\\"path-pattern\\",\\"Values\\":[\\"'+path+'*\\"]}]'
+////              sh 'aws --region us-east-1 elbv2 create-rule --listener-arn '+ECSClusterMaps.env_cluster[station.environment]['ialb_larn']+' --conditions \"'+LB_CONDITIONS+'\" --priority '+random_prio+' --actions \"Type=forward,TargetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+'\"'
+////              // def lb_rule_sh = 'aws-ialb-rule-'+env+'.sh'
+////              // writeFile file:lb_rule_sh, text:'aws --region us-east-1 elbv2 create-rule --listener-arn '+ECSClusterMaps.env_cluster[environment]['ialb_larn']+' --conditions "'+LB_CONDITIONS+'" --priority '+3273+' --actions "Type=forward,TargetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+'"'
+////              // sh 'ls -alh'
+////              // sh 'cat '+lb_rule_sh
+////              // sh 'sh '+lb_rule_sh
+//              sh 'aws --region us-east-1 ecs create-service --cluster ' + clusterId +
+//                ' --service-name ' + serviceFullName(station, podName) +
+//                ' --task-definition '+serviceFullName(station, podName)+
+//                ' --desired-count ' + desiredCount
+//// put this back when loadbalance is fixed                + ' --role ecsServiceRole --load-balancers "targetGroupArn='+ialb_tg.TargetGroups[0].TargetGroupArn+',containerName='+serviceFullName(station, podName)+',containerPort='+port+'"'
+//
+//          }
+//      }
+//  }
+  
   
   String fugueConfig(Station station, String podName)
   {
@@ -312,111 +282,111 @@ station.region =${station.region}
   
   private void registerTaskDef(Station station, String podName)
   {
-    if(pods[station.environment] == null) pods[station.environment] = [:]
-    if(pods[station.environment][podName] == null) pods[station.environment][podName] = [:]
-
-    // Check if we were given a template file and allow it to override
-    // the default template
-    def taskdef_template
-    if(ecstemplate != null && fileExists(ecstemplate)) {
-        taskdef_template = readFile ecstemplate
-    } else {
-        taskdef_template = defaultTaskDefTemplate(port>0)
-    }
-    
-    // dev-s2dev3-sym-ac8-s2fwd-init-role
-    String baseRoleName = podName == null ? 
-      'sym-s2-' + station.environmentType + '-' + station.environment + '-' + pipeLine_.serviceId_ + '-' + containerRole :
-      'sym-s2-' + station.environmentType + '-' + station.environment + '-' + podName + '-' + pipeLine_.serviceId_ + '-' + containerRole
-    
-    String roleArn = 'arn:aws:iam::' + pipeLine_.aws_identity[pipeLine_.getCredentialName(station.environmentType)].Account + ':role/' + baseRoleName + '-role'
-    
-    def template_args = 
-    [
-      'ENV':'dev',
-      'REGION':'ause1',
-      'AWSREGION':pipeLine_.awsRegion,
-      'FUGUE_ENVIRONMENT_TYPE':station.environmentType,
-      'FUGUE_ENVIRONMENT':station.environment,
-      'FUGUE_REGION':station.region,
-      'FUGUE_CONFIG':fugueConfig(station, podName),
-      'FUGUE_SERVICE':pipeLine_.serviceId_,
-      'FUGUE_PRIMARY_ENVIRONMENT':station.primaryEnvironment,
-      'FUGUE_PRIMARY_REGION':station.primaryRegion,
-      'TASK_ROLE_ARN':roleArn,
-      'LOG_GROUP':'',
-      'SERVICE_ID':pipeLine_.serviceId_,
-      'SERVICE':serviceFullName(station, podName),
-      'SERVICE_PORT':port,
-      'FUGUE_POD_NAME':podName,
-      'MEMORY':memory_,
-      'JVM_HEAP':jvmHeap_,
-//      'PERSIST_POD_ID':podName+'-'+station.environment+'-glb-ause1-1',
-//      'LEGACY_POD_ID':podName+'-'+station.environment+'-glb-ause1-1',
-      'SERVICE_IMAGE':pipeLine_.docker_repo[station.environmentType]+name + pipeLine_.dockerLabel,
-      'CONSUL_TOKEN':'',
-      'GITHUB_TOKEN':''
-    ]
-    
-    echo 'station.primaryEnvironment is ' + station.primaryEnvironment
-    echo 'template_args is ' + template_args
-
-    withCredentials([string(credentialsId: 'sym-consul-'+station.environmentType,
-    variable: 'CONSUL_TOKEN')])
-    {
-      // TODO: CONSUL_TOKEN needs to be moved
-      template_args['CONSUL_TOKEN'] = sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
-    }
-    
-    withCredentials([string(credentialsId: 'symphonyjenkinsauto-token',
-    variable: 'GITHUB_TOKEN')])
-    {
-      template_args['GITHUB_TOKEN'] = sh(returnStdout:true, script:'echo -n $GITHUB_TOKEN').trim()
-    }
-    
-    withCredentials([[
-      $class: 'AmazonWebServicesCredentialsBinding',
-      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-      credentialsId: pipeLine_.getCredentialName(station.environmentType),
-      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
-    {
-
-      template_args['LOG_GROUP'] = pipeLine_.createLogGroup(station, podName)
-      
-        //def taskdef = (new groovy.text.SimpleTemplateEngine()).createTemplate(taskdef_template).make(template_args).toString()
-        def taskdef = (new org.apache.commons.lang3.text.StrSubstitutor(template_args)).replace(taskdef_template)
-        //echo taskdef
-        def taskdef_file = 'ecs-'+station.environment+'-'+podName+'.json'
-        writeFile file:taskdef_file, text:taskdef
-        
-//          echo 'taskdef file is ' + taskdef_file
-          echo 'V1 taskdef is ' + taskdef
-          echo 'V1 station.primaryEnvironment is ' + station.primaryEnvironment
-          echo 'V1 template_args is ' + template_args
-        
-            sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-'+station.environment+'-'+podName+'.json'
-            def tdefout = readJSON file: 'ecs-taskdef-out-'+station.environment+'-'+podName+'.json'
-            pods[station.environment][podName]['ecs-taskdef-arn'] = tdefout.taskDefinition.taskDefinitionArn
-            pods[station.environment][podName]['ecs-taskdef-family'] = tdefout.taskDefinition.family
-            pods[station.environment][podName]['ecs-taskdef-revision'] = tdefout.taskDefinition.revision
-            echo """
-ECS Task Definition ARN:      ${pods[station.environment][podName]['ecs-taskdef-arn']}
-ECS Task Definition Family:   ${pods[station.environment][podName]['ecs-taskdef-family']}
-ECS Task Definition Revision: ${pods[station.environment][podName]['ecs-taskdef-revision']}
-"""
-            
-echo """
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-station.environment = ${station.environment}
-podName=${podName}
-
-pods[station.environment][podName]['ecs-taskdef-family']  = ${pods[station.environment][podName]['ecs-taskdef-family']}
-pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.environment][podName]['ecs-taskdef-revision']}
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-"""
-      
-    }
+//    if(pods[station.environment] == null) pods[station.environment] = [:]
+//    if(pods[station.environment][podName] == null) pods[station.environment][podName] = [:]
+//
+//    // Check if we were given a template file and allow it to override
+//    // the default template
+//    def taskdef_template
+//    if(ecstemplate != null && fileExists(ecstemplate)) {
+//        taskdef_template = readFile ecstemplate
+//    } else {
+//        taskdef_template = defaultTaskDefTemplate(port>0)
+//    }
+//    
+//    // dev-s2dev3-sym-ac8-s2fwd-init-role
+//    String baseRoleName = podName == null ? 
+//      'sym-s2-' + station.environmentType + '-' + station.environment + '-' + pipeLine_.serviceId_ + '-' + containerRole :
+//      'sym-s2-' + station.environmentType + '-' + station.environment + '-' + podName + '-' + pipeLine_.serviceId_ + '-' + containerRole
+//    
+//    String roleArn = 'arn:aws:iam::' + pipeLine_.aws_identity[pipeLine_.getCredentialName(station.environmentType)].Account + ':role/' + baseRoleName + '-role'
+//    
+//    def template_args = 
+//    [
+//      'ENV':'dev',
+//      'REGION':'ause1',
+//      'AWSREGION':pipeLine_.awsRegion,
+//      'FUGUE_ENVIRONMENT_TYPE':station.environmentType,
+//      'FUGUE_ENVIRONMENT':station.environment,
+//      'FUGUE_REGION':station.region,
+//      'FUGUE_CONFIG':fugueConfig(station, podName),
+//      'FUGUE_SERVICE':pipeLine_.serviceId_,
+//      'FUGUE_PRIMARY_ENVIRONMENT':station.primaryEnvironment,
+//      'FUGUE_PRIMARY_REGION':station.primaryRegion,
+//      'TASK_ROLE_ARN':roleArn,
+//      'LOG_GROUP':'',
+//      'SERVICE_ID':pipeLine_.serviceId_,
+//      'SERVICE':serviceFullName(station, podName),
+//      'SERVICE_PORT':port,
+//      'FUGUE_POD_NAME':podName,
+//      'MEMORY':memory_,
+//      'JVM_HEAP':jvmHeap_,
+////      'PERSIST_POD_ID':podName+'-'+station.environment+'-glb-ause1-1',
+////      'LEGACY_POD_ID':podName+'-'+station.environment+'-glb-ause1-1',
+//      'SERVICE_IMAGE':pipeLine_.docker_repo[station.environmentType]+name + pipeLine_.dockerLabel,
+//      'CONSUL_TOKEN':'',
+//      'GITHUB_TOKEN':''
+//    ]
+//    
+//    echo 'station.primaryEnvironment is ' + station.primaryEnvironment
+//    echo 'template_args is ' + template_args
+//
+//    withCredentials([string(credentialsId: 'sym-consul-'+station.environmentType,
+//    variable: 'CONSUL_TOKEN')])
+//    {
+//      // TODO: CONSUL_TOKEN needs to be moved
+//      template_args['CONSUL_TOKEN'] = sh(returnStdout:true, script:'echo -n $CONSUL_TOKEN').trim()
+//    }
+//    
+//    withCredentials([string(credentialsId: 'symphonyjenkinsauto-token',
+//    variable: 'GITHUB_TOKEN')])
+//    {
+//      template_args['GITHUB_TOKEN'] = sh(returnStdout:true, script:'echo -n $GITHUB_TOKEN').trim()
+//    }
+//    
+//    withCredentials([[
+//      $class: 'AmazonWebServicesCredentialsBinding',
+//      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//      credentialsId: pipeLine_.getCredentialName(station.environmentType),
+//      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']])
+//    {
+//
+//      template_args['LOG_GROUP'] = pipeLine_.createLogGroup(station, podName)
+//      
+//        //def taskdef = (new groovy.text.SimpleTemplateEngine()).createTemplate(taskdef_template).make(template_args).toString()
+//        def taskdef = (new org.apache.commons.lang3.text.StrSubstitutor(template_args)).replace(taskdef_template)
+//        //echo taskdef
+//        def taskdef_file = 'ecs-'+station.environment+'-'+podName+'.json'
+//        writeFile file:taskdef_file, text:taskdef
+//        
+////          echo 'taskdef file is ' + taskdef_file
+//          echo 'V1 taskdef is ' + taskdef
+//          echo 'V1 station.primaryEnvironment is ' + station.primaryEnvironment
+//          echo 'V1 template_args is ' + template_args
+//        
+//            sh 'aws --region us-east-1 ecs register-task-definition --cli-input-json file://'+taskdef_file+' > ecs-taskdef-out-'+station.environment+'-'+podName+'.json'
+//            def tdefout = readJSON file: 'ecs-taskdef-out-'+station.environment+'-'+podName+'.json'
+//            pods[station.environment][podName]['ecs-taskdef-arn'] = tdefout.taskDefinition.taskDefinitionArn
+//            pods[station.environment][podName]['ecs-taskdef-family'] = tdefout.taskDefinition.family
+//            pods[station.environment][podName]['ecs-taskdef-revision'] = tdefout.taskDefinition.revision
+//            echo """
+//ECS Task Definition ARN:      ${pods[station.environment][podName]['ecs-taskdef-arn']}
+//ECS Task Definition Family:   ${pods[station.environment][podName]['ecs-taskdef-family']}
+//ECS Task Definition Revision: ${pods[station.environment][podName]['ecs-taskdef-revision']}
+//"""
+//            
+//echo """
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//station.environment = ${station.environment}
+//podName=${podName}
+//
+//pods[station.environment][podName]['ecs-taskdef-family']  = ${pods[station.environment][podName]['ecs-taskdef-family']}
+//pods[station.environment][podName]['ecs-taskdef-revision'] = ${pods[station.environment][podName]['ecs-taskdef-revision']}
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+//"""
+//      
+//    }
   }
   
   private String serviceFullName(Station station, String podName)
