@@ -362,8 +362,14 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
       String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
       String nextToken = ""
       int    limit=30
-      while(limit-- > 0)
+      
+      boolean notDone = true;
+      boolean stopped = false;
+      boolean taskFailed = false;
+      
+      while(notDone)
       {
+        notDone = !(stopped || limit-- < 0);
         try
         {
           def logEvents = readJSON(text:
@@ -379,7 +385,9 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
           for(def event : logEvents."events")
           {
             l = l + event."message" + '\n'
+            notDone = true; // go around at least one more time to get more log data
           }
+          
           echo l
         }
         catch(Exception e)
@@ -396,6 +404,8 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
         
         if("STOPPED".equals(taskDescription.tasks[0].lastStatus))
         {
+          stopped = true;
+            
           echo """
   Task run
   taskArn: ${taskDescription.tasks[0].taskArn}
@@ -405,6 +415,8 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
   """
           if(taskDescription.tasks[0].containers[0].exitCode != 0)
           {
+                taskFailed = true;
+                
             echo """
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Failed Task Description
@@ -416,9 +428,19 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
           
           return
         }
-        sleep 10000
+        if(notDone)
+        {
+          sleep 10000
+        }
       }
-      throw new IllegalStateException('Timed out waiting for task fugue-deploy')
+
+      if(taskFailed)
+        throw new IllegalStateException("TASK FAILED");
+
+      if(stopped)
+        return;
+      
+      throw new IllegalStateException("Timed out.");
     }
     
     
