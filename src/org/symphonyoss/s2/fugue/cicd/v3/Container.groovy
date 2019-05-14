@@ -2,6 +2,7 @@ package org.symphonyoss.s2.fugue.cicd.v3
 
 class Container extends FuguePipelineTask implements Serializable {
   private String                name
+  private String                containerImage
   private Tenancy               tenancy         = Tenancy.SINGLE
   private ContainerType         containerType   = ContainerType.SERVICE
   private String                healthCheckPath = '/HealthCheck'
@@ -22,6 +23,7 @@ class Container extends FuguePipelineTask implements Serializable {
   public String toString() {
     "    {" +
         "\n      name             =" + name +
+        "\n      image             =" + getImage() +
         "\n      tenancy          =" + tenancy +
         "\n      containerType    =" + containerType +
         "\n      healthCheckPath  =" + healthCheckPath +
@@ -42,6 +44,15 @@ class Container extends FuguePipelineTask implements Serializable {
   
   String getRole() {
     containerRole == null ? pipeLine_.serviceId_ : containerRole
+  }
+
+  public Container withImage(String n) {
+    containerImage = n
+    return this
+  }
+  
+  String getImage() {
+    containerImage == null ? name_ : containerImage
   }
 
   public Container withName(String n) {

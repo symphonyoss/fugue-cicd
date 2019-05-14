@@ -505,6 +505,7 @@ fbuildAction    ${env_.buildAction}
 
         Container ms = new Container(this)
             .withName(name)
+            .withImage(containerDef."image")
             .withRole(containerDef."role")
             .withTenancy(Tenancy.parse(containerDef."tenancy"))
             .withContainerType(ContainerType.parse(containerDef."containerType"))
@@ -630,12 +631,12 @@ environmentType ${environmentType}
             case ContainerType.INIT:
               try
               {
-                  sh "aws --region ${awsRegion} ecr describe-repositories --repository-names ${globalNamePrefix_}${serviceId_}/${ms.name}"
+                  sh "aws --region ${awsRegion} ecr describe-repositories --repository-names ${globalNamePrefix_}${serviceId_}/${ms.image}"
               }
               catch(Exception e)
               {
                   echo 'Exception ' + e.toString()
-                  sh "aws --region ${awsRegion} ecr create-repository --repository-name ${globalNamePrefix_}${serviceId_}/${ms.name}"
+                  sh "aws --region ${awsRegion} ecr create-repository --repository-name ${globalNamePrefix_}${serviceId_}/${ms.image}"
               }
               break;
               
@@ -923,8 +924,8 @@ environmentType ${environmentType}
             if(repo == null)
               throw new IllegalStateException("Unknown environment type ${pullFrom_}")
             
-            String localImage = ms.name + ':' + release
-            String remoteImage = repo + ms.name + ':' + buildId
+            String localImage = ms.image + ':' + release
+            String remoteImage = repo + ms.image + ':' + buildId
             
             sh 'docker pull ' + remoteImage
             break;
@@ -937,8 +938,8 @@ environmentType ${environmentType}
             secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
             {
               sh 'aws sts get-caller-identity'
-              //sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId}.jar ${ms.name}/target/${ms.name}-${buildId}.jar"
-              sh "aws s3 sync s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_} ${ms.name}/target --exclude \"*\" --include ${ms.name}-${buildId}.jar"
+              //sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar ${ms.image}/target/${ms.image}-${buildId}.jar"
+              sh "aws s3 sync s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_} ${ms.image}/target --exclude \"*\" --include ${ms.image}-${buildId}.jar"
             }
             break;
         }
@@ -970,8 +971,8 @@ environmentType ${environmentType}
     
             if(pullFrom_ == null)
             {
-              String localImage = ms.name + ':' + release
-              String remoteImage = pushRepo + ms.name + ':' + buildId
+              String localImage = ms.image + ':' + release
+              String remoteImage = pushRepo + ms.image + ':' + buildId
               
               sh """
 docker tag ${localImage} ${remoteImage}
@@ -982,7 +983,7 @@ docker push ${remoteImage}
             {
               String pullRepo = docker_repo[pullFrom_]
               
-              String baseImage = ms.name + ':' + buildId
+              String baseImage = ms.image + ':' + buildId
               String localImage = pullRepo + baseImage
               String remoteImage = pushRepo + baseImage
               
@@ -1003,7 +1004,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.name}/target/${ms.name}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId}.jar"
+                sh "aws s3 cp ${ms.image}/target/${ms.image}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
               }
             }
             else
@@ -1015,7 +1016,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.name}/target/${ms.name}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.name}-${buildId}.jar"
+                sh "aws s3 cp ${ms.image}/target/${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
               }
             }
             break;
