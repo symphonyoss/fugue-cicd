@@ -299,7 +299,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       loadConfig()
     }
     
-    if(!verifyCreds('dev'))
+    if(!verifyCreds('dev', true))
     {
       abort("No dev credentials")
     }
