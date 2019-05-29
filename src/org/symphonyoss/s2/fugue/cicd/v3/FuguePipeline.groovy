@@ -573,7 +573,7 @@ serviceGitBranch is ${serviceGitBranch}
     
     verifyCreds_[pullFrom_] = true
     
-    if(!verifyCreds('dev'))
+    if(!verifyCreds('dev', true))
     {
       abort("No dev credentials")
     }
