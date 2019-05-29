@@ -186,7 +186,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   /** Intended for fugue-tools use only NOT TO BE CALLED BY NORMAL SERVICES */
   public FuguePipeline withToolsDeploy(boolean b) {
     toolsDeploy = b
-    
+    buildId = FUGUE_VERSION
     return this
   }
   
@@ -1063,7 +1063,7 @@ docker push ${remoteImage}
       if(repo == null)
         throw new IllegalStateException("Unknown environment type ${environmentType}")
       
-      String localImage = name + ':' + release
+      String localImage = name + ':' + FUGUE_VERSION
       String remoteImage = repo + name + ':' + FUGUE_VERSION
       
       sh 'docker tag ' + localImage + ' ' + remoteImage
