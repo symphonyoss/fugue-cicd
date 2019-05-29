@@ -186,7 +186,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   /** Intended for fugue-tools use only NOT TO BE CALLED BY NORMAL SERVICES */
   public FuguePipeline withToolsDeploy(boolean b) {
     toolsDeploy = b
-    
+    buildId = FUGUE_VERSION
     return this
   }
   
@@ -279,6 +279,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ buildId = ${buildId}
 @ releaseVersion = ${release}
+@ FuguePipeline V3.8
+@ Build Action ${env_.buildAction}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
   }
@@ -287,19 +289,14 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     sh 'rm -rf *'
 
-    echo """
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildId = ${buildId}
-@ releaseVersion = ${release}
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-"""
+    report()
     
     if(configGitRepo != null)
     {
       loadConfig()
     }
     
-    if(!verifyCreds('dev'))
+    if(!verifyCreds('dev', true))
     {
       abort("No dev credentials")
     }
@@ -307,7 +304,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean qualifierIsSet()
   {
-    return !("".equals(env_.buildId.trim()))
+    return env_.buildId != null && !("".equals(env_.buildId.trim()))
   }
   
   private void pushTo(String environmentType)
@@ -356,11 +353,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void preflight()
   {
-    echo """====================================
-Preflight
-echo 'FuguePipeline V3.7'
-Build Action ${env_.buildAction}
-"""
+    report()
+    
     switch(env_."dryRun")
     {
       case 'Dry Run':
@@ -458,7 +452,7 @@ Build Action ${env_.buildAction}
         abort('Do not set buildId for a build action.')
       }
     }
-    else
+    else if(!toolsDeploy)
     {
       if(qualifierIsSet())
       {
@@ -579,7 +573,7 @@ serviceGitBranch is ${serviceGitBranch}
     
     verifyCreds_[pullFrom_] = true
     
-    if(!verifyCreds('dev'))
+    if(!verifyCreds('dev', true))
     {
       abort("No dev credentials")
     }
@@ -1060,7 +1054,7 @@ docker push ${remoteImage}
     echo 'deployTo_[' + environmentType + '] = ' + deployTo_[environmentType]
     echo 'pushTo_[' + environmentType + '] = ' + pushTo_[environmentType]
     
-    if(doBuild_ && deployTo_[environmentType] == Purpose.Service)
+    if(deployTo_[environmentType] == Purpose.Service)
     {
       echo 'Push Tool Image for ' + name
       
@@ -1069,8 +1063,13 @@ docker push ${remoteImage}
       if(repo == null)
         throw new IllegalStateException("Unknown environment type ${environmentType}")
       
-      String localImage = name + ':' + release
+      String localRepo = (pullFrom_ == null ? "" : docker_repo[pullFrom_]);
+      String localImage =  doBuild_ ? name + ':' + release : localRepo + name + ':' + FUGUE_VERSION
       String remoteImage = repo + name + ':' + FUGUE_VERSION
+      
+      echo "localRepo=${localRepo}, pullFrom_=${pullFrom_}"
+      
+      
       
       sh 'docker tag ' + localImage + ' ' + remoteImage
       sh 'docker push ' + remoteImage
@@ -1244,6 +1243,25 @@ docker push ${remoteImage}
     ]
    
     list.addAll(buildIdParameters(env, steps))
+    list.addAll(sourceVersionParameters(env, steps))
+    list.addAll(configVersionParameters(env, steps))
+   
+    if(extras != null)
+     list.addAll(extras)
+     
+    return [
+  steps.parameters(list)
+]
+  }
+  
+  
+  
+  public static def toolsParameters(env, steps, extras = null)
+  {
+    def list = [
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    ]
+   
     list.addAll(sourceVersionParameters(env, steps))
     list.addAll(configVersionParameters(env, steps))
    
