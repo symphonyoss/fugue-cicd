@@ -1249,6 +1249,25 @@ docker push ${remoteImage}
 ]
   }
   
+  
+  
+  public static def toolsParameters(env, steps, extras = null)
+  {
+    def list = [
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    ]
+   
+    list.addAll(sourceVersionParameters(env, steps))
+    list.addAll(configVersionParameters(env, steps))
+   
+    if(extras != null)
+     list.addAll(extras)
+     
+    return [
+  steps.parameters(list)
+]
+  }
+  
   public static def deployParameters(env, steps, extras = null)
   {
     def list = [
