@@ -452,7 +452,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         abort('Do not set buildId for a build action.')
       }
     }
-    else
+    else if(!toolsDeploy)
     {
       if(qualifierIsSet())
       {
