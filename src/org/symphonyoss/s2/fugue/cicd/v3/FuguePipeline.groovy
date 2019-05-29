@@ -1064,10 +1064,12 @@ docker push ${remoteImage}
         throw new IllegalStateException("Unknown environment type ${environmentType}")
       
       String localRepo = (pullFrom_ == null ? "" : docker_repo[pullFrom_]);
-      String localImage =  localRepo + name + ':' + FUGUE_VERSION
+      String localImage =  doBuild_ ? name + ':' + release : localRepo + name + ':' + FUGUE_VERSION
       String remoteImage = repo + name + ':' + FUGUE_VERSION
       
       echo "localRepo=${localRepo}, pullFrom_=${pullFrom_}"
+      
+      
       
       sh 'docker tag ' + localImage + ' ' + remoteImage
       sh 'docker push ' + remoteImage
