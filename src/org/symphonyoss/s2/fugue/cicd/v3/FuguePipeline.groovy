@@ -304,7 +304,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean qualifierIsSet()
   {
-    return !("".equals(env_.buildId.trim()))
+    return env_.buildId != null && !("".equals(env_.buildId.trim()))
   }
   
   private void pushTo(String environmentType)
