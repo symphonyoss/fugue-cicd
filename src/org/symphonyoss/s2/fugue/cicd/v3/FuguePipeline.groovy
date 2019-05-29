@@ -1054,7 +1054,7 @@ docker push ${remoteImage}
     echo 'deployTo_[' + environmentType + '] = ' + deployTo_[environmentType]
     echo 'pushTo_[' + environmentType + '] = ' + pushTo_[environmentType]
     
-    if(doBuild_ && deployTo_[environmentType] == Purpose.Service)
+    if(deployTo_[environmentType] == Purpose.Service)
     {
       echo 'Push Tool Image for ' + name
       
