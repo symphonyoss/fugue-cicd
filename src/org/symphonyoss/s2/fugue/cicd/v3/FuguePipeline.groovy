@@ -279,6 +279,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ buildId = ${buildId}
 @ releaseVersion = ${release}
+@ FuguePipeline V3.8
+@ Build Action ${env_.buildAction}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
   }
@@ -287,12 +289,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   {
     sh 'rm -rf *'
 
-    echo """
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ buildId = ${buildId}
-@ releaseVersion = ${release}
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-"""
+    report()
     
     if(configGitRepo != null)
     {
@@ -356,11 +353,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   public void preflight()
   {
-    echo """====================================
-Preflight
-echo 'FuguePipeline V3.7'
-Build Action ${env_.buildAction}
-"""
+    report()
+    
     switch(env_."dryRun")
     {
       case 'Dry Run':
