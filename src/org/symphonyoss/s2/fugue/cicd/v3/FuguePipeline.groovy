@@ -417,9 +417,17 @@ class FuguePipeline extends JenkinsTask implements Serializable
         targetEnvironmentType_ = 'stage'
         break;
         
-      case 'Promote Stage to Prod':
+      case 'Promote Stage to UAT':
         doBuild_ = false
         pullFrom_ = 'stage'
+        pushTo('uat')
+        deployTo('uat')
+        targetEnvironmentType_ = 'uat'
+        break;
+        
+      case 'Promote UAT to Prod':
+        doBuild_ = false
+        pullFrom_ = 'uat'
         pushTo('prod')
         deployTo('prod')
         targetEnvironmentType_ = 'prod'
@@ -582,7 +590,10 @@ serviceGitBranch is ${serviceGitBranch}
     {
       if(verifyCreds('stage'))
       {
-        verifyCreds('prod')
+        if(verifyCreds('uat'))
+        {
+          verifyCreds('prod')
+        }
       }
     }
     
@@ -1239,7 +1250,7 @@ docker push ${remoteImage}
   public static def parameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to UAT', 'Promote UAT to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
     ]
    
     list.addAll(buildIdParameters(env, steps))
@@ -1259,7 +1270,7 @@ docker push ${remoteImage}
   public static def toolsParameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to UAT', 'Promote UAT to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
     ]
    
     list.addAll(sourceVersionParameters(env, steps))
