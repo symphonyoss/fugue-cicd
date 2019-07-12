@@ -586,16 +586,10 @@ serviceGitBranch is ${serviceGitBranch}
       abort("No dev credentials")
     }
 
-    if(verifyCreds('qa'))
-    {
-      if(verifyCreds('stage'))
-      {
-        if(verifyCreds('uat'))
-        {
-          verifyCreds('prod')
-        }
-      }
-    }
+    verifyCreds('qa');
+    verifyCreds('stage');
+    verifyCreds('uat');
+    verifyCreds('prod')
     
     pullDockerImages()
   }
