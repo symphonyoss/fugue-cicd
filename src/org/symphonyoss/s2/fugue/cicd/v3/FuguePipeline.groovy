@@ -598,7 +598,26 @@ serviceGitBranch is ${serviceGitBranch}
   
   public void createBuildIdClass()
   {
-    File f = new File("BuildId")
+    File f = new File("BuildId.java");
+    
+    try
+    {
+      PrintWriter out = new PrintWriter(f);
+      
+      out.println(
+"""
+public class BuildId
+{
+  public static final String BUILD_ID="Hello World";
+}
+""");
+      out.close();
+    }
+    catch (FileNotFoundException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
