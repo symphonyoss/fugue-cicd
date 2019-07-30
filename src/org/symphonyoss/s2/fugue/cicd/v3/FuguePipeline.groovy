@@ -459,6 +459,8 @@ class FuguePipeline extends JenkinsTask implements Serializable
       {
         abort('Do not set buildId for a build action.')
       }
+      
+      createBuildIdClass();
     }
     else if(!toolsDeploy)
     {
@@ -592,6 +594,11 @@ serviceGitBranch is ${serviceGitBranch}
     verifyCreds('prod')
     
     pullDockerImages()
+  }
+  
+  public void createBuildIdClass()
+  {
+    File f = new File("BuildId")
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
