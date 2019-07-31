@@ -607,10 +607,10 @@ public class BuildId
   public static final String BUILD_ID="Hello World";
 }
 """
-    sh 'ls -l groovy1.txt'
-    sh 'cat groovy1.txt'
     sh 'pwd'
     sh 'ls -l src/main/java/fugue/BuildId.java'
+    
+    sh 'cat src/main/java/fugue/BuildId.java'
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
