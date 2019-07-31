@@ -599,32 +599,16 @@ serviceGitBranch is ${serviceGitBranch}
   
   public void createBuildIdClass()
   {
-    writeFile file: 'groovy1.txt', text: 'Working with files the Groovy way is easy.'
-    sh 'ls -l groovy1.txt'
-    sh 'cat groovy1.txt'
-      
-    File f = new File(environ.environment.get('WORKSPACE') + "/src/main/java/fugue/BuildId.java");
-    
-    try
-    {
-      PrintWriter out = new PrintWriter(f);
-      
-      out.println(
-"""
+    writeFile file: 'src/main/java/fugue/BuildId.java', text: """
 package fugue;
 
 public class BuildId
 {
   public static final String BUILD_ID="Hello World";
 }
-""");
-      out.close();
-    }
-    catch (FileNotFoundException e)
-    {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+"""
+    sh 'ls -l groovy1.txt'
+    sh 'cat groovy1.txt'
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
