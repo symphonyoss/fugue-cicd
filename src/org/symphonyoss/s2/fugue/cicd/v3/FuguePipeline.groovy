@@ -598,7 +598,7 @@ serviceGitBranch is ${serviceGitBranch}
   
   public void createBuildIdClass()
   {
-    File f = new File(steps.envVars.get('WORKSPACE') + "/src/main/java/fugue/BuildId.java");
+    File f = new File(environ.get('WORKSPACE') + "/src/main/java/fugue/BuildId.java");
     
     try
     {
