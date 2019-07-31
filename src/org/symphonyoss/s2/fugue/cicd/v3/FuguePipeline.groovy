@@ -609,6 +609,8 @@ public class BuildId
 """
     sh 'ls -l groovy1.txt'
     sh 'cat groovy1.txt'
+    sh 'pwd'
+    sh 'ls -l src/main/java/fugue/BuildId.java'
   }
   
   public void verifyUserAccess(String credentialId, String environmentType = null)
