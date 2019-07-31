@@ -577,9 +577,6 @@ serviceGitBranch is ${serviceGitBranch}
 """
     
       steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
-      
-      
-      createBuildIdClass();
     }
     
     
