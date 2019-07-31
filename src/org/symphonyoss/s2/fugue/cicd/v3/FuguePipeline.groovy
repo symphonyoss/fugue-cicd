@@ -460,8 +460,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
       {
         abort('Do not set buildId for a build action.')
       }
-      
-      createBuildIdClass();
     }
     else if(!toolsDeploy)
     {
@@ -579,6 +577,9 @@ serviceGitBranch is ${serviceGitBranch}
 """
     
       steps.git credentialsId: 'symphonyjenkinsauto', url: 'https://github.com/' + serviceGitOrg + '/' + serviceGitRepo + '.git', branch: serviceGitBranch
+      
+      
+      createBuildIdClass();
     }
     
     
