@@ -5,6 +5,7 @@ import org.jenkinsci.plugins.workflow.cps.DSL
 import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
 import java.util.Map.Entry
+import hudson.FilePath
 import java.util.Random
 
 class FuguePipeline extends JenkinsTask implements Serializable
@@ -598,7 +599,11 @@ serviceGitBranch is ${serviceGitBranch}
   
   public void createBuildIdClass()
   {
-    File f = new File(environ.env.get('WORKSPACE') + "/src/main/java/fugue/BuildId.java");
+    writeFile file: 'groovy1.txt', text: 'Working with files the Groovy way is easy.'
+    sh 'ls -l groovy1.txt'
+    sh 'cat groovy1.txt'
+      
+    File f = new File(environ.environment.get('WORKSPACE') + "/src/main/java/fugue/BuildId.java");
     
     try
     {
