@@ -1323,7 +1323,7 @@ docker push ${remoteImage}
           {
             action ->
             
-            if('iam:PassRole'.equals(action))
+            if('s3:PutBucketTagging'.equals(action))
             {
               echo 'thats it!'
               
