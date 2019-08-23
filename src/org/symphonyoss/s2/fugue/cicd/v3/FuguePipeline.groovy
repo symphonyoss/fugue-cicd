@@ -1535,7 +1535,8 @@ docker push ${remoteImage}
             "Action": [
                 "s3:CreateBucket",
                 "s3:PutEncryptionConfiguration",
-                "s3:GetBucketLocation"
+                "s3:GetBucketLocation",
+                "s3:PutBucketTagging"
             ],
             "Resource": [
                 "arn:aws:s3:::sym-s2-fugue-*"
