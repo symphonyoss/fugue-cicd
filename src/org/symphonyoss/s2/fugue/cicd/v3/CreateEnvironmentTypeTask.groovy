@@ -93,6 +93,7 @@ roleName            ${roleName}
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironmentType',
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
+          .withServiceName("fugue")
           .withEnvironmentType(environmentType_)
           .withDockerLabel(dockerLabel_)
           .withRole(roleName)

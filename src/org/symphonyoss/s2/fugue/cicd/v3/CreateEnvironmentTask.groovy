@@ -83,6 +83,7 @@ region_             ${region_}
       FugueDeploy deploy = new FugueDeploy(pipeLine_, 'CreateEnvironment',
         awsRegion_)
           .withConfigGitRepo(configGitOrg_, configGitRepo_, configGitBranch_)
+          .withServiceName("fugue")
           .withEnvironmentType(environmentType_)
           .withEnvironment(environment_)
           .withRegion(region_)
