@@ -361,7 +361,7 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
       String taskArn = taskRun.tasks[0].taskArn
       String taskId = taskArn.substring(taskArn.lastIndexOf('/')+1)
       String nextToken = ""
-      int    limit=30
+      int    limit=200
       
       boolean notDone = true;
       boolean stopped = false;
@@ -430,7 +430,7 @@ lastStatus: ${taskRun.tasks[0].lastStatus}
         }
         if(notDone)
         {
-          sleep 10000
+          sleep 20000
         }
       }
 
