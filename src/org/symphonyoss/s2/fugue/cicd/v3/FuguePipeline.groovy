@@ -1285,6 +1285,7 @@ docker push ${remoteImage}
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction',      ['Deploy', 'Undeploy Pod', 'Undeploy All']), description: 'Action to perform'),
     steps.choice(name: 'dryRun',            choices:      Default.choice(env, 'dryRun',           ['Execute', 'Dry Run']),    description: 'Dry run or actually do it'),
     steps.string(name: 'podName',           defaultValue: Default.value(env,  'podName',          'sym-ac6-dev-chat-glb-1'),  description: 'Pod Name.'),
+    steps.string(name: 'stationName',       defaultValue: Default.value(env,  'stationName',      'Smoke Test'),              description: 'Station Name.'),
     steps.string(name: 'environmentType',   defaultValue: Default.value(env,  'environmentType',  'dev'),                     description: 'Environment Type ID.'),
     steps.string(name: 'environmentId',     defaultValue: Default.value(env,  'environmentId',    's2dev2'),                  description: 'Environment  ID.'),
     steps.string(name: 'regionId',          defaultValue: Default.value(env,  'regionId',         'us-east-1'),               description: 'Service ID.'),
