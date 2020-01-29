@@ -349,6 +349,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       .withEnvironmentType(env_."environmentType")
       .withEnvironment(env_."environmentId")
       .withRegion(env_."regionId")
+      .withPodNames(env_."podName".split("  *"))
   }
   
   public void preflight()
