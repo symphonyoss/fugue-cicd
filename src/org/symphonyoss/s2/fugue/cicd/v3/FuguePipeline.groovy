@@ -349,6 +349,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
       .withEnvironmentType(env_."environmentType")
       .withEnvironment(env_."environmentId")
       .withRegion(env_."regionId")
+      .withPodNames(env_."podName".split("  *"))
   }
   
   public void preflight()
@@ -369,6 +370,20 @@ class FuguePipeline extends JenkinsTask implements Serializable
     switch(env_.buildAction)
     {
       case 'Build to QA':
+        doBuild_ = true
+        pushTo('dev')
+        deployTo('smoke', Purpose.SmokeTest)
+        deployTo('dev')
+        pushTo('qa')
+        deployTo('qa')
+        pushTo('stage')
+        deployTo('stage')
+        pushTo('uat')
+        deployTo('uat')
+        targetEnvironmentType_ = 'qa'
+        break;
+        
+      case 'Build to UAT':
         doBuild_ = true
         pushTo('dev')
         deployTo('smoke', Purpose.SmokeTest)
@@ -1244,7 +1259,7 @@ docker push ${remoteImage}
   public static def parameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Deploy to Dev', 'Promote Stage to UAT', 'Promote UAT to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Build to UAT', 'Deploy to Dev', 'Promote Stage to UAT', 'Promote UAT to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
     ]
    
     list.addAll(buildIdParameters(env, steps))
@@ -1284,6 +1299,7 @@ docker push ${remoteImage}
     steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction',      ['Deploy', 'Undeploy Pod', 'Undeploy All']), description: 'Action to perform'),
     steps.choice(name: 'dryRun',            choices:      Default.choice(env, 'dryRun',           ['Execute', 'Dry Run']),    description: 'Dry run or actually do it'),
     steps.string(name: 'podName',           defaultValue: Default.value(env,  'podName',          'sym-ac6-dev-chat-glb-1'),  description: 'Pod Name.'),
+    steps.string(name: 'stationName',       defaultValue: Default.value(env,  'stationName',      'Smoke Test'),              description: 'Station Name.'),
     steps.string(name: 'environmentType',   defaultValue: Default.value(env,  'environmentType',  'dev'),                     description: 'Environment Type ID.'),
     steps.string(name: 'environmentId',     defaultValue: Default.value(env,  'environmentId',    's2dev2'),                  description: 'Environment  ID.'),
     steps.string(name: 'regionId',          defaultValue: Default.value(env,  'regionId',         'us-east-1'),               description: 'Service ID.'),
