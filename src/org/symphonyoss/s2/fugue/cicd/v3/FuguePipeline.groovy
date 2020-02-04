@@ -376,10 +376,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
         deployTo('dev')
         pushTo('qa')
         deployTo('qa')
-        pushTo('stage')
-        deployTo('stage')
-        pushTo('uat')
-        deployTo('uat')
         targetEnvironmentType_ = 'qa'
         break;
         
@@ -390,7 +386,11 @@ class FuguePipeline extends JenkinsTask implements Serializable
         deployTo('dev')
         pushTo('qa')
         deployTo('qa')
-        targetEnvironmentType_ = 'qa'
+        pushTo('stage')
+        deployTo('stage')
+        pushTo('uat')
+        deployTo('uat')
+        targetEnvironmentType_ = 'uat'
         break;
         
       case 'Build to Dev':
