@@ -440,6 +440,14 @@ class FuguePipeline extends JenkinsTask implements Serializable
         targetEnvironmentType_ = 'uat'
         break;
         
+      case 'Promote QA to UAT':
+        doBuild_ = false
+        pullFrom_ = 'qa'
+        pushTo('uat')
+        deployTo('uat')
+        targetEnvironmentType_ = 'uat'
+        break;
+        
       case 'Promote UAT to Prod':
         doBuild_ = false
         pullFrom_ = 'uat'
@@ -1259,7 +1267,7 @@ docker push ${remoteImage}
   public static def parameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Build to UAT', 'Deploy to Dev', 'Promote Stage to UAT', 'Promote UAT to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Build to UAT', 'Deploy to Dev', 'Promote Stage to UAT', 'Promote QA to UAT', 'Promote UAT to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
     ]
    
     list.addAll(buildIdParameters(env, steps))
