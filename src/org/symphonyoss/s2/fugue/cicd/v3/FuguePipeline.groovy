@@ -1421,6 +1421,7 @@ docker push ${remoteImage}
                 "ecs:DescribeTasks",
                 "ecs:DescribeTaskDefinition",
                 "ecs:ListTaskDefinitions",
+                "ecs:StopTask",
                 "secretsmanager:CreateSecret"
             ],
             "Resource": "*"
