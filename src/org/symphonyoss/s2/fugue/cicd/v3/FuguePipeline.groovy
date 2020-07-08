@@ -663,6 +663,8 @@ environmentType ${environmentType}
               break;
               
             case ContainerType.LAMBDA:
+            case ContainerType.EXTERNAL_LAMBDA:
+            case ContainerType.EXTERNAL_HTTP:
             // Nothing to do here
               break;
           }
@@ -832,6 +834,11 @@ environmentType ${environmentType}
             echo 'Runtime MULTI ' + ms.toString()
               ms.registerTaskDef(station, null)
               break
+          
+          case ContainerType.EXTERNAL_LAMBDA:
+          case ContainerType.EXTERNAL_HTTP:
+            // Nothing to do here
+            break
         }
       }
     }
@@ -964,6 +971,11 @@ environmentType ${environmentType}
               sh "aws s3 sync s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_} ${ms.image}/target --exclude \"*\" --include ${ms.image}-${buildId}.jar"
             }
             break;
+          
+          case ContainerType.EXTERNAL_LAMBDA:
+          case ContainerType.EXTERNAL_HTTP:
+            // Nothing to do here
+            break
         }
       }
     }
@@ -1042,6 +1054,11 @@ docker push ${remoteImage}
               }
             }
             break;
+          
+          case ContainerType.EXTERNAL_LAMBDA:
+          case ContainerType.EXTERNAL_HTTP:
+            // Nothing to do here
+            break
         }
       }
     }
