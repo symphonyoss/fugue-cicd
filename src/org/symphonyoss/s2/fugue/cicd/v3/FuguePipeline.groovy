@@ -684,7 +684,7 @@ environmentType ${environmentType}
           
           
           steps.withCredentials([steps.file(credentialsId: 'maven-settings', variable: 'FILE')]) {
-            sh 'cp $FILE /usr/share/maven/conf/settings.xml'
+            echo 'cp $FILE /usr/share/maven/conf/settings.xml'
             sh 'cat $FILE'
           } 
             
