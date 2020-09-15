@@ -671,6 +671,8 @@ environmentType ${environmentType}
         }
         
         sh "set +x; echo 'Logging into docker repo'; `aws --region ${awsRegion} ecr get-login --no-include-email`"
+        //sh "set +x; echo 'Logging into docker repo'; aws --region ${awsRegion} ecr get-login-password --profile sym-s2-dev | docker login -u AWS --password-stdin https://189141687483.dkr.ecr.us-east-1.amazonaws.com"
+        
                     
         if(doBuild_ && environmentType=='dev')
         {
