@@ -720,12 +720,16 @@ environmentType ${environmentType}
     {
       try
       {
+        echo "Verify creds " + getCredentialName(environmentType);
+    
         verifyUserAccess(getCredentialName(environmentType), environmentType);
         
         return true
       }
       catch(Exception e)
       {
+        echo "Exception " + e;
+        
         pushTo_[environmentType] = false
         deployTo_[environmentType] = Purpose.None
         echo "No valid credentials for environmentType ${environmentType}"
