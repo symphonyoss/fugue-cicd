@@ -279,7 +279,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ buildId = ${buildId}
 @ releaseVersion = ${release}
-@ FuguePipeline V3.8
+@ FuguePipeline V3.9
 @ Build Action ${env_.buildAction}
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
@@ -606,7 +606,7 @@ serviceGitBranch is ${serviceGitBranch}
     
     if(!verifyCreds('dev', true))
     {
-      abort("No dev credentials")
+      abort("No dev credentials for preflight")
     }
 
     verifyCreds('qa');
