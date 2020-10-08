@@ -683,10 +683,10 @@ environmentType ${environmentType}
           sh "docker pull 189141687483.dkr.ecr.${awsRegion}.amazonaws.com/symbase/java11:latest"
           
           
-          steps.withCredentials([steps.file(credentialsId: 'maven-settings', variable: 'FILE')]) {
-            sh 'cp $FILE /usr/share/maven/conf/settings.xml'
+       //   steps.withCredentials([steps.file(credentialsId: 'maven-settings', variable: 'FILE')]) {
+        //    sh 'cp $FILE /usr/share/maven/conf/settings.xml'
             
-          } 
+       //   } 
             
           if(!toolsDeploy)
           {
@@ -960,8 +960,20 @@ environmentType ${environmentType}
             
             sh 'docker pull ' + remoteImage
             break;
-            
           case ContainerType.LAMBDA:
+            steps.withCredentials([[
+            $class:             'AmazonWebServicesCredentialsBinding',
+            accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+            credentialsId:      getCredentialName(pullFrom_),
+            secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+            {
+              sh 'aws sts get-caller-identity'
+              //sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar ${ms.image}/target/${ms.image}-${buildId}.jar"
+              sh "aws s3 sync s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_} ${ms.image}/target --exclude \"*\" --include ${ms.image}-${buildId}.jar"
+            }
+            break;
+            
+          case ContainerType.LAMBDA_INIT:
             steps.withCredentials([[
             $class:             'AmazonWebServicesCredentialsBinding',
             accessKeyVariable:  'AWS_ACCESS_KEY_ID',
