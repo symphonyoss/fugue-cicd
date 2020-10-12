@@ -64,7 +64,7 @@ class CreateEnvironmentTypeTask extends FuguePipelineTask implements Serializabl
 
     echo """
 ------------------------------------------------------------------------------------------------------------------------
-CreateEnvironmentTypeTask org.symphonyoss.s2.fugue.cicd.v3
+CreateEnvironmentTypeTask org.symphonyoss.s2.fugue.cicd.v4
 
 awsRegion_          ${awsRegion_}
 environmentType_    ${environmentType_}

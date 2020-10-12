@@ -228,7 +228,7 @@ docker push ${tgtServiceImage}
     
     echo """
 ------------------------------------------------------------------------------------------------------------------------
-FugeDeploy V3 execute start
+FugeDeploy V4 execute start
 
 fargateLaunch   ${fargateLaunch_}
 launchType      ${launchType_}
