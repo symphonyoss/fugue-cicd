@@ -969,7 +969,7 @@ environmentType ${environmentType}
             break;
           case ContainerType.LAMBDA:
           case ContainerType.LAMBDA_INIT:
-            downloadArtifact()
+           // downloadArtifact()
             steps.withCredentials([[
             $class:             'AmazonWebServicesCredentialsBinding',
             accessKeyVariable:  'AWS_ACCESS_KEY_ID',
