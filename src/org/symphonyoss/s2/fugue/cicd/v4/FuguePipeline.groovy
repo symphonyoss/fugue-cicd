@@ -1019,7 +1019,7 @@ environmentType ${environmentType}
       {
        
         echo ('download starting ' + fullUrl)
-        File f = new File(filename)
+        File f = new File("${env.WORKSPACE}/"+filename)
         if(f.exists())
           echo 'Pippo'
         f.createNewFile()
