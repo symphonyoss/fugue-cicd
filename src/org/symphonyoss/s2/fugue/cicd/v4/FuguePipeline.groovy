@@ -1007,7 +1007,7 @@ environmentType ${environmentType}
        new File("output.") << println(get.getInputStream().getBytes());
        echo ('download successful ' + repoUrl)
     } else {
-      echo get.getResposeCode()
+      echo getRC
       echo get.toString()
       echo get.getContent().toString()
     }
