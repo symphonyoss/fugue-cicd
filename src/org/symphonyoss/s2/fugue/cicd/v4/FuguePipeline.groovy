@@ -1002,15 +1002,14 @@ environmentType ${environmentType}
 
     echo 'Starting download of artifact'
 
-    steps.withCredentials([
-      $class: 'UsernamePasswordMultiBinding',
-       credentialsId: 'artifactory-id',
-       usernameVariable: 'Username',
-       passwordVariable: 'Password']) {
+    steps.withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory-id',
+                  usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
+    echo "Username1 is  ${env.USERNAME}"
+    echo 'UserName2 is ${USERNAME}'
     def get = new URL(repoUrl).openConnection();
-    echo $Username
-    get.setRequestProperty('Authorization', 'Basic '+ ($Username +':'+ $Password).getBytes('iso-8859-1').encodeBase64())
+    
+    get.setRequestProperty('Authorization', 'Basic '+ ('${USERNAME}:${PASSWORD}').getBytes('iso-8859-1').encodeBase64())
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
