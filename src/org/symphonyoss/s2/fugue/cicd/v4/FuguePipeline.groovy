@@ -1017,6 +1017,7 @@ environmentType ${environmentType}
   
       if(getRC.equals(200))
       {
+        sh "ls"
         echo ('download starting ' + fullUrl)
         File f = new File(filename)
         f.createNewFile()
