@@ -670,6 +670,7 @@ environmentType ${environmentType}
               break;
               
             case ContainerType.LAMBDA:
+            case ContainerType.LAMBDA_INIT:
             case ContainerType.EXTERNAL_LAMBDA:
             case ContainerType.EXTERNAL_HTTP:
             // Nothing to do here
@@ -969,7 +970,7 @@ environmentType ${environmentType}
             break;
           case ContainerType.LAMBDA:
           case ContainerType.LAMBDA_INIT:
-           // downloadArtifact()
+            downloadArtifact()
             steps.withCredentials([[
             $class:             'AmazonWebServicesCredentialsBinding',
             accessKeyVariable:  'AWS_ACCESS_KEY_ID',
@@ -992,14 +993,14 @@ environmentType ${environmentType}
   }
   
   public void downloadArtifact() {
-    
+    echo 'Starting download of artifact'
     def get = new URL(repoUrl).openConnection();
     get.setRequestProperty('Authorization', 'Basic '+ ('artifactory-id.username' + ':' + 'artifactory-id.password').getBytes('iso-8859-1').encodeBase64())
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
        new File("output.") << println(get.getInputStream().getBytes());
-       println('download successful ' + repoUrl)
+       echo ('download successful ' + repoUrl)
     }
     
   }
