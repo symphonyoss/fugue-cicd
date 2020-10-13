@@ -416,7 +416,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
         break;
         
       case 'Build to Smoke Test':
-        doBuild_ = true
+        doBuild_ = false
         pushTo('dev')
         targetEnvironmentType_ = 'dev'
         deployTo('smoke', Purpose.SmokeTest)
