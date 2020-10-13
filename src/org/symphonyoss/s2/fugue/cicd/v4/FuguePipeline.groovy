@@ -1001,6 +1001,7 @@ environmentType ${environmentType}
     
 
     echo 'Starting download of artifact'
+
     steps.withCredentials([usernamePassword(
        credentialsId: 'artifactory-id',
        usernameVariable: 'Username',
@@ -1009,7 +1010,6 @@ environmentType ${environmentType}
     def get = new URL(repoUrl).openConnection();
     echo $Username
     get.setRequestProperty('Authorization', 'Basic '+ ($Username +':'+ $Password).getBytes('iso-8859-1').encodeBase64())
-
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
