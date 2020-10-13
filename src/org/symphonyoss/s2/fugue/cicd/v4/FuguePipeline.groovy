@@ -1005,10 +1005,11 @@ environmentType ${environmentType}
     steps.withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory-id',
                   usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
+    echo 'UserName1 is ' + USERNAME
     echo 'UserName2 is ' + $USERNAME
     def get = new URL(repoUrl).openConnection();
     
-    get.setRequestProperty('Authorization', 'Basic '+ ($USERNAME+':'+$PASSWORD).getBytes('iso-8859-1').encodeBase64())
+    get.setRequestProperty('Authorization', 'Basic '+ (USERNAME+'+'+PASSWORD).getBytes('iso-8859-1').encodeBase64())
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
