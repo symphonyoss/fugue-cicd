@@ -1006,8 +1006,7 @@ environmentType ${environmentType}
        usernameVariable: 'USERNAME',
        passwordVariable: 'PASSWORD']]) {
     def get = new URL(repoUrl).openConnection();
-
-    get.setRequestProperty('Authorization', 'Basic '+ ($USERNAME + ':' + $PASSWORD).getBytes('iso-8859-1').encodeBase64())
+    get.setRequestProperty('Authorization', 'Basic '+ ("${env.USERNAME}" + ':' + "${env.PASSWORD}").getBytes('iso-8859-1').encodeBase64())
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
