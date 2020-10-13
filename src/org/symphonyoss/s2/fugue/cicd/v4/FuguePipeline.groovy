@@ -4,6 +4,8 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.jenkinsci.plugins.workflow.cps.DSL
 import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
+import sun.tools.tree.ThisExpression
+
 import java.util.Map.Entry
 import java.util.Random
 
@@ -311,7 +313,9 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean qualifierIsSet()
   {
+    env_.buildId = buildId
     return env_.buildId != null && !("".equals(env_.buildId.trim()))
+ 
   }
   
   private void pushTo(String environmentType)
@@ -492,6 +496,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
     }
     else if(!toolsDeploy)
     {
+     
       if(qualifierIsSet())
       {
         withBuildId(env_.buildId.trim())
