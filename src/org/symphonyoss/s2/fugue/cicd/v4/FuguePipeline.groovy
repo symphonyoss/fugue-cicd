@@ -1005,7 +1005,7 @@ environmentType ${environmentType}
     steps.withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory-id',
                   usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
-    echo 'UserName1 is ' + USERNAME
+  //  echo 'UserName1 is ' + USERNAME
     echo 'UserName2 is ' + $USERNAME
     def get = new URL(repoUrl).openConnection();
     
