@@ -1017,8 +1017,10 @@ environmentType ${environmentType}
   
       if(getRC.equals(200))
       {
-        echo ('download successful ' + fullUrl)
+        echo ('download starting ' + fullUrl)
+        new File(filename).delete()
          new File(filename) << println(get.getInputStream().getBytes());
+         echo ('download successful ' + fullUrl)
       } else
       {
         echo getRC.toString()
