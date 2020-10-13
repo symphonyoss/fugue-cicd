@@ -1019,11 +1019,14 @@ environmentType ${environmentType}
       {
        
         echo ('download starting ' + fullUrl)
-        File f = new File(env_.WORKSPACE+"/"+filename)
-        if(f.exists())
-          echo 'Pippo'
-        f.createNewFile()
+        File ff = new File('test')
+        ff.mkdir()
+        if(ff.exists())
+        File f = new File(filename)
         
+        if(f.exists())
+          echo 'Created'
+        f.createNewFile()      
          f << get.getInputStream().getBytes();
          echo ('download successful ' + fullUrl)
       } else
