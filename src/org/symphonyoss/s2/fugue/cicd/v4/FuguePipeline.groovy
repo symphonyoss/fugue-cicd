@@ -313,7 +313,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean qualifierIsSet()
   {
-    env_.buildId = buildId
     return env_.buildId != null && !("".equals(env_.buildId.trim()))
  
   }
@@ -380,92 +379,92 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     switch(env_.buildAction)
     {
-      case 'Build to QA':
-        doBuild_ = true
-        pushTo('dev')
-        deployTo('smoke', Purpose.SmokeTest)
-        deployTo('dev')
-        pushTo('qa')
-        deployTo('qa')
-        targetEnvironmentType_ = 'qa'
-        break;
-        
-      case 'Build to UAT':
-        doBuild_ = true
-        pushTo('dev')
-        deployTo('smoke', Purpose.SmokeTest)
-        deployTo('dev')
-        pushTo('qa')
-        deployTo('qa')
-        pushTo('stage')
-        deployTo('stage')
-        pushTo('uat')
-        deployTo('uat')
-        targetEnvironmentType_ = 'uat'
-        break;
-        
-      case 'Build to Dev':
-        doBuild_ = true
-        pushTo('dev')
-        deployTo('smoke', Purpose.SmokeTest)
-        deployTo('dev')
-        targetEnvironmentType_ = 'dev'
-        break;
-        
-      case 'Deploy to Dev':
-        doBuild_ = false
-        pullFrom_ = 'dev'
-        deployTo('smoke', Purpose.SmokeTest)
-        deployTo('dev')
-        break;
-        
-      case 'Build to Smoke Test':
-        doBuild_ = false
-        pushTo('dev')
-        targetEnvironmentType_ = 'dev'
-        deployTo('smoke', Purpose.SmokeTest)
-        deployTo('dev', Purpose.SmokeTest)
-        break;
-        
-      case 'Promote Dev to QA':
-        doBuild_ = false
-        pullFrom_ = 'dev'
-        pushTo('qa')
-        deployTo('qa')
-        targetEnvironmentType_ = 'qa'
-        break;
-        
-      case 'Promote QA to Stage':
-        doBuild_ = false
-        pullFrom_ = 'qa'
-        pushTo('stage')
-        deployTo('stage')
-        targetEnvironmentType_ = 'stage'
-        break;
-        
-      case 'Promote Stage to UAT':
-        doBuild_ = false
-        pullFrom_ = 'stage'
-        pushTo('uat')
-        deployTo('uat')
-        targetEnvironmentType_ = 'uat'
-        break;
-        
-      case 'Promote QA to UAT':
-        doBuild_ = false
-        pullFrom_ = 'qa'
-        pushTo('uat')
-        deployTo('uat')
-        targetEnvironmentType_ = 'uat'
-        break;
-        
-      case 'Promote UAT to Prod':
-        doBuild_ = false
-        pullFrom_ = 'uat'
-        pushTo('prod')
-        deployTo('prod')
-        targetEnvironmentType_ = 'prod'
-        break;
+//      case 'Build to QA':
+//        doBuild_ = true
+//        pushTo('dev')
+//        deployTo('smoke', Purpose.SmokeTest)
+//        deployTo('dev')
+//        pushTo('qa')
+//        deployTo('qa')
+//        targetEnvironmentType_ = 'qa'
+//        break;
+//        
+//      case 'Build to UAT':
+//        doBuild_ = true
+//        pushTo('dev')
+//        deployTo('smoke', Purpose.SmokeTest)
+//        deployTo('dev')
+//        pushTo('qa')
+//        deployTo('qa')
+//        pushTo('stage')
+//        deployTo('stage')
+//        pushTo('uat')
+//        deployTo('uat')
+//        targetEnvironmentType_ = 'uat'
+//        break;
+//        
+//      case 'Build to Dev':
+//        doBuild_ = true
+//        pushTo('dev')
+//        deployTo('smoke', Purpose.SmokeTest)
+//        deployTo('dev')
+//        targetEnvironmentType_ = 'dev'
+//        break;
+//        
+//      case 'Deploy to Dev':
+//        doBuild_ = false
+//        pullFrom_ = 'dev'
+//        deployTo('smoke', Purpose.SmokeTest)
+//        deployTo('dev')
+//        break;
+//        
+//      case 'Build to Smoke Test':
+//        doBuild_ = false
+//        pushTo('dev')
+//        targetEnvironmentType_ = 'dev'
+//        deployTo('smoke', Purpose.SmokeTest)
+//        deployTo('dev', Purpose.SmokeTest)
+//        break;
+//        
+//      case 'Promote Dev to QA':
+//        doBuild_ = false
+//        pullFrom_ = 'dev'
+//        pushTo('qa')
+//        deployTo('qa')
+//        targetEnvironmentType_ = 'qa'
+//        break;
+//        
+//      case 'Promote QA to Stage':
+//        doBuild_ = false
+//        pullFrom_ = 'qa'
+//        pushTo('stage')
+//        deployTo('stage')
+//        targetEnvironmentType_ = 'stage'
+//        break;
+//        
+//      case 'Promote Stage to UAT':
+//        doBuild_ = false
+//        pullFrom_ = 'stage'
+//        pushTo('uat')
+//        deployTo('uat')
+//        targetEnvironmentType_ = 'uat'
+//        break;
+//        
+//      case 'Promote QA to UAT':
+//        doBuild_ = false
+//        pullFrom_ = 'qa'
+//        pushTo('uat')
+//        deployTo('uat')
+//        targetEnvironmentType_ = 'uat'
+//        break;
+//        
+//      case 'Promote UAT to Prod':
+//        doBuild_ = false
+//        pullFrom_ = 'uat'
+//        pushTo('prod')
+//        deployTo('prod')
+//        targetEnvironmentType_ = 'prod'
+//        break;
       
       case 'Deploy':
         createDeployStation()
@@ -975,7 +974,7 @@ environmentType ${environmentType}
             break;
           case ContainerType.LAMBDA:
           case ContainerType.LAMBDA_INIT:
-            downloadArtifact()
+            downloadArtifact(ms.image)
             steps.withCredentials([[
             $class:             'AmazonWebServicesCredentialsBinding',
             accessKeyVariable:  'AWS_ACCESS_KEY_ID',
@@ -997,7 +996,7 @@ environmentType ${environmentType}
     }
   }
   
-  public void downloadArtifact() {
+  public void downloadArtifact(String name) {
     
 
     echo 'Starting download of artifact'
@@ -1006,19 +1005,23 @@ environmentType ${environmentType}
                   usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
   //  echo 'UserName1 is ' + USERNAME
-    echo 'UserName2 is ' +  environ.USERNAME
-    def get = new URL(repoUrl).openConnection();
-    get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
-    def getRC = get.getResponseCode();
-
-    if(getRC.equals(200)) {
-      echo ('download successful ' + repoUrl)
-       new File("output.") << println(get.getInputStream().getBytes());
-    } else {
-      echo getRC.toString()
-      echo get.toString()
-      echo get.getContent().toString()
-    }
+      String filename =   name +'-'+ env_.buildId+'.jar'           
+      String fullUrl = repoUrl + name + '/' + env_.buildId +'/' +filename
+      echo 'UserName2 is ' +  environ.USERNAME
+      def get = new URL(fullUrl).openConnection();
+      get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
+      def getRC = get.getResponseCode();
+  
+      if(getRC.equals(200))
+      {
+        echo ('download successful ' + fullUrl)
+         new File(filename) << println(get.getInputStream().getBytes());
+      } else
+      {
+        echo getRC.toString()
+        echo get.toString()
+        echo get.getContent().toString()
+      }
     }
   }
   
@@ -1325,7 +1328,7 @@ docker push ${remoteImage}
   public static def parameters(env, steps, extras = null)
   {
     def list = [
-    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Build to Smoke Test', 'Build to Dev', 'Build to QA', 'Build to UAT', 'Deploy to Dev', 'Promote Stage to UAT', 'Promote QA to UAT', 'Promote UAT to Prod', 'Promote QA to Stage', 'Promote Dev to QA']), description: 'Action to perform'),
+    steps.choice(name: 'buildAction',       choices:      Default.choice(env, 'buildAction', ['Deploy to Smoke Test', 'Deploy to Dev', 'Deploy to QA', 'Deploy to UAT', 'Deploy to Stage', 'Deploy to Prod' ]), description: 'Action to perform'),
     ]
    
     list.addAll(buildIdParameters(env, steps))
