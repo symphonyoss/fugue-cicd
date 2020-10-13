@@ -1002,11 +1002,10 @@ environmentType ${environmentType}
 
     echo 'Starting download of artifact'
 
-    steps.withCredentials([
-      $class: 'UsernamePasswordMultiBinding',
+    steps.withCredentials([usernamePassword(
        credentialsId: 'artifactory-id',
        usernameVariable: 'Username',
-       passwordVariable: 'Password']) {
+       passwordVariable: 'Password')]) {
      
     def get = new URL(repoUrl).openConnection();
     echo $Username
