@@ -1003,10 +1003,14 @@ environmentType ${environmentType}
     steps.withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory-id',
                   usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
-    echo 'Build-Id is ' + env_.buildId
+
       String filename =   name +'-'+ env_.buildId+'.jar'           
       String fullUrl = repoUrl + name + '/' + env_.buildId +'/' +filename
-      echo 'UserName2 is ' +  environ.USERNAME
+      
+      echo 'Build-Id is ' + env_.buildId
+      echo 'Filename is ' + filename
+        echo 'FullURL is ' + fullUrl
+
       def get = new URL(fullUrl).openConnection();
       get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
       def getRC = get.getResponseCode();
