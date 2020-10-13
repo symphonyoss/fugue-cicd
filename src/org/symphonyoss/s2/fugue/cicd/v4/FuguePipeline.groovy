@@ -973,7 +973,7 @@ environmentType ${environmentType}
             break;
           case ContainerType.LAMBDA:
           case ContainerType.LAMBDA_INIT:
-            downloadArtifact(ms.name, ms.image + '-' +buildId+'.jar' )
+            downloadArtifact(ms.name)
             steps.withCredentials([[
             $class:             'AmazonWebServicesCredentialsBinding',
             accessKeyVariable:  'AWS_ACCESS_KEY_ID',
@@ -995,7 +995,7 @@ environmentType ${environmentType}
     }
   }
   
-  public void downloadArtifact(String name, String path) {
+  public void downloadArtifact(String name) {
     
 
     echo 'Starting download of artifact'
@@ -1009,8 +1009,8 @@ environmentType ${environmentType}
       
       echo 'Build-Id is ' + env_.buildId
       echo 'Filename is ' + filename
-      echo 'FullURL is ' + fullUrl
-      echo 'Path is ' + path
+        echo 'FullURL is ' + fullUrl
+
       def get = new URL(fullUrl).openConnection();
       get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
       def getRC = get.getResponseCode();
@@ -1018,7 +1018,7 @@ environmentType ${environmentType}
       if(getRC.equals(200))
       {
         echo ('download successful ' + fullUrl)
-         new File(path) << println(get.getInputStream().getBytes());
+         new File(filename) << println(get.getInputStream().getBytes());
       } else
       {
         echo getRC.toString()
