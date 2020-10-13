@@ -1003,7 +1003,7 @@ environmentType ${environmentType}
     steps.withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory-id',
                   usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
-  //  echo 'UserName1 is ' + USERNAME
+    echo 'Build-Id is ' + env_.buildId
       String filename =   name +'-'+ env_.buildId+'.jar'           
       String fullUrl = repoUrl + name + '/' + env_.buildId +'/' +filename
       echo 'UserName2 is ' +  environ.USERNAME
