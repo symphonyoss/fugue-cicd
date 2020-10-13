@@ -999,11 +999,15 @@ environmentType ${environmentType}
   
   public void downloadArtifact() {
     
-    String artifactory_id = 'artifactory-id'
+
     echo 'Starting download of artifact'
+    steps.withCredentials([usernamePassword(
+       credentialsId: 'artifactory-id',
+       username: 'USERNAME',
+       password: 'PASSWORD')]) {
     def get = new URL(repoUrl).openConnection();
-    get.setRequestProperty('Authorization', 'Basic '+ (artifactory_id.username + ':' + artifactory_id.password).getBytes('iso-8859-1').encodeBase64())
-    echo artifactory_id.username
+
+  //  get.setRequestProperty('Authorization', 'Basic '+ (artifactory_id.username + ':' + artifactory_id.password).getBytes('iso-8859-1').encodeBase64())
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
@@ -1014,7 +1018,7 @@ environmentType ${environmentType}
       echo get.toString()
       echo get.getContent().toString()
     }
-    
+    }
   }
   
   public void pushDockerImages(String environmentType)
