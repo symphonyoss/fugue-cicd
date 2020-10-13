@@ -313,9 +313,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   
   private boolean qualifierIsSet()
   {
-    env_.buildId = buildId
     return env_.buildId != null && !("".equals(env_.buildId.trim()))
- 
   }
   
   private void pushTo(String environmentType)
@@ -1006,7 +1004,7 @@ environmentType ${environmentType}
                   usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
   //  echo 'UserName1 is ' + USERNAME
-      String filename =   name +'-'+ environ_.buildId+'.jar'           
+      String filename =   name +'-'+ env_.buildId+'.jar'           
       String fullUrl = repoUrl + name + '/' + environ_.buildId +'/' +filename
       echo 'UserName2 is ' +  environ.USERNAME
       def get = new URL(fullUrl).openConnection();
