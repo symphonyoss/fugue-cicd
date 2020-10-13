@@ -998,9 +998,12 @@ environmentType ${environmentType}
   }
   
   public void downloadArtifact() {
+    
+    String artifactory_id = 'artifactory-id'
     echo 'Starting download of artifact'
     def get = new URL(repoUrl).openConnection();
-    get.setRequestProperty('Authorization', 'Basic '+ ('artifactory-id.username' + ':' + 'artifactory-id.password').getBytes('iso-8859-1').encodeBase64())
+    get.setRequestProperty('Authorization', 'Basic '+ (artifactory_id.username + ':' + artifactory_id.password).getBytes('iso-8859-1').encodeBase64())
+    echo artifactory_id.username
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
