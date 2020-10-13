@@ -1001,10 +1001,10 @@ environmentType ${environmentType}
     
 
     echo 'Starting download of artifact'
-    steps.withCredentials([[$class: 'UsernamePasswordMultiBinding',
+    steps.withCredentials([usernamePassword(
        credentialsId: 'artifactory-id',
        usernameVariable: 'USERNAME',
-       passwordVariable: 'PASSWORD']]) {
+       passwordVariable: 'PASSWORD')]) {
     def get = new URL(repoUrl).openConnection();
     get.setRequestProperty('Authorization', 'Basic '+ ("${USERNAME}" + ':' + "${PASSWORD}").getBytes('iso-8859-1').encodeBase64())
 
