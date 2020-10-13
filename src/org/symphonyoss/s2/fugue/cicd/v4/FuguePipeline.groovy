@@ -1017,10 +1017,13 @@ environmentType ${environmentType}
   
       if(getRC.equals(200))
       {
-        sh "ls"
+       
         echo ('download starting ' + fullUrl)
         File f = new File(filename)
+        if(f.exists())
+          echo 'Pippo'
         f.createNewFile()
+        
          f << get.getInputStream().getBytes();
          echo ('download successful ' + fullUrl)
       } else
