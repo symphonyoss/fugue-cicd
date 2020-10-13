@@ -1005,7 +1005,7 @@ environmentType ${environmentType}
      
   //  echo 'UserName1 is ' + USERNAME
       String filename =   name +'-'+ env_.buildId+'.jar'           
-      String fullUrl = repoUrl + name + '/' + environ_.buildId +'/' +filename
+      String fullUrl = repoUrl + name + '/' + env_.buildId +'/' +filename
       echo 'UserName2 is ' +  environ.USERNAME
       def get = new URL(fullUrl).openConnection();
       get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
