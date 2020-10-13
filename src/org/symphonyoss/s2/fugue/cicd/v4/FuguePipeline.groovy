@@ -1019,7 +1019,7 @@ environmentType ${environmentType}
       {
         echo ('download starting ' + fullUrl)
         new File(filename).delete()
-         new File(filename) << println(get.getInputStream().getBytes());
+         new File(filename) << get.getInputStream().getBytes();
          echo ('download successful ' + fullUrl)
       } else
       {
