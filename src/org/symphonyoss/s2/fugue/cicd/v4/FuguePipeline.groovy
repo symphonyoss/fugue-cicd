@@ -1006,6 +1006,10 @@ environmentType ${environmentType}
     if(getRC.equals(200)) {
        new File("output.") << println(get.getInputStream().getBytes());
        echo ('download successful ' + repoUrl)
+    } else {
+      echo get.getResposeCode()
+      echo get.toString()
+      echo get.getContent().toString()
     }
     
   }
