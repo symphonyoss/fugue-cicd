@@ -1007,7 +1007,7 @@ environmentType ${environmentType}
        passwordVariable: 'PASSWORD']]) {
     def get = new URL(repoUrl).openConnection();
 
-  //  get.setRequestProperty('Authorization', 'Basic '+ (artifactory_id.username + ':' + artifactory_id.password).getBytes('iso-8859-1').encodeBase64())
+    get.setRequestProperty('Authorization', 'Basic '+ (env.USERNAME + ':' + env.PASSWORD).getBytes('iso-8859-1').encodeBase64())
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
