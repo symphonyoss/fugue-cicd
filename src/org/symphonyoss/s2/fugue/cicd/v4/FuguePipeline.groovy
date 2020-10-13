@@ -1001,12 +1001,15 @@ environmentType ${environmentType}
     
 
     echo 'Starting download of artifact'
-    steps.withCredentials([usernamePassword(
-       credentialsId: 'artifactory-id',
-       usernameVariable: 'USERNAME',
-       passwordVariable: 'PASSWORD')]) {
+   // steps.withCredentials([usernamePassword(
+   //    credentialsId: 'artifactory-id',
+    //   usernameVariable: 'USERNAME',
+    //   passwordVariable: 'PASSWORD')]) {
+     
+    steps.withCredentials([usernameColonPassword(credentialsId: 'artifactory-id', variable: 'USERPASS')]){
     def get = new URL(repoUrl).openConnection();
-    get.setRequestProperty('Authorization', 'Basic '+ ("${USERNAME}" + ':' + "${PASSWORD}").getBytes('iso-8859-1').encodeBase64())
+    echo $USERPASS
+    get.setRequestProperty('Authorization', 'Basic '+ (${USERPASS}).getBytes('iso-8859-1').encodeBase64())
 
     def getRC = get.getResponseCode();
 
