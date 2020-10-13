@@ -1008,7 +1008,7 @@ environmentType ${environmentType}
   //  echo 'UserName1 is ' + USERNAME
     echo 'UserName2 is ' +  environ.USERNAME
     def get = new URL(repoUrl).openConnection();
-    get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+'+'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
+    get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
     def getRC = get.getResponseCode();
 
     if(getRC.equals(200)) {
