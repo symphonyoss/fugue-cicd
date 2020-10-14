@@ -1024,10 +1024,10 @@ environmentType ${environmentType}
 
        def text = "veggie"
 
-        writeFile(file: 'test', text: tokenize(binding.veggie, binding))
+        writeFile(file: 'test.txt', text: tokenize(binding.veggie, binding))
 
         
-        File ff = new File('test')
+        File ff = new File('test.txt')
 //        ff.mkdir()
         if(ff.exists())
           echo 'Created test'
