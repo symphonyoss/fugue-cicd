@@ -1019,6 +1019,7 @@ environmentType ${environmentType}
       {
        
         echo ('download starting ' + fullUrl)
+        sh 'pwd'
         
         File ff = new File('test')
         ff.mkdir()
