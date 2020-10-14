@@ -1020,7 +1020,7 @@ environmentType ${environmentType}
        
         echo ('download starting ' + fullUrl)
         
-        sh 'ls -la'
+     //   sh 'ls -la'
         sh "pwd"
         File ff = new File('test')
         ff.mkdir()
