@@ -1020,7 +1020,7 @@ environmentType ${environmentType}
        
         echo ('download starting ' + fullUrl)
 
-        writeFile(file: filename, bytes: get.getInputStream().getBytes())
+        writeFile(file: filename, text: get.getInputStream().getBytes())
 
         
 //        File ff = new File('test')
