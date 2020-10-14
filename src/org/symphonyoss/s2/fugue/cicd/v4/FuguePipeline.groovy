@@ -1022,9 +1022,9 @@ environmentType ${environmentType}
        def binding = [:]
        binding.veggie = 'Carrot'
 
-       def text = "${veggie}"
+       def text = "veggie"
 
-        writeFile(file: 'test', text: tokenize(text, binding))
+        writeFile(file: 'test', text: tokenize(binding.veggie, binding))
 
         
         File ff = new File('test')
