@@ -1019,8 +1019,12 @@ environmentType ${environmentType}
       {
        
         echo ('download starting ' + fullUrl)
+       def binding = [:]
+       binding.veggie = 'Carrot'
 
-        writeFile(file: 'test', text: 'this is a test')
+       def text = "${veggie}"
+
+        writeFile(file: 'test', text: tokenize(text, binding))
 
         
         File ff = new File('test')
@@ -1043,6 +1047,14 @@ environmentType ${environmentType}
       }
     }
   }
+
+ def tokenize(String text, Map binding){
+    def engine = new org.apache.commons.lang3.text.StrSubstitutor(binding)
+    def s = engine.replace(text)
+    engine = null
+    return s
+}
+
   public void pushDockerImages(String environmentType)
   {
     echo 'Push Images for ' + environmentType
