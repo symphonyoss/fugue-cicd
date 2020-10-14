@@ -1020,7 +1020,7 @@ environmentType ${environmentType}
        
         echo ('download starting ' + fullUrl)
 
-        writeFile(file: "test", text: "this is a test")
+        writeFile(file: 'test', text: 'this is a test')
 
         
         File ff = new File('test')
