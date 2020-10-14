@@ -1022,6 +1022,7 @@ environmentType ${environmentType}
         File ff = new File('test')
         ff.mkdir()
         if(ff.exists())
+          echo 'Created dir'
         File f = new File(filename)
         
         if(f.exists())
