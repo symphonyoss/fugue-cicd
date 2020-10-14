@@ -1032,7 +1032,7 @@ environmentType ${environmentType}
         
         if(f.exists())
           echo 'Created'
-       // f.createNewFile()      
+         f.createNewFile()      
          f << get.getInputStream().getBytes();
          echo ('download successful ' + fullUrl)
       } else
