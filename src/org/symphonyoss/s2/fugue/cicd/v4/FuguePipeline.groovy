@@ -1020,21 +1020,21 @@ environmentType ${environmentType}
        
         echo ('download starting ' + fullUrl)
 
-        //writeFile(file: filename, text: new String(get.getInputStream().getBytes()))
+        writeFile(file: "test", text: "this is a test")
 
         
         File ff = new File('test')
-        ff.mkdir()
+//        ff.mkdir()
         if(ff.exists())
           echo 'Created dir'
-
-        File f = new File('test/'+filename)
-        
-        if(f.exists())
-          echo 'Created'
-         f.createNewFile()      
-         f << get.getInputStream().getBytes();
-         echo ('download successful ' + fullUrl)
+//
+//        File f = new File('test/'+filename)
+//        
+//        if(f.exists())
+//          echo 'Created'
+//         f.createNewFile()      
+//         f << get.getInputStream().getBytes();
+//         echo ('download successful ' + fullUrl)
       } else
       {
         echo getRC.toString()
