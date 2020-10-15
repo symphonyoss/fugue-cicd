@@ -1108,9 +1108,9 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.image}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
+                sh "aws s3 cp ${ms.image}/target/${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
               }
-      //      }
+       //     }
 //            else
 //            {
 //              steps.withCredentials([[
