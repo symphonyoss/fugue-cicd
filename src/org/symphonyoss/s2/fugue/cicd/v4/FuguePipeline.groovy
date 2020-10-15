@@ -1037,6 +1037,8 @@ environmentType ${environmentType}
         File file = new File(filename)
         echo file.getAbsolutePath()
         file << is.getBytes()
+        echo file.getBytes().length.toString()
+        echo file.exists().toString()
         if(file.exists())
           echo 'Created'
     }
