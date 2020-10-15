@@ -1,10 +1,9 @@
 package org.symphonyoss.s2.fugue.cicd.v4
 
-import org.apache.commons.lang3.text.StrSubstitutor;
+
 import org.jenkinsci.plugins.workflow.cps.DSL
 import org.jenkinsci.plugins.workflow.cps.EnvActionImpl
 
-import sun.tools.tree.ThisExpression
 
 import java.util.Map.Entry
 import java.util.Random
@@ -1019,28 +1018,15 @@ environmentType ${environmentType}
       {
        
         echo ('download starting ' + fullUrl)
-     // def binding = [:]
-      // binding.veggie = 'Carrot'
 
-      // def text = "veggie"
-
-       // writeFile(file: 'test.txt', text: tokenize(binding.veggie, binding))
-
-        
-      //  File ff = new File('test.txt')
-//        ff.mkdir()
-     //   if(ff.exists())
-      //    echo 'Created test'
           PipelineUtils utils = new PipelineUtils()
           utils.saveFile(filename,get.getInputStream() )
-//
+
         File f = new File(filename)
-//        
+        
         if(f.exists())
           echo 'Created'
-//         f.createNewFile()      
-//         f << get.getInputStream().getBytes();
-//         echo ('download successful ' + fullUrl)
+
       } else
       {
         echo getRC.toString()
@@ -1051,8 +1037,7 @@ environmentType ${environmentType}
   }
   
   final class PipelineUtils implements Serializable {
-    //private script=null
-  //  private static final PipelineUtils instance = new PipelineUtils()
+
     @NonCPS
     String saveFile(String filename, InputStream is) {
       //  String PWD = script.pwd()
@@ -1062,13 +1047,6 @@ environmentType ${environmentType}
         echo file.getAbsolutePath()
         file << is.getBytes()
     }
-}
-
- def tokenize(String text, Map binding){
-    def engine = new org.apache.commons.lang3.text.StrSubstitutor(binding)
-    def s = engine.replace(text)
-    engine = null
-    return s
 }
 
   public void pushDockerImages(String environmentType)
