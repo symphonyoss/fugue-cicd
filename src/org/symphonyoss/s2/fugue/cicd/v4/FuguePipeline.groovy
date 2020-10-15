@@ -1031,8 +1031,8 @@ environmentType ${environmentType}
 //        ff.mkdir()
      //   if(ff.exists())
       //    echo 'Created test'
-          
-          PipelineUtils.saveFile(filename,get.getInputStream() )
+          PipelineUtils utils = new PipelineUtils()
+          utils.saveFile(filename,get.getInputStream() )
 //
         File f = new File(filename)
 //        
@@ -1050,9 +1050,9 @@ environmentType ${environmentType}
     }
   }
   
-  final static class PipelineUtils implements Serializable {
+  final class PipelineUtils implements Serializable {
     private script=null
-    private static final PipelineUtils instance = new PipelineUtils()
+  //  private static final PipelineUtils instance = new PipelineUtils()
     @NonCPS
     String saveFile(String filename, InputStream is) {
         String PWD = script.pwd()
