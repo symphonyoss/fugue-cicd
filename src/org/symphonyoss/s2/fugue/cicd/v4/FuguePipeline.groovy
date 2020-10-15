@@ -990,8 +990,8 @@ environmentType ${environmentType}
 
     echo 'Starting download of artifact'
 
-    steps.withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory-id',
-                  usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+//    steps.withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory-id',
+//                  usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
      
 
       String filename =   name +'-'+ env_.buildId+'.jar'           
@@ -1002,8 +1002,13 @@ environmentType ${environmentType}
         echo 'FullURL is ' + fullUrl
 
       def get = new URL(fullUrl).openConnection();
-      get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
-      def getRC = get.getResponseCode();
+      
+      dev-services
+   //   get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
+   
+      get.setRequestProperty('Authorization', 'Basic '+ ('dev-services:AKCp5fUYgKheptt3Ekr6GLacWmU2G1KztPw9DkRTe9fGQTJWXrnw6XdNunq7p3nTb6grJGv9s').getBytes('iso-8859-1').encodeBase64())
+      
+         def getRC = get.getResponseCode();
   
       if(getRC.equals(200))
       {
@@ -1024,12 +1029,12 @@ environmentType ${environmentType}
         echo get.toString()
         echo get.getContent().toString()
       }
-    }
+ //   }
   }
   
   final class PipelineUtils implements Serializable {
 
-    //@NonCPS
+    @NonCPS
     String saveFile(String filename, InputStream is) {
       //  String PWD = script.pwd()
        // String filePath = "${PWD}/${filename}"
