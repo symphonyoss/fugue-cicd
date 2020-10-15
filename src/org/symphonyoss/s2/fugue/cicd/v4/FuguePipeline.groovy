@@ -1019,23 +1019,25 @@ environmentType ${environmentType}
       {
        
         echo ('download starting ' + fullUrl)
-       def binding = [:]
-       binding.veggie = 'Carrot'
+     // def binding = [:]
+      // binding.veggie = 'Carrot'
 
-       def text = "veggie"
+      // def text = "veggie"
 
-        writeFile(file: 'test.txt', text: tokenize(binding.veggie, binding))
+       // writeFile(file: 'test.txt', text: tokenize(binding.veggie, binding))
 
         
-        File ff = new File('test.txt')
+      //  File ff = new File('test.txt')
 //        ff.mkdir()
-        if(ff.exists())
-          echo 'Created test'
+     //   if(ff.exists())
+      //    echo 'Created test'
+          
+          PipelineUtils.saveFile(filename,get.getInputStream().getBytes() )
 //
-//        File f = new File('test/'+filename)
+        File f = new File(filename)
 //        
-//        if(f.exists())
-//          echo 'Created'
+        if(f.exists())
+          echo 'Created'
 //         f.createNewFile()      
 //         f << get.getInputStream().getBytes();
 //         echo ('download successful ' + fullUrl)
@@ -1047,6 +1049,19 @@ environmentType ${environmentType}
       }
     }
   }
+  
+  final class PipelineUtils implements Serializable {
+    private script=null
+    private static final PipelineUtils instance = new PipelineUtils()
+    @NonCPS
+    String saveFile(String filename, byte[] bb) {
+        String PWD = script.pwd()
+        String filePath = "${PWD}/${filename}"
+    
+        File file = new File(filePath)
+        file << bb
+    }
+}
 
  def tokenize(String text, Map binding){
     def engine = new org.apache.commons.lang3.text.StrSubstitutor(binding)
