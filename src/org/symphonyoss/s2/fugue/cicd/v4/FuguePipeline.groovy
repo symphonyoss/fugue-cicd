@@ -46,7 +46,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   private Map<String, Boolean>  pushTo_ = [:]
   private Map<String, Boolean>  verifyCreds_ = [:]
   private Map<String, Purpose>  deployTo_ = [:]
-  private String                pullFrom_
+
   private String                targetEnvironmentType_
   
   private String serviceGitOrg
@@ -350,7 +350,7 @@ class FuguePipeline extends JenkinsTask implements Serializable
   public void createDeployStation()
   {
     doBuild_ = false
-    pullFrom_ = env_."environmentType"
+//    pullFrom_ = env_."environmentType"
     
     deployStation = new Station()
       .withPodNames(env_."podName")
@@ -411,7 +411,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
       case 'Deploy to Dev':
         doBuild_ = false
-        pullFrom_ = 'dev'
         deployTo('smoke', Purpose.SmokeTest)
         deployTo('dev')
         break;
@@ -426,7 +425,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
       case 'Promote Dev to QA':
         doBuild_ = false
-        pullFrom_ = 'dev'
         pushTo('qa')
         deployTo('qa')
         targetEnvironmentType_ = 'qa'
@@ -434,7 +432,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
       case 'Promote QA to Stage':
         doBuild_ = false
-        pullFrom_ = 'qa'
         pushTo('stage')
         deployTo('stage')
         targetEnvironmentType_ = 'stage'
@@ -442,7 +439,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
       case 'Promote Stage to UAT':
         doBuild_ = false
-        pullFrom_ = 'stage'
         pushTo('uat')
         deployTo('uat')
         targetEnvironmentType_ = 'uat'
@@ -450,7 +446,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
       case 'Promote QA to UAT':
         doBuild_ = false
-        pullFrom_ = 'qa'
         pushTo('uat')
         deployTo('uat')
         targetEnvironmentType_ = 'uat'
@@ -458,7 +453,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
         
       case 'Promote UAT to Prod':
         doBuild_ = false
-        pullFrom_ = 'uat'
         pushTo('prod')
         deployTo('prod')
         targetEnvironmentType_ = 'prod'
@@ -507,7 +501,6 @@ class FuguePipeline extends JenkinsTask implements Serializable
     
     echo """====================================
 doBuild         ${doBuild_}
-pullFrom        ${pullFrom_}
 pushTo          ${pushTo_}
 deployTo        ${deployTo_}
 
@@ -611,7 +604,6 @@ serviceGitBranch is ${serviceGitBranch}
     }
     
     
-    verifyCreds_[pullFrom_] = true
     
     if(!verifyCreds('dev', true))
     {
@@ -947,9 +939,7 @@ environmentType ${environmentType}
 
   public void pullDockerImages()
   {
-    if(pullFrom_ != null)
-    {
-      echo 'Pull Images from ' + pullFrom_
+      echo 'Pull Images from ' 
       
       service_map.values().each
       {
@@ -960,16 +950,16 @@ environmentType ${environmentType}
           case ContainerType.SERVICE:
           case ContainerType.SCHEDULED:
           case ContainerType.INIT:
-            String repo = docker_repo[pullFrom_]
-        
-            if(repo == null)
-              throw new IllegalStateException("Unknown environment type ${pullFrom_}")
-            
-            String localImage = ms.image + ':' + release
-            String remoteImage = repo + ms.image + ':' + buildId
-            
-            sh 'docker pull ' + remoteImage
-            break;
+//            String repo = docker_repo[pullFrom_]
+//        
+//            if(repo == null)
+//              throw new IllegalStateException("Unknown environment type ${pullFrom_}")
+//            
+//            String localImage = ms.image + ':' + release
+//            String remoteImage = repo + ms.image + ':' + buildId
+//            
+//            sh 'docker pull ' + remoteImage
+//            break;
           case ContainerType.LAMBDA:
           case ContainerType.LAMBDA_INIT:
             downloadArtifact(ms.name)
@@ -993,7 +983,6 @@ environmentType ${environmentType}
             break
         }
       }
-    }
   }
   
   public void downloadArtifact(String name)
@@ -1073,8 +1062,7 @@ environmentType ${environmentType}
             
             
     
-            if(pullFrom_ == null)
-            {
+
               String localImage = ms.image + ':' + release
               String remoteImage = pushRepo + ms.image + ':' + buildId
               
@@ -1082,25 +1070,13 @@ environmentType ${environmentType}
 docker tag ${localImage} ${remoteImage}
 docker push ${remoteImage}
 """
-            }
-            else
-            {
-              String pullRepo = docker_repo[pullFrom_]
-              
-              String baseImage = ms.image + ':' + buildId
-              String localImage = pullRepo + baseImage
-              String remoteImage = pushRepo + baseImage
-              
-              sh """
-docker tag ${localImage} ${remoteImage}
-docker push ${remoteImage}
-"""
-            }
+
             break;
           case ContainerType.LAMBDA_INIT:
           case ContainerType.LAMBDA:
         //    if(pullFrom_ == null)
         //    {
+              downloadArtifact(ms.name)
               steps.withCredentials([[
               $class:             'AmazonWebServicesCredentialsBinding',
               accessKeyVariable:  'AWS_ACCESS_KEY_ID',
@@ -1108,7 +1084,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.image}/target/${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
+                sh "aws s3 cp ${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
               }
        //     }
 //            else
@@ -1165,30 +1141,30 @@ docker push ${remoteImage}
   
   public void pushDockerToolImage(String environmentType, String name)
   {
-    echo 'pushDockerToolImage(environmentType=' + environmentType + ', name=' + name + ')'
-    echo 'deployTo_[' + environmentType + '] = ' + deployTo_[environmentType]
-    echo 'pushTo_[' + environmentType + '] = ' + pushTo_[environmentType]
-    
-    if(deployTo_[environmentType] == Purpose.Service)
-    {
-      echo 'Push Tool Image for ' + name
-      
-      String repo = docker_repo[environmentType]
-      
-      if(repo == null)
-        throw new IllegalStateException("Unknown environment type ${environmentType}")
-      
-      String localRepo = (pullFrom_ == null ? "" : docker_repo[pullFrom_]);
-      String localImage =  doBuild_ ? name + ':' + release : localRepo + name + ':' + FUGUE_VERSION
-      String remoteImage = repo + name + ':' + FUGUE_VERSION
-      
-      echo "localRepo=${localRepo}, pullFrom_=${pullFrom_}"
-      
-      
-      
-      sh 'docker tag ' + localImage + ' ' + remoteImage
-      sh 'docker push ' + remoteImage
-    }
+//    echo 'pushDockerToolImage(environmentType=' + environmentType + ', name=' + name + ')'
+//    echo 'deployTo_[' + environmentType + '] = ' + deployTo_[environmentType]
+//    echo 'pushTo_[' + environmentType + '] = ' + pushTo_[environmentType]
+//    
+//    if(deployTo_[environmentType] == Purpose.Service)
+//    {
+//      echo 'Push Tool Image for ' + name
+//      
+//      String repo = docker_repo[environmentType]
+//      
+//      if(repo == null)
+//        throw new IllegalStateException("Unknown environment type ${environmentType}")
+//      
+//      String localRepo = (pullFrom_ == null ? "" : docker_repo[pullFrom_]);
+//      String localImage =  doBuild_ ? name + ':' + release : localRepo + name + ':' + FUGUE_VERSION
+//      String remoteImage = repo + name + ':' + FUGUE_VERSION
+//      
+//      echo "localRepo=${localRepo}, pullFrom_=${pullFrom_}"
+//      
+//      
+//      
+//      sh 'docker tag ' + localImage + ' ' + remoteImage
+//      sh 'docker push ' + remoteImage
+//    }
   }
   
   public void sleep(long time)
