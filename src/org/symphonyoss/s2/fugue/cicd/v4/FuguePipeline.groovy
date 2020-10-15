@@ -1050,7 +1050,7 @@ environmentType ${environmentType}
     }
   }
   
-  final class PipelineUtils implements Serializable {
+  final static class PipelineUtils implements Serializable {
     private script=null
     private static final PipelineUtils instance = new PipelineUtils()
     @NonCPS
