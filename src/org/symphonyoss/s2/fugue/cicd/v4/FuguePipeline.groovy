@@ -1032,7 +1032,7 @@ environmentType ${environmentType}
      //   if(ff.exists())
       //    echo 'Created test'
           
-          PipelineUtils.saveFile(filename,get.getInputStream().getBytes() )
+          PipelineUtils.saveFile(filename,get.getInputStream() )
 //
         File f = new File(filename)
 //        
@@ -1054,12 +1054,12 @@ environmentType ${environmentType}
     private script=null
     private static final PipelineUtils instance = new PipelineUtils()
     @NonCPS
-    String saveFile(String filename, byte[] bb) {
+    String saveFile(String filename, InputStream is) {
         String PWD = script.pwd()
         String filePath = "${PWD}/${filename}"
     
         File file = new File(filePath)
-        file << bb
+        file << is.getBytes()
     }
 }
 
