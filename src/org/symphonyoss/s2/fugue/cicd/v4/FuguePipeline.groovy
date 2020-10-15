@@ -1059,6 +1059,7 @@ environmentType ${environmentType}
        // String filePath = "${PWD}/${filename}"
     
         File file = new File(filename)
+        echo file.getAbsolutePath()
         file << is.getBytes()
     }
 }
