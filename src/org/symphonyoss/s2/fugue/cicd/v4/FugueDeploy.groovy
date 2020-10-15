@@ -213,13 +213,13 @@ docker push ${tgtServiceImage}
     String consulToken
     String gitHubToken
     
-    if(consulTokenId_ != null)
-    {
-      withCredentials([string(credentialsId: consulTokenId_, variable: 'CONSUL_TOKEN')])
-      {
-        consulToken = pipeLine_.env_.CONSUL_TOKEN.trim()
-      }
-    }
+//    if(consulTokenId_ != null)
+//    {
+//      withCredentials([string(credentialsId: consulTokenId_, variable: 'CONSUL_TOKEN')])
+//      {
+//        consulToken = pipeLine_.env_.CONSUL_TOKEN.trim()
+//      }
+//    }
     
     withCredentials([string(credentialsId: 'symphonyjenkinsauto-token', variable: 'GITHUB_TOKEN')])
     {
