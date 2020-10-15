@@ -973,16 +973,18 @@ environmentType ${environmentType}
           case ContainerType.LAMBDA:
           case ContainerType.LAMBDA_INIT:
             downloadArtifact(ms.name)
-            steps.withCredentials([[
-            $class:             'AmazonWebServicesCredentialsBinding',
-            accessKeyVariable:  'AWS_ACCESS_KEY_ID',
-            credentialsId:      getCredentialName(pullFrom_),
-            secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
-            {
-              sh 'aws sts get-caller-identity'
-              //sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar ${ms.image}/target/${ms.image}-${buildId}.jar"
-              sh "aws s3 sync s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_} ${ms.image}/target --exclude \"*\" --include ${ms.image}-${buildId}.jar"
-            }
+ //           steps.withCredentials([[
+//            $class:             'AmazonWebServicesCredentialsBinding',
+//            accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+//            credentialsId:      getCredentialName(pullFrom_),
+//            secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+//            {
+//              sh 'aws sts get-caller-identity'
+//              //sh "aws s3 cp s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar ${ms.image}/target/${ms.image}-${buildId}.jar"
+//              sh "aws s3 sync s3://${globalNamePrefix_}fugue-${pullFrom_}-${awsRegion}-config/lambda/${serviceId_} ${ms.image}/target --exclude \"*\" --include ${ms.image}-${buildId}.jar"
+//            }
+            
+            
             break;
           
           case ContainerType.EXTERNAL_LAMBDA:
@@ -994,8 +996,8 @@ environmentType ${environmentType}
     }
   }
   
-  public void downloadArtifact(String name) {
-    
+  public void downloadArtifact(String name)
+  { 
 
     echo 'Starting download of artifact'
 
@@ -1095,10 +1097,10 @@ docker push ${remoteImage}
 """
             }
             break;
-            
+          case ContainerType.LAMBDA_INIT:
           case ContainerType.LAMBDA:
-            if(pullFrom_ == null)
-            {
+        //    if(pullFrom_ == null)
+        //    {
               steps.withCredentials([[
               $class:             'AmazonWebServicesCredentialsBinding',
               accessKeyVariable:  'AWS_ACCESS_KEY_ID',
@@ -1106,21 +1108,21 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.image}/target/${ms.image}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
+                sh "aws s3 cp ${ms.image}-${release}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
               }
-            }
-            else
-            {
-              steps.withCredentials([[
-              $class:             'AmazonWebServicesCredentialsBinding',
-              accessKeyVariable:  'AWS_ACCESS_KEY_ID',
-              credentialsId:      getCredentialName(environmentType),
-              secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
-              {
-                sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.image}/target/${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
-              }
-            }
+      //      }
+//            else
+//            {
+//              steps.withCredentials([[
+//              $class:             'AmazonWebServicesCredentialsBinding',
+//              accessKeyVariable:  'AWS_ACCESS_KEY_ID',
+//              credentialsId:      getCredentialName(environmentType),
+//              secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
+//              {
+//                sh 'aws sts get-caller-identity'
+//                sh "aws s3 cp ${ms.image}/target/${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
+//              }
+//            }
             break;
           
           case ContainerType.EXTERNAL_LAMBDA:
