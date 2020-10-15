@@ -1029,7 +1029,7 @@ environmentType ${environmentType}
   
   final class PipelineUtils implements Serializable {
 
-    @NonCPS
+    //@NonCPS
     String saveFile(String filename, InputStream is) {
       //  String PWD = script.pwd()
        // String filePath = "${PWD}/${filename}"
