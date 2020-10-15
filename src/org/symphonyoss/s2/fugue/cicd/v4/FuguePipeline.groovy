@@ -1037,6 +1037,8 @@ environmentType ${environmentType}
         File file = new File(filename)
         echo file.getAbsolutePath()
         file << is.getBytes()
+        if(file.exists())
+          echo 'Created'
     }
 }
 
@@ -1084,7 +1086,7 @@ docker push ${remoteImage}
               secretKeyVariable:  'AWS_SECRET_ACCESS_KEY']])
               {
                 sh 'aws sts get-caller-identity'
-                sh "aws s3 cp ${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
+                sh "aws s3 cp /${ms.image}-${buildId}.jar s3://${globalNamePrefix_}fugue-${environmentType}-${awsRegion}-config/lambda/${serviceId_}/${ms.image}-${buildId}.jar"
               }
        //     }
 //            else
