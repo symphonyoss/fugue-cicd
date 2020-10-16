@@ -1003,7 +1003,7 @@ environmentType ${environmentType}
 
       def get = new URL(fullUrl).openConnection();
       
-      dev-services
+     // dev-services
    //   get.setRequestProperty('Authorization', 'Basic '+ ( environ.USERNAME+':'+ environ.PASSWORD).getBytes('iso-8859-1').encodeBase64())
    
       get.setRequestProperty('Authorization', 'Basic '+ ('dev-services:AKCp5fUYgKheptt3Ekr6GLacWmU2G1KztPw9DkRTe9fGQTJWXrnw6XdNunq7p3nTb6grJGv9s').getBytes('iso-8859-1').encodeBase64())
