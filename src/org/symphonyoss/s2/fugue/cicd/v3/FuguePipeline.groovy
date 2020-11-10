@@ -1360,19 +1360,11 @@ docker push ${remoteImage}
     policyVersion."PolicyVersion"."Document"."Statement".each
     {
       statement ->
-        if('FugueAdmin'.equals(statement."Sid"))
+        if('LambdaV1'.equals(statement."Sid"))
         {
-          statement."Action".each
-          {
-            action ->
-            
-            if('s3:PutBucketTagging'.equals(action))
-            {
-              echo 'thats it!'
-              
-              ok = true
-            }
-          }
+          echo 'thats it!'
+          
+          ok = true
         }
     }
     
