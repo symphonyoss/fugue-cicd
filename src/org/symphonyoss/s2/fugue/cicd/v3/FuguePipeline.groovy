@@ -1432,7 +1432,6 @@ docker push ${remoteImage}
                 "ecs:DescribeTasks",
                 "ecs:DescribeTaskDefinition",
                 "ecs:ListTaskDefinitions",
-                "ecs:StopTask",
                 "secretsmanager:CreateSecret"
             ],
             "Resource": "*"
@@ -1558,7 +1557,7 @@ docker push ${remoteImage}
             ],
             "Resource": [
                 "arn:aws:ecs:*:*:task-definition/sym-s2-fugue-*",
-                "arn:aws:iam::*:policy/sym-s2-fugue-*",
+                "arn:aws:iam::*:policy/sym-s2-*",
                 "arn:aws:iam::*:role/sym-s2-fugue-*",
                 "arn:aws:iam::*:user/sym-s2-fugue-*",
                 "arn:aws:iam::*:group/sym-s2-fugue-*",
@@ -1576,6 +1575,36 @@ docker push ${remoteImage}
             ],
             "Resource": [
                 "arn:aws:s3:::sym-s2-fugue-*"
+            ]
+        },
+               {
+            "Sid": "All",
+            "Effect": "Allow",
+            "Action": [
+                "logs:DescribeLogGroups",
+                "logs:CreateLogGroup",
+                "logs:PutRetentionPolicy",
+                "logs:PutLogEvents",
+                "logs:CreateLogStream"
+
+           ],
+            "Resource": [
+                "*"
+            ]
+        },
+                {
+            "Sid": "LambdaV1",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:CreateFunction",
+                "lambda:InvokeFunction",
+                "lambda:GetFunction",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:UpdateFunctionCode",
+                "lambda:PublishVersion"
+            ],
+            "Resource": [
+                "arn:aws:lambda:*:*:function:sym-s2-*"
             ]
         }
     ]
