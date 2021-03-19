@@ -1,4 +1,4 @@
-# fugue-cicd
+# Fugue CICD
 Fugue Jenkins pipeline library
 
 ## Change Log
@@ -19,3 +19,18 @@ The pipeline initializes the build qualifier on instantiation, the withBuildNumb
 withBuildQualifier(String qualifier) and this method should only be called if you wish to re-use an existing build.
 
 Existing Jenkinsfiles will break as a result of this change, calls to FuguePipeline.withBuildNumber() should be removed.
+
+## Contributing
+
+1. Fork it (<https://github.com/symphonyoss/fugue-cicd/fork>)
+2. Create your feature branch (`git checkout -b feature/fooBar`)
+3. Read our [contribution guidelines](.github/CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
+4. Commit your changes (`git commit -am 'Add some fooBar'`)
+5. Push to the branch (`git push origin feature/fooBar`)
+6. Create a new Pull Request
+
+## License
+
+The code in this repository is distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+Copyright 2018-2019 Symphony Communication Services, LLC.
